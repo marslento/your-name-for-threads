@@ -1,0 +1,841 @@
+{
+  "extension_name": {
+    "message": "Your Name for Threads",
+    "description": "Extension name shown in the browser toolbar and extensions page."
+  },
+  "extension_description": {
+    "message": "本機保存的 Threads 私人暱稱。",
+    "description": "Extension description shown on the extensions page."
+  },
+  "common_close": {
+    "message": "關閉"
+  },
+  "popup_title": {
+    "message": "Your Name for Threads"
+  },
+  "popup_openDashboard": {
+    "message": "開啟通訊錄"
+  },
+  "popup_currentSiteLabel": {
+    "message": "目前網站："
+  },
+  "popup_threadsSite": {
+    "message": "Threads"
+  },
+  "popup_nonThreadsSite": {
+    "message": "非 Threads"
+  },
+  "popup_threadsGuidance": {
+    "message": "請前往 Threads 個人頁新增私人暱稱"
+  },
+  "popup_nonThreadsGuidance": {
+    "message": "開啟 Threads 後，即可在個人頁新增私人暱稱。"
+  },
+  "popup_threadsUnresolvedGuidance": {
+    "message": "尚無法確認這個分頁的 Threads 帳號，請重新整理頁面或稍後再試。"
+  },
+  "integration_partialUnavailable": {
+    "message": "部分 Threads 整合目前無法使用"
+  },
+  "integration_partialHelp": {
+    "message": "請重新整理 Threads 頁面再試一次。如果持續發生，可以回報問題。"
+  },
+  "notice_dismiss": {
+    "message": "知道了"
+  },
+  "popup_versionLabel": {
+    "message": "版本"
+  },
+  "profile_addNickname": {
+    "message": "添加暱稱"
+  },
+  "profile_editNickname": {
+    "message": "編輯"
+  },
+  "profile_createNicknameTitle": {
+    "message": "添加暱稱"
+  },
+  "profile_updateNicknameTitle": {
+    "message": "修改暱稱"
+  },
+  "profile_nicknameLabel": {
+    "message": "暱稱"
+  },
+  "profile_nicknameInvalid": {
+    "message": "請輸入 1 至 25 個字元的暱稱"
+  },
+  "profile_cancelNickname": {
+    "message": "取消"
+  },
+  "profile_saveNickname": {
+    "message": "儲存"
+  },
+  "profile_deleteNickname": {
+    "message": "刪除暱稱"
+  },
+  "profile_deleteConfirmationTitle": {
+    "message": "確定要刪除這個暱稱嗎？"
+  },
+  "profile_deleteConfirmationDescription": {
+    "message": "刪除後可以重新新增。"
+  },
+  "profile_cancelDelete": {
+    "message": "取消"
+  },
+  "profile_confirmDelete": {
+    "message": "刪除"
+  },
+  "profile_nicknameCreated": {
+    "message": "暱稱已儲存"
+  },
+  "profile_nicknameUpdated": {
+    "message": "暱稱已更新"
+  },
+  "profile_deleteSuccess": {
+    "message": "暱稱已刪除"
+  },
+  "profile_saveError": {
+    "message": "儲存失敗，請再試一次"
+  },
+  "profile_deleteError": {
+    "message": "刪除失敗，請再試一次"
+  },
+  "profile_notificationsLabel": {
+    "message": "通知"
+  },
+  "profile_pendingConfirmation": {
+    "message": "待確認"
+  },
+  "profile_pendingConflictDescription": {
+    "message": "此暱稱有待確認的身分衝突"
+  },
+  "dashboard_sidebar_directory": {
+    "message": "通訊錄"
+  },
+  "dashboard_sidebar_settings": {
+    "message": "設定"
+  },
+  "dashboard_sidebar_backupSync": {
+    "message": "備份與匯入"
+  },
+  "dashboard_sidebar_about": {
+    "message": "關於與隱私"
+  },
+  "dashboard_conflicts_title": {
+    "message": "身分衝突"
+  },
+  "common_cancel": {
+    "message": "取消"
+  },
+  "dashboard_directory_columnNickname": {
+    "message": "暱稱"
+  },
+  "dashboard_directory_columnUsername": {
+    "message": "Threads 帳號"
+  },
+  "dashboard_directory_columnNote": {
+    "message": "備註"
+  },
+  "dashboard_directory_columnUpdatedAt": {
+    "message": "最後更新"
+  },
+  "dashboard_directory_columnActions": {
+    "message": "操作"
+  },
+  "dashboard_directory_resolveConflictAction": {
+    "message": "處理衝突"
+  },
+  "dashboard_directory_title": {
+    "message": "私人通訊錄"
+  },
+  "dashboard_directory_countLabel": {
+    "message": "$1 位聯絡人"
+  },
+  "dashboard_directory_conflictBannerLabel": {
+    "message": "$1 筆資料待確認"
+  },
+  "dashboard_directory_conflictBannerAction": {
+    "message": "立即處理"
+  },
+  "dashboard_directory_emptyTitle": {
+    "message": "還沒有通訊錄資料"
+  },
+  "dashboard_directory_emptyDescription": {
+    "message": "在 Threads 個人頁新增暱稱後，聯絡人會顯示在這裡。"
+  },
+  "dashboard_directory_emptyAction": {
+    "message": "開啟 Threads"
+  },
+  "dashboard_directory_searchEmptyTitle": {
+    "message": "找不到符合條件的聯絡人"
+  },
+  "dashboard_directory_searchEmptyAction": {
+    "message": "清除搜尋"
+  },
+  "dashboard_directory_searchPlaceholder": {
+    "message": "搜尋暱稱、帳號或備註"
+  },
+  "dashboard_directory_sortLabel": {
+    "message": "排序方式"
+  },
+  "dashboard_directory_sort_updatedDesc": {
+    "message": "最近更新"
+  },
+  "dashboard_directory_sort_updatedAsc": {
+    "message": "最早更新"
+  },
+  "dashboard_directory_sort_nicknameAsc": {
+    "message": "暱稱 A–Z"
+  },
+  "dashboard_directory_sort_nicknameDesc": {
+    "message": "暱稱 Z–A"
+  },
+  "dashboard_directory_sort_usernameAsc": {
+    "message": "帳號 A–Z"
+  },
+  "dashboard_directory_sort_usernameDesc": {
+    "message": "帳號 Z–A"
+  },
+  "dashboard_directory_pageSizeLabel": {
+    "message": "每頁筆數"
+  },
+  "dashboard_directory_pageIndicator": {
+    "message": "第 $1 / $2 頁"
+  },
+  "dashboard_directory_prevPage": {
+    "message": "上一頁"
+  },
+  "dashboard_directory_nextPage": {
+    "message": "下一頁"
+  },
+  "dashboard_drawer_editTitle": {
+    "message": "編輯聯絡人"
+  },
+  "dashboard_drawer_noteLabel": {
+    "message": "備註"
+  },
+  "dashboard_drawer_noteInvalid": {
+    "message": "備註不可超過 200 個字元"
+  },
+  "dashboard_drawer_createdAtLabel": {
+    "message": "建立時間"
+  },
+  "dashboard_drawer_deleteAction": {
+    "message": "刪除聯絡人"
+  },
+  "dashboard_drawer_saveSuccess": {
+    "message": "已儲存"
+  },
+  "dashboard_drawer_discardConfirmTitle": {
+    "message": "放棄未儲存變更？"
+  },
+  "dashboard_drawer_discardConfirmDescription": {
+    "message": "離開後，尚未儲存的變更將會遺失。"
+  },
+  "dashboard_drawer_discardConfirmAction": {
+    "message": "放棄變更"
+  },
+  "dashboard_drawer_externalUpdateWarning": {
+    "message": "此聯絡人已在其他地方被更新"
+  },
+  "dashboard_drawer_reloadLatest": {
+    "message": "重新載入最新資料"
+  },
+  "dashboard_drawer_reloadConfirmTitle": {
+    "message": "重新載入將會遺失目前的變更，確定要繼續嗎？"
+  },
+  "dashboard_drawer_deletedExternally": {
+    "message": "這位聯絡人已被刪除"
+  },
+  "dashboard_drawer_deleteConfirmTitle": {
+    "message": "確定要刪除這位聯絡人嗎？"
+  },
+  "dashboard_drawer_deleteConfirmDescription": {
+    "message": "刪除後可以重新新增，但備註內容將無法復原。"
+  },
+  "dashboard_drawer_deleteSuccess": {
+    "message": "已刪除"
+  },
+  "dashboard_conflicts_emptyTitle": {
+    "message": "沒有待確認的身分衝突"
+  },
+  "dashboard_conflicts_columnSourceCount": {
+    "message": "來源數量"
+  },
+  "dashboard_conflicts_columnDetectedAt": {
+    "message": "偵測時間"
+  },
+  "dashboard_conflicts_canonicalBadge": {
+    "message": "目前主要資料"
+  },
+  "dashboard_conflicts_sourceLabel": {
+    "message": "來源 $1"
+  },
+  "dashboard_conflicts_finalNicknameLabel": {
+    "message": "最終暱稱"
+  },
+  "dashboard_conflicts_finalNoteLabel": {
+    "message": "最終備註"
+  },
+  "dashboard_conflicts_mergeAction": {
+    "message": "合併"
+  },
+  "dashboard_conflicts_staleError": {
+    "message": "審查期間資料已變更，請重新載入後再繼續。"
+  },
+  "dashboard_conflicts_mergeSuccess": {
+    "message": "已合併"
+  },
+  "dashboard_conflicts_mergeError": {
+    "message": "合併失敗，請再試一次"
+  },
+  "dashboard_settings_enabledLabel": {
+    "message": "Extension 功能"
+  },
+  "dashboard_settings_disabledNotice": {
+    "message": "Extension 功能目前已關閉；重新啟用後將套用以下設定。"
+  },
+  "dashboard_settings_nicknameDisplayTitle": {
+    "message": "暱稱顯示位置"
+  },
+  "dashboard_settings_surface_profile": {
+    "message": "個人頁"
+  },
+  "dashboard_settings_surface_feed": {
+    "message": "動態貼文"
+  },
+  "dashboard_settings_surface_replies": {
+    "message": "回覆串"
+  },
+  "dashboard_settings_surface_quotes": {
+    "message": "引用內容"
+  },
+  "dashboard_import_homeTitle": {
+    "message": "備份與匯入"
+  },
+  "dashboard_import_exportCardTitle": {
+    "message": "匯出備份"
+  },
+  "dashboard_import_exportCardDescription": {
+    "message": "匯出的檔案是純文字 JSON，包含你的私人暱稱與備註，請妥善保存。"
+  },
+  "dashboard_import_exportAction": {
+    "message": "匯出備份"
+  },
+  "dashboard_import_exportSuccess": {
+    "message": "已匯出備份"
+  },
+  "dashboard_import_exportError": {
+    "message": "匯出失敗，請稍後再試一次。"
+  },
+  "dashboard_import_importCardTitle": {
+    "message": "匯入備份"
+  },
+  "dashboard_import_importCardDescription": {
+    "message": "選擇相容的 Your Name for Threads 備份檔，會依通訊錄目前的狀態自動還原或合併。"
+  },
+  "dashboard_import_importAction": {
+    "message": "選擇 JSON 備份檔"
+  },
+  "dashboard_import_invalidTitle": {
+    "message": "無法匯入此備份"
+  },
+  "dashboard_import_invalidGeneric": {
+    "message": "此檔案不是有效的 Your Name for Threads 備份。"
+  },
+  "dashboard_import_invalidNewerVersion": {
+    "message": "此備份由較新的 Your Name for Threads 版本建立。請先更新擴充功能後再試一次。"
+  },
+  "dashboard_import_preflightTitle": {
+    "message": "匯入預覽"
+  },
+  "dashboard_import_backupExportedAtLabel": {
+    "message": "備份時間"
+  },
+  "dashboard_import_summaryCreate": {
+    "message": "新增"
+  },
+  "dashboard_import_summaryUpdate": {
+    "message": "更新"
+  },
+  "dashboard_import_summaryDelete": {
+    "message": "刪除"
+  },
+  "dashboard_import_summaryUnchanged": {
+    "message": "維持不變"
+  },
+  "dashboard_import_summaryReview": {
+    "message": "需要審查"
+  },
+  "dashboard_import_summaryPendingConflicts": {
+    "message": "匯入後待確認"
+  },
+  "dashboard_import_summaryNewContacts": {
+    "message": "新聯絡人"
+  },
+  "dashboard_import_summaryStableDuplicates": {
+    "message": "確認為相同帳號"
+  },
+  "dashboard_import_summaryWeakDuplicates": {
+    "message": "需要確認的帳號比對"
+  },
+  "dashboard_import_summaryIdentityMismatches": {
+    "message": "帳號身分不一致"
+  },
+  "dashboard_import_summaryLocallyDeleted": {
+    "message": "先前已刪除"
+  },
+  "dashboard_import_strategyLabel": {
+    "message": "重複帳號的處理方式"
+  },
+  "dashboard_import_strategyKeepLocal": {
+    "message": "保留我的資料"
+  },
+  "dashboard_import_strategyUseIncoming": {
+    "message": "使用匯入資料"
+  },
+  "dashboard_import_strategyReviewEach": {
+    "message": "逐筆審查"
+  },
+  "dashboard_import_startReviewAction": {
+    "message": "開始審查"
+  },
+  "dashboard_import_applyAction": {
+    "message": "套用備份"
+  },
+  "dashboard_import_blockingIssuesTitle": {
+    "message": "此備份包含無法自動處理的衝突"
+  },
+  "dashboard_import_confirmPendingConflicts": {
+    "message": "匯入完成後另有 $1 筆資料需要確認"
+  },
+  "dashboard_import_exportFirstAction": {
+    "message": "先匯出目前資料"
+  },
+  "dashboard_import_backToReviewAction": {
+    "message": "返回審查"
+  },
+  "dashboard_import_executeAction": {
+    "message": "執行匯入"
+  },
+  "dashboard_import_noUndoNotice": {
+    "message": "此操作沒有一鍵復原功能，建議先匯出目前資料作為備份。"
+  },
+  "dashboard_import_reviewTitle": {
+    "message": "審查匯入項目"
+  },
+  "dashboard_import_filterAll": {
+    "message": "全部"
+  },
+  "dashboard_import_filterPending": {
+    "message": "尚未處理"
+  },
+  "dashboard_import_filterDone": {
+    "message": "已處理"
+  },
+  "dashboard_import_reviewContinueAction": {
+    "message": "完成審查"
+  },
+  "dashboard_import_statusPending": {
+    "message": "尚未處理"
+  },
+  "dashboard_import_statusDone": {
+    "message": "已處理"
+  },
+  "dashboard_import_drawerLocalLabel": {
+    "message": "我的資料"
+  },
+  "dashboard_import_drawerIncomingLabel": {
+    "message": "匯入的資料"
+  },
+  "dashboard_import_finalResultLabel": {
+    "message": "最終結果"
+  },
+  "dashboard_import_adoptLocalAction": {
+    "message": "採用我的資料"
+  },
+  "dashboard_import_adoptIncomingAction": {
+    "message": "採用匯入的資料"
+  },
+  "dashboard_import_importAsNewAction": {
+    "message": "匯入為新的聯絡人"
+  },
+  "dashboard_import_keepDeletedAction": {
+    "message": "保持刪除"
+  },
+  "dashboard_import_resurrectAction": {
+    "message": "重新加入"
+  },
+  "dashboard_import_keepActiveAction": {
+    "message": "保留聯絡人"
+  },
+  "dashboard_import_confirmWeakIdentityAction": {
+    "message": "確認為同一帳號"
+  },
+  "dashboard_import_saveDecisionAction": {
+    "message": "儲存決定"
+  },
+  "dashboard_import_adoptIncomingIdCheckbox": {
+    "message": "同時採用匯入資料的帳號 ID"
+  },
+  "dashboard_import_discardConfirmTitle": {
+    "message": "放棄此次匯入？"
+  },
+  "dashboard_import_discardConfirmDescription": {
+    "message": "尚未完成的匯入進度將會遺失，目前的通訊錄資料不會被修改。"
+  },
+  "dashboard_import_discardConfirmAction": {
+    "message": "放棄匯入"
+  },
+  "dashboard_import_concurrencyTitle": {
+    "message": "通訊錄已有變更"
+  },
+  "dashboard_import_concurrencyDescription": {
+    "message": "你在審查期間，部分相關聯絡人已被修改或刪除。為避免覆蓋較新的資料，需要重新分析此備份。"
+  },
+  "dashboard_import_cancelImportAction": {
+    "message": "取消匯入"
+  },
+  "dashboard_import_reanalyzeAction": {
+    "message": "重新分析"
+  },
+  "dashboard_import_resultTitle": {
+    "message": "匯入完成"
+  },
+  "dashboard_import_resultCreated": {
+    "message": "新增"
+  },
+  "dashboard_import_resultUpdated": {
+    "message": "更新"
+  },
+  "dashboard_import_resultResurrected": {
+    "message": "恢復已刪除的資料"
+  },
+  "dashboard_import_resultDeleted": {
+    "message": "刪除"
+  },
+  "dashboard_import_resultSkipped": {
+    "message": "略過"
+  },
+  "dashboard_import_resultPendingConflicts": {
+    "message": "另有 $1 筆資料需要確認"
+  },
+  "dashboard_import_goToConflictsAction": {
+    "message": "前往處理"
+  },
+  "dashboard_import_backToDirectoryAction": {
+    "message": "返回私人通訊錄"
+  },
+  "dashboard_import_doneAction": {
+    "message": "完成"
+  },
+  "dashboard_import_commitFailedTitle": {
+    "message": "無法完成匯入"
+  },
+  "dashboard_import_commitFailedDescription": {
+    "message": "請稍後再試一次。"
+  },
+  "dashboard_import_cancelledTitle": {
+    "message": "匯入已取消"
+  },
+  "dashboard_import_cancelledDescription": {
+    "message": "帳號狀態已變更。請確認已登入原帳號後，再重新提交匯入。"
+  },
+  "dashboard_import_sessionExpired": {
+    "message": "匯入工作階段已結束，請重新選擇備份檔。"
+  },
+  "dashboard_about_supportedBrowsersLabel": {
+    "message": "支援瀏覽器"
+  },
+  "dashboard_about_supportedBrowsers": {
+    "message": "最新穩定版 Chrome 與 Edge"
+  },
+  "dashboard_import_reviewItemAction": {
+    "message": "審查"
+  },
+  "dashboard_import_dangerZoneTitle": {
+    "message": "危險操作"
+  },
+  "dashboard_import_ownerMismatchTitle": {
+    "message": "此備份屬於另一個 Threads 帳號"
+  },
+  "dashboard_import_ownerMismatchBackupOwnerLabel": {
+    "message": "備份帳號："
+  },
+  "dashboard_import_ownerMismatchCurrentOwnerLabel": {
+    "message": "目前帳號："
+  },
+  "dashboard_import_ownerMismatchDescription": {
+    "message": "匯入後，這份備份中的聯絡人會以新項目加入目前帳號的通訊錄，不會還原備份帳號本身的通訊錄，備份中已刪除的聯絡人在這裡也不會被還原。"
+  },
+  "dashboard_import_ownerMismatchConfirmAction": {
+    "message": "匯入到 $1"
+  },
+  "dashboard_accountUnresolved": {
+    "message": "無法確認目前的 Threads 帳號"
+  },
+  "dashboard_accountUnresolvedDescription": {
+    "message": "請在已登入 Threads 的分頁開啟，再從擴充功能彈出視窗重新開啟通訊錄。"
+  },
+  "dashboard_import_discardContinueAction": {
+    "message": "繼續匯入"
+  },
+  "dashboard_import_operationLabel": {
+    "message": "要如何使用這份備份？"
+  },
+  "dashboard_import_operationRestore": {
+    "message": "還原到這份備份"
+  },
+  "dashboard_import_operationRestoreDescription": {
+    "message": "讓目前通訊錄回到這份備份建立時的狀態。"
+  },
+  "dashboard_import_operationMerge": {
+    "message": "合併變更"
+  },
+  "dashboard_import_operationMergeDescription": {
+    "message": "把這份備份的變更，與這個瀏覽器上較新的本機資料合在一起。"
+  },
+  "dashboard_import_operationExternal": {
+    "message": "匯入另一份通訊錄"
+  },
+  "dashboard_import_operationExternalDescription": {
+    "message": "這份備份來自另一份通訊錄，其中的聯絡人會以新的項目加入目前的通訊錄。"
+  },
+  "dashboard_import_summaryRestoreRestored": {
+    "message": "恢復已刪除的資料"
+  },
+  "dashboard_import_summaryRestoreReverted": {
+    "message": "回復成備份版本"
+  },
+  "dashboard_import_summaryRestoreRemoved": {
+    "message": "移除備份後新增的資料"
+  },
+  "dashboard_import_changesTitleRestore": {
+    "message": "本次還原的變更"
+  },
+  "dashboard_import_changesTitleMerge": {
+    "message": "本次合併的變更"
+  },
+  "dashboard_import_changesTitleExternal": {
+    "message": "本次匯入的變更"
+  },
+  "dashboard_import_changesUnchangedNote": {
+    "message": "另有 $1 筆資料維持不變。"
+  },
+  "dashboard_import_noChangesNotice": {
+    "message": "這份備份不會造成任何變更。"
+  },
+  "dashboard_import_restoreNoUndoNotice": {
+    "message": "備份後的新增、修改與刪除可能會遺失，且無法一鍵復原。建議先匯出目前資料。"
+  },
+  "dashboard_import_summaryKeptLocalNewer": {
+    "message": "保留較新的本機版本"
+  },
+  "dashboard_import_summaryKeptLocalDeletion": {
+    "message": "保留較新的本機刪除"
+  },
+  "dashboard_import_restoreWarning": {
+    "message": "還原會讓目前通訊錄回到備份建立時的狀態。備份之後新增、修改或刪除的資料可能會遺失。"
+  },
+  "dashboard_import_restoreAction": {
+    "message": "還原到這份備份"
+  },
+  "dashboard_import_restoreConfirmTitle": {
+    "message": "確認還原？"
+  },
+  "dashboard_import_restoreConfirmDescription": {
+    "message": "目前通訊錄將被這份備份取代。此操作沒有一鍵復原。"
+  },
+  "dashboard_import_restoreConfirmAction": {
+    "message": "確認還原"
+  },
+  "dashboard_import_clearAccountTitle": {
+    "message": "清除 $1 的通訊錄資料"
+  },
+  "dashboard_import_clearAccountDescription": {
+    "message": "刪除 $1 在這個瀏覽器中的私人暱稱、備註與刪除紀錄。其他 Threads 帳號的資料不受影響。"
+  },
+  "dashboard_import_clearAccountAction": {
+    "message": "清除此帳號資料"
+  },
+  "dashboard_import_clearAccountConfirmTitle": {
+    "message": "清除 $1 的通訊錄資料？"
+  },
+  "dashboard_import_clearAccountConfirmDescription": {
+    "message": "此操作會永久刪除目前帳號在此瀏覽器中的私人暱稱、備註與刪除紀錄。其他 Threads 帳號不受影響。此操作無法復原。"
+  },
+  "dashboard_import_clearAccountSuccess": {
+    "message": "已清除此帳號的通訊錄資料。"
+  },
+  "dashboard_import_clearAccountError": {
+    "message": "無法清除此帳號資料，請再試一次。"
+  },
+  "onboarding_stepProgress": {
+    "message": "第 $1 步，共 $2 步"
+  },
+  "onboarding_step1_title": {
+    "message": "私人 Threads 通訊錄"
+  },
+  "onboarding_step1_body": {
+    "message": "替 Threads 上的人建立只有你看得到的暱稱與備註。資料保存在你的瀏覽器中。"
+  },
+  "onboarding_step2_title": {
+    "message": "從 Threads 開始"
+  },
+  "onboarding_step2_body": {
+    "message": "登入 Threads，打開任一個人頁，即可新增私人暱稱。"
+  },
+  "onboarding_step3_title": {
+    "message": "記得備份"
+  },
+  "onboarding_step3_body": {
+    "message": "Your Name for Threads 不使用雲端同步。建議定期從「備份與匯入」匯出 JSON 備份。"
+  },
+  "onboarding_back": {
+    "message": "上一步"
+  },
+  "onboarding_next": {
+    "message": "下一步"
+  },
+  "onboarding_openThreads": {
+    "message": "開啟 Threads"
+  },
+  "dashboard_about_replayTour": {
+    "message": "重新查看使用導覽"
+  },
+  "dashboard_about_intro": {
+    "message": "本機優先、開源的 Threads 私人暱稱與備註通訊錄。"
+  },
+  "dashboard_about_privacyHeading": {
+    "message": "隱私"
+  },
+  "dashboard_about_privacyLocal": {
+    "message": "暱稱與備註儲存在目前的瀏覽器中，由擴充功能在本機處理，不會自動傳送給開發者。"
+  },
+  "dashboard_about_privacyNoTelemetry": {
+    "message": "本專案不營運接收這些資料的後端服務，也不提供雲端同步。不做分析、使用行為追蹤、自動當機回報或廣告追蹤。"
+  },
+  "dashboard_about_privacyBackup": {
+    "message": "只有在你主動匯出時，才會產生 JSON 備份供你儲存。備份檔包含私人暱稱、備註及內部識別資訊，請妥善保管，不要公開張貼。"
+  },
+  "dashboard_about_privacySharedProfile": {
+    "message": "不同 Threads 帳號在正常使用流程中，會使用各自的私人通訊錄。"
+  },
+  "dashboard_about_privacySharedProfileLimit": {
+    "message": "這種區隔屬於功能上的區分，並不是共用同一個瀏覽器 Profile 的人之間的加密安全邊界。若多人共用同一台電腦，並需要彼此隔離私人資料，建議使用不同的瀏覽器設定檔（Profile）或作業系統帳號。"
+  },
+  "dashboard_about_supportHeading": {
+    "message": "支援"
+  },
+  "dashboard_about_supportHelp": {
+    "message": "遇到問題時，請先複製診斷資訊，再到 GitHub 回報問題。"
+  },
+  "dashboard_about_copyDiagnostics": {
+    "message": "複製診斷資訊"
+  },
+  "dashboard_about_clearDiagnostics": {
+    "message": "清除診斷紀錄"
+  },
+  "dashboard_about_reportIssue": {
+    "message": "到 GitHub 回報問題"
+  },
+  "dashboard_about_copySuccess": {
+    "message": "已複製診斷資訊。"
+  },
+  "dashboard_about_copyError": {
+    "message": "無法複製診斷資訊，請再試一次。"
+  },
+  "dashboard_about_clearSuccess": {
+    "message": "已清除診斷紀錄。"
+  },
+  "dashboard_about_clearError": {
+    "message": "無法清除診斷紀錄，請再試一次。"
+  },
+  "dashboard_about_linksHeading": {
+    "message": "專案"
+  },
+  "dashboard_about_linkSource": {
+    "message": "GitHub 原始碼"
+  },
+  "dashboard_about_linkIssues": {
+    "message": "GitHub Issues"
+  },
+  "dashboard_about_linkPrivacy": {
+    "message": "隱私權政策"
+  },
+  "dashboard_about_independentHeading": {
+    "message": "關於本專案"
+  },
+  "dashboard_about_independent": {
+    "message": "這是獨立的開源專案。"
+  },
+  "dashboard_about_vibeCoding": {
+    "message": "本專案以 vibe coding 方式開發，開發過程使用 OpenAI 模型與 Claude Code 協助。"
+  },
+  "dashboard_about_backupHeading": {
+    "message": "記得備份"
+  },
+  "dashboard_about_backupReminder": {
+    "message": "記得定期匯出備份，避免瀏覽器資料清除後遺失。"
+  },
+  "dashboard_about_sharedHeading": {
+    "message": "共用電腦時"
+  },
+  "dashboard_about_supportDiagnostics": {
+    "message": "診斷紀錄保存在本機，最多保留最近 20 筆事件，不會自動上傳。複製的診斷資訊包含版本、執行狀態、資料筆數及錯誤代碼。"
+  },
+  "dashboard_about_supportPrivate": {
+    "message": "請勿在公開 Issue 貼上私人暱稱、備註、完整 JSON 備份或復原資料。若涉及安全漏洞或隱私洩漏，請依安全回報說明使用私密管道。"
+  },
+  "dashboard_about_linkSecurity": {
+    "message": "安全回報說明"
+  },
+  "dashboard_about_nameNote": {
+    "message": "脆名簿、脆脆友人帳、你的脆名、脆上好朋友……名字想了不少，就這樣吧。"
+  },
+  "recovery_title": {
+    "message": "資料需要修復"
+  },
+  "recovery_descriptionDirectory": {
+    "message": "Your Name for Threads 無法安全讀取目前的私人通訊錄資料。為避免進一步修改，私人通訊錄功能已暫停。其他帳號不受影響。"
+  },
+  "recovery_descriptionGlobal": {
+    "message": "Your Name for Threads 無法安全讀取已儲存的資料。為避免進一步修改，此瀏覽器中所有帳號的私人通訊錄功能已暫停。"
+  },
+  "recovery_codeLabel": {
+    "message": "代碼"
+  },
+  "recovery_checking": {
+    "message": "正在檢查你的資料⋯⋯"
+  },
+  "recovery_exportAction": {
+    "message": "匯出復原資料"
+  },
+  "recovery_exportWarningDirectory": {
+    "message": "復原資料可能包含私人暱稱、備註及內部識別資訊。請勿直接公開貼到 GitHub Issue。"
+  },
+  "recovery_exportWarningGlobal": {
+    "message": "復原資料可能包含私人暱稱、備註及內部識別資訊，且因為所有已儲存的資料都受影響，也包含所有帳號的資料。請勿直接公開貼到 GitHub Issue。"
+  },
+  "recovery_exportSuccess": {
+    "message": "已儲存復原資料。"
+  },
+  "recovery_exportError": {
+    "message": "無法匯出復原資料，請再試一次。"
+  },
+  "recovery_noRepair": {
+    "message": "本擴充功能不提供自動修復，也無法匯入復原檔案。此檔案供你或開發者查看。"
+  },
+  "recovery_clearDescription": {
+    "message": "清除會永久刪除此帳號已損壞的資料，其他帳號與設定不受影響。若想保留副本，請先匯出復原資料。"
+  },
+  "recovery_clearConfirmTitle": {
+    "message": "要清除此帳號的資料嗎？"
+  },
+  "recovery_clearConfirmDescription": {
+    "message": "這會刪除此帳號已損壞的私人通訊錄，且無法復原。若想保留副本，請先匯出復原資料。"
+  },
+  "recovery_globalNoClear": {
+    "message": "因為所有帳號的資料都受影響，所以不提供清除功能。請改為匯出復原資料並回報問題。"
+  }
+}

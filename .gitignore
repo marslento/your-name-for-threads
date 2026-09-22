@@ -1,0 +1,21 @@
+node_modules
+dist
+/artifacts/
+/.local/
+.env*
+!.env.example
+coverage
+.pnpm-store
+/.claude
+/.agents
+/.qodo/
+/.superpowers/
+/skills-lock.json
+/_private/
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/

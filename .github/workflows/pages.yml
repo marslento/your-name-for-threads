@@ -1,0 +1,42 @@
+name: Pages
+
+# Publishes site/ as the project's GitHub Pages site (Phase 4 Task 32): the home page, /privacy and /support. The files
+# are published exactly as they are committed, with no install and no build step, so nothing here runs project code and
+# nothing needs a secret. site/privacy/index.html is rendered from PRIVACY.md by `pnpm build:site` and committed, and CI
+# fails while it is out of date. Publishing the extension to the stores is a separate workflow behind an approval gate
+# (Tasks 37-41) and is not this one.
+#
+# One-time setup by the repository owner: Settings > Pages > Build and deployment > Source: "GitHub Actions".
+on:
+  push:
+    branches: [main]
+    paths:
+      - "site/**"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+      - id: deployment
+        uses: actions/deploy-pages@v4

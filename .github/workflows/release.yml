@@ -1,0 +1,192 @@
+name: Release
+
+# Stable-only, tag-driven release packaging (Phase 4 Task 37; review checklist 37, 39, 40 and 41). A tag that is exactly
+# v<major>.<minor>.<patch> starts it, and nothing else does: there is no manual start, no schedule, no branch and no
+# beta or canary path. This job builds the extension once, audits it, and turns the audited `dist` into one
+# deterministic ZIP. That ZIP, its checksum and the release notes are the artifact, and it is the only thing any later
+# job is given: nothing after this job builds anything again.
+#
+# This job has no secret and cannot write to the repository. Submitting to the stores and creating the GitHub release
+# come after it, behind a manual approval (Tasks 38 to 41).
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+
+permissions: {}
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    outputs:
+      version: ${{ steps.zip.outputs.version }}
+      sha256: ${{ steps.zip.outputs.sha256 }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      # A tag can be put on any commit. Only a commit that is already on main, and so has been through review, releases.
+      - name: The tagged commit is on main
+        run: git merge-base --is-ancestor "$GITHUB_SHA" origin/main
+
+      # The pnpm version is the one package.json's "packageManager" names.
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install from the frozen lockfile
+        run: pnpm install --frozen-lockfile
+
+      - name: Test
+        run: pnpm test
+
+      - name: Build
+        run: pnpm build
+
+      # The package audit, the release gates that must all be closed, and the tag being v plus package.json's version.
+      - name: Audit the package, the release gates and the tag
+        run: pnpm release:audit --release --tag "$GITHUB_REF_NAME"
+
+      - name: Create the release ZIP, twice, and require the same bytes
+        id: zip
+        run: |
+          set -euo pipefail
+          version=$(node -p "require('./package.json').version")
+          zip="your-name-for-threads-${version}.zip"
+          mkdir release
+          node scripts/make-release-zip.mjs dist "release/${zip}"
+          node scripts/make-release-zip.mjs dist "release/second.zip"
+          cmp "release/${zip}" release/second.zip
+          rm release/second.zip
+          sha256=$(sha256sum "release/${zip}" | cut -d ' ' -f 1)
+          echo "${sha256}  ${zip}" > release/SHA256SUMS
+          node scripts/changelog-excerpt.mjs "${version}" CHANGELOG.md release/release-notes.md
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          echo "sha256=${sha256}" >> "$GITHUB_OUTPUT"
+
+      # The ZIP itself is audited, extracted by a tool that is not ours, so what the stores receive is what was checked.
+      - name: Audit the extracted ZIP
+        run: |
+          set -euo pipefail
+          unzip -t "release/your-name-for-threads-${{ steps.zip.outputs.version }}.zip"
+          unzip -q "release/your-name-for-threads-${{ steps.zip.outputs.version }}.zip" -d extracted
+          node scripts/release-audit.mjs extracted --release --tag "$GITHUB_REF_NAME"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release
+          path: release/
+          if-no-files-found: error
+          retention-days: 30
+
+  # Submits the ZIP the packaging job built and audited to the Chrome Web Store (Phase 4 Task 39). It needs the approval, since
+  # it is the job that names the environment the credentials belong to, and it builds nothing: it takes the artifact, and the
+  # script refuses any file whose checksum or manifest version is not the one the packaging job recorded.
+  chrome:
+    needs: package
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: production-release
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: release
+          path: release
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      # The only step that holds a credential, and each is passed to this step alone.
+      - name: Submit the release ZIP to the Chrome Web Store
+        env:
+          CHROME_PUBLISHER_ID: ${{ secrets.CHROME_PUBLISHER_ID }}
+          CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
+          CHROME_CLIENT_ID: ${{ secrets.CHROME_CLIENT_ID }}
+          CHROME_CLIENT_SECRET: ${{ secrets.CHROME_CLIENT_SECRET }}
+          CHROME_REFRESH_TOKEN: ${{ secrets.CHROME_REFRESH_TOKEN }}
+          VERSION: ${{ needs.package.outputs.version }}
+          SHA256: ${{ needs.package.outputs.sha256 }}
+        run: node scripts/publish-chrome.mjs "release/your-name-for-threads-${VERSION}.zip" --expect-version "$VERSION" --expect-sha256 "$SHA256"
+
+  # Submits the same ZIP to Microsoft Edge Add-ons (Phase 4 Task 40), by the same rules as the Chrome job: it needs the approval,
+  # it builds nothing, and the script refuses any file whose checksum or manifest version is not the one the packaging job
+  # recorded. The notes for certification are the version, what changed and the listing's instructions for the reviewer.
+  edge:
+    needs: package
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: production-release
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: release
+          path: release
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      # The only step that holds a credential, and each is passed to this step alone.
+      - name: Submit the release ZIP to Microsoft Edge Add-ons
+        env:
+          EDGE_PRODUCT_ID: ${{ secrets.EDGE_PRODUCT_ID }}
+          EDGE_CLIENT_ID: ${{ secrets.EDGE_CLIENT_ID }}
+          EDGE_API_KEY: ${{ secrets.EDGE_API_KEY }}
+          VERSION: ${{ needs.package.outputs.version }}
+          SHA256: ${{ needs.package.outputs.sha256 }}
+        run: node scripts/publish-edge.mjs "release/your-name-for-threads-${VERSION}.zip" --expect-version "$VERSION" --expect-sha256 "$SHA256" --release-notes release/release-notes.md --reviewer-instructions docs/release/edge-store-listing.md
+
+  # The GitHub release (Phase 4 Task 41): the same ZIP the stores were given, with the changelog section for its notes. It needs
+  # both store jobs, so it runs only after the approval has been given and both stores have taken the submission. It can write to
+  # the repository and holds no secret: it uses the token the run already has. Before it attaches the ZIP it checks its checksum
+  # against the one the packaging job recorded, so the release cannot be of a different file from the one that was audited.
+  github-release:
+    needs: [package, chrome, edge]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: release
+          path: release
+
+      - name: Create the GitHub release from the same ZIP
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          VERSION: ${{ needs.package.outputs.version }}
+          SHA256: ${{ needs.package.outputs.sha256 }}
+        run: |
+          set -euo pipefail
+          zip="release/your-name-for-threads-${VERSION}.zip"
+          test "$(sha256sum "$zip" | cut -d ' ' -f 1)" = "$SHA256"
+          (cd release && sha256sum -c SHA256SUMS)
+          printf '\nThe ZIP attached here is the one submitted to the Chrome Web Store and Microsoft Edge Add-ons, whose reviews are separate. Its SHA-256 is %s.\n' "$SHA256" >> release/release-notes.md
+          gh release create "$GITHUB_REF_NAME" "$zip" release/SHA256SUMS --title "Your Name for Threads ${VERSION}" --notes-file release/release-notes.md --verify-tag

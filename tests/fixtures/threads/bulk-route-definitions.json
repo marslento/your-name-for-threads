@@ -1,0 +1,18 @@
+{
+  "payloads": {
+    "/@RootUser": {
+      "rootView": {
+        "props": {
+          "user_id": "10001"
+        }
+      }
+    },
+    "/@HostUser": {
+      "hostableView": {
+        "props": {
+          "user_id": "20002"
+        }
+      }
+    }
+  }
+}

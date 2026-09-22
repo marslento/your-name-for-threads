@@ -1,0 +1,72 @@
+name: Bug report
+description: Something in Your Name for Threads is not working as expected
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a problem. 感謝你回報問題。
+
+        **Do not post private data in a public issue.** Nicknames, notes, a full JSON backup and a raw Recovery export are yours to keep private. 請勿在公開 Issue 貼上私人暱稱、備註、完整 JSON 備份或復原資料。
+
+        **Security vulnerability or privacy leak?** Do not open a public issue. Follow the [security policy](https://github.com/marslento/your-name-for-threads/security/policy) instead. 若涉及安全漏洞或隱私洩漏，請依[安全回報說明](https://github.com/marslento/your-name-for-threads/security/policy)使用私密管道。
+  - type: dropdown
+    id: browser
+    attributes:
+      label: Browser
+      description: Only the latest stable Chrome and Edge are officially supported.
+      options:
+        - Google Chrome (latest stable)
+        - Microsoft Edge (latest stable)
+        - Another Chromium browser (not officially supported)
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Extension version
+      description: Shown in the Dashboard under About & Privacy, and in the copied diagnostics.
+      placeholder: "1.0.0"
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: What happened, and how can we reproduce it?
+      description: The steps, and where on Threads it happened (profile page, feed, replies, Dashboard). Leave out real usernames if you can.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect to happen instead?
+    validations:
+      required: false
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+      description: Did it lose or change data, stop a feature working, or only look wrong? How often does it happen?
+    validations:
+      required: false
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Diagnostics (optional)
+      description: |
+        In the Dashboard open About & Privacy, choose "Copy diagnostics", and paste the result here. It contains the version, runtime state, counts and error codes, and nothing is attached automatically.
+
+        Do not paste: private nicknames, notes, a full JSON backup, or a raw Recovery export. 請勿貼上：私人暱稱、備註、完整 JSON 備份、Recovery raw export。
+      render: text
+    validations:
+      required: false
+  - type: checkboxes
+    id: confirm
+    attributes:
+      label: Before you submit
+      options:
+        - label: I have not included private nicknames, notes, a full JSON backup or a raw Recovery export.
+          required: true
+        - label: This is not a security vulnerability or a privacy leak (those go through the security policy).
+          required: true

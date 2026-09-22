@@ -1,0 +1,43 @@
+name: CI
+
+# Every pull request and every push to main is installed from the frozen lockfile, tested, built and audited (Phase 4
+# Task 28, review checklist 31). This workflow only reads the repository: it has no secrets and publishes nothing, and a
+# pull request from a fork can only ever read. Releasing is a separate workflow behind an approval gate (Tasks 37-41).
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      # The pnpm version is the one package.json's "packageManager" names.
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install from the frozen lockfile
+        run: pnpm install --frozen-lockfile
+
+      - name: Test
+        run: pnpm test
+
+      - name: Build
+        run: pnpm build
+
+      - name: Audit the package
+        run: pnpm release:audit

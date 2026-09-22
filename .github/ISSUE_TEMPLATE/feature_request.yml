@@ -1,0 +1,32 @@
+name: Feature request
+description: Suggest an improvement to Your Name for Threads
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the idea. 感謝你的建議。
+
+        Your Name for Threads is local-first: your data stays in your browser, and there is no developer-run server, no telemetry and no cloud sync. Proposals that need any of those are out of scope by design.
+
+        Please do not include private data (real nicknames, notes or backups) in a public issue. 請勿在公開 Issue 貼上私人資料。
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem are you trying to solve?
+      description: The situation you run into, rather than the solution. Leave out real usernames if you can.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What would you like to see?
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you considered
+    validations:
+      required: false

@@ -1,0 +1,841 @@
+{
+  "extension_name": {
+    "message": "Your Name for Threads",
+    "description": "Extension name shown in the browser toolbar and extensions page."
+  },
+  "extension_description": {
+    "message": "Locally saved private nicknames for Threads.",
+    "description": "Extension description shown on the extensions page."
+  },
+  "common_close": {
+    "message": "Close"
+  },
+  "popup_title": {
+    "message": "Your Name for Threads"
+  },
+  "popup_openDashboard": {
+    "message": "Open Directory"
+  },
+  "popup_currentSiteLabel": {
+    "message": "Current site:"
+  },
+  "popup_threadsSite": {
+    "message": "Threads"
+  },
+  "popup_nonThreadsSite": {
+    "message": "Not Threads"
+  },
+  "popup_threadsGuidance": {
+    "message": "Go to a Threads profile to add a private nickname"
+  },
+  "popup_nonThreadsGuidance": {
+    "message": "Open Threads to add a private nickname on a profile."
+  },
+  "popup_threadsUnresolvedGuidance": {
+    "message": "Could not confirm your Threads account on this tab yet. Refresh the page or try again in a moment."
+  },
+  "integration_partialUnavailable": {
+    "message": "Part of the Threads integration is currently unavailable."
+  },
+  "integration_partialHelp": {
+    "message": "Refresh the Threads page to try again. If it keeps happening, you can report it."
+  },
+  "notice_dismiss": {
+    "message": "Got it"
+  },
+  "popup_versionLabel": {
+    "message": "Version"
+  },
+  "profile_addNickname": {
+    "message": "Add nickname"
+  },
+  "profile_editNickname": {
+    "message": "Edit"
+  },
+  "profile_createNicknameTitle": {
+    "message": "Add nickname"
+  },
+  "profile_updateNicknameTitle": {
+    "message": "Edit nickname"
+  },
+  "profile_nicknameLabel": {
+    "message": "Nickname"
+  },
+  "profile_nicknameInvalid": {
+    "message": "Enter a nickname between 1 and 25 characters"
+  },
+  "profile_cancelNickname": {
+    "message": "Cancel"
+  },
+  "profile_saveNickname": {
+    "message": "Save"
+  },
+  "profile_deleteNickname": {
+    "message": "Delete nickname"
+  },
+  "profile_deleteConfirmationTitle": {
+    "message": "Delete this nickname?"
+  },
+  "profile_deleteConfirmationDescription": {
+    "message": "You can add it again later."
+  },
+  "profile_cancelDelete": {
+    "message": "Cancel"
+  },
+  "profile_confirmDelete": {
+    "message": "Delete"
+  },
+  "profile_nicknameCreated": {
+    "message": "Nickname saved"
+  },
+  "profile_nicknameUpdated": {
+    "message": "Nickname updated"
+  },
+  "profile_deleteSuccess": {
+    "message": "Nickname deleted"
+  },
+  "profile_saveError": {
+    "message": "Couldn't save. Please try again."
+  },
+  "profile_deleteError": {
+    "message": "Couldn't delete. Please try again."
+  },
+  "profile_notificationsLabel": {
+    "message": "Notifications"
+  },
+  "profile_pendingConfirmation": {
+    "message": "Pending"
+  },
+  "profile_pendingConflictDescription": {
+    "message": "This nickname has a pending identity conflict"
+  },
+  "dashboard_sidebar_directory": {
+    "message": "Directory"
+  },
+  "dashboard_sidebar_settings": {
+    "message": "Settings"
+  },
+  "dashboard_sidebar_backupSync": {
+    "message": "Backup & Import"
+  },
+  "dashboard_sidebar_about": {
+    "message": "About & Privacy"
+  },
+  "dashboard_conflicts_title": {
+    "message": "Identity Conflicts"
+  },
+  "common_cancel": {
+    "message": "Cancel"
+  },
+  "dashboard_directory_columnNickname": {
+    "message": "Nickname"
+  },
+  "dashboard_directory_columnUsername": {
+    "message": "Threads Account"
+  },
+  "dashboard_directory_columnNote": {
+    "message": "Note"
+  },
+  "dashboard_directory_columnUpdatedAt": {
+    "message": "Last Updated"
+  },
+  "dashboard_directory_columnActions": {
+    "message": "Actions"
+  },
+  "dashboard_directory_resolveConflictAction": {
+    "message": "Resolve Conflict"
+  },
+  "dashboard_directory_title": {
+    "message": "Private Directory"
+  },
+  "dashboard_directory_countLabel": {
+    "message": "$1 contacts"
+  },
+  "dashboard_directory_conflictBannerLabel": {
+    "message": "$1 entries pending confirmation"
+  },
+  "dashboard_directory_conflictBannerAction": {
+    "message": "Resolve Now"
+  },
+  "dashboard_directory_emptyTitle": {
+    "message": "No contacts yet"
+  },
+  "dashboard_directory_emptyDescription": {
+    "message": "Add a nickname on a Threads profile to see it here."
+  },
+  "dashboard_directory_emptyAction": {
+    "message": "Open Threads"
+  },
+  "dashboard_directory_searchEmptyTitle": {
+    "message": "No contacts match your search"
+  },
+  "dashboard_directory_searchEmptyAction": {
+    "message": "Clear Search"
+  },
+  "dashboard_directory_searchPlaceholder": {
+    "message": "Search nickname, username, or note"
+  },
+  "dashboard_directory_sortLabel": {
+    "message": "Sort by"
+  },
+  "dashboard_directory_sort_updatedDesc": {
+    "message": "Recently updated"
+  },
+  "dashboard_directory_sort_updatedAsc": {
+    "message": "Least recently updated"
+  },
+  "dashboard_directory_sort_nicknameAsc": {
+    "message": "Nickname A–Z"
+  },
+  "dashboard_directory_sort_nicknameDesc": {
+    "message": "Nickname Z–A"
+  },
+  "dashboard_directory_sort_usernameAsc": {
+    "message": "Username A–Z"
+  },
+  "dashboard_directory_sort_usernameDesc": {
+    "message": "Username Z–A"
+  },
+  "dashboard_directory_pageSizeLabel": {
+    "message": "Rows per page"
+  },
+  "dashboard_directory_pageIndicator": {
+    "message": "Page $1 of $2"
+  },
+  "dashboard_directory_prevPage": {
+    "message": "Previous"
+  },
+  "dashboard_directory_nextPage": {
+    "message": "Next"
+  },
+  "dashboard_drawer_editTitle": {
+    "message": "Edit Contact"
+  },
+  "dashboard_drawer_noteLabel": {
+    "message": "Note"
+  },
+  "dashboard_drawer_noteInvalid": {
+    "message": "Note must be 200 characters or fewer"
+  },
+  "dashboard_drawer_createdAtLabel": {
+    "message": "Created"
+  },
+  "dashboard_drawer_deleteAction": {
+    "message": "Delete Contact"
+  },
+  "dashboard_drawer_saveSuccess": {
+    "message": "Saved"
+  },
+  "dashboard_drawer_discardConfirmTitle": {
+    "message": "Discard unsaved changes?"
+  },
+  "dashboard_drawer_discardConfirmDescription": {
+    "message": "Unsaved changes will be lost."
+  },
+  "dashboard_drawer_discardConfirmAction": {
+    "message": "Discard Changes"
+  },
+  "dashboard_drawer_externalUpdateWarning": {
+    "message": "This contact was updated elsewhere"
+  },
+  "dashboard_drawer_reloadLatest": {
+    "message": "Reload Latest Data"
+  },
+  "dashboard_drawer_reloadConfirmTitle": {
+    "message": "Reloading will discard your current changes. Continue?"
+  },
+  "dashboard_drawer_deletedExternally": {
+    "message": "This contact has been deleted"
+  },
+  "dashboard_drawer_deleteConfirmTitle": {
+    "message": "Delete this contact?"
+  },
+  "dashboard_drawer_deleteConfirmDescription": {
+    "message": "You can re-add this contact later, but its note cannot be recovered."
+  },
+  "dashboard_drawer_deleteSuccess": {
+    "message": "Deleted"
+  },
+  "dashboard_conflicts_emptyTitle": {
+    "message": "No pending conflicts"
+  },
+  "dashboard_conflicts_columnSourceCount": {
+    "message": "Sources"
+  },
+  "dashboard_conflicts_columnDetectedAt": {
+    "message": "Detected"
+  },
+  "dashboard_conflicts_canonicalBadge": {
+    "message": "Canonical"
+  },
+  "dashboard_conflicts_sourceLabel": {
+    "message": "Source $1"
+  },
+  "dashboard_conflicts_finalNicknameLabel": {
+    "message": "Final Nickname"
+  },
+  "dashboard_conflicts_finalNoteLabel": {
+    "message": "Final Note"
+  },
+  "dashboard_conflicts_mergeAction": {
+    "message": "Merge"
+  },
+  "dashboard_conflicts_staleError": {
+    "message": "This data changed while you were reviewing it. Reload to continue."
+  },
+  "dashboard_conflicts_mergeSuccess": {
+    "message": "Merged"
+  },
+  "dashboard_conflicts_mergeError": {
+    "message": "Merge failed, please try again"
+  },
+  "dashboard_settings_enabledLabel": {
+    "message": "Extension"
+  },
+  "dashboard_settings_disabledNotice": {
+    "message": "The extension is currently off; these settings will apply once it's turned back on."
+  },
+  "dashboard_settings_nicknameDisplayTitle": {
+    "message": "Show nicknames on"
+  },
+  "dashboard_settings_surface_profile": {
+    "message": "Profile page"
+  },
+  "dashboard_settings_surface_feed": {
+    "message": "Feed posts"
+  },
+  "dashboard_settings_surface_replies": {
+    "message": "Reply threads"
+  },
+  "dashboard_settings_surface_quotes": {
+    "message": "Quoted posts"
+  },
+  "dashboard_import_homeTitle": {
+    "message": "Backup & Import"
+  },
+  "dashboard_import_exportCardTitle": {
+    "message": "Export Backup"
+  },
+  "dashboard_import_exportCardDescription": {
+    "message": "The exported file is plain-text JSON and contains your private nicknames and notes - store it carefully."
+  },
+  "dashboard_import_exportAction": {
+    "message": "Export Backup"
+  },
+  "dashboard_import_exportSuccess": {
+    "message": "Backup exported"
+  },
+  "dashboard_import_exportError": {
+    "message": "Export failed. Please try again."
+  },
+  "dashboard_import_importCardTitle": {
+    "message": "Import Backup"
+  },
+  "dashboard_import_importCardDescription": {
+    "message": "Choose a compatible Your Name for Threads backup file. Depending on your directory's state, it will be restored or merged."
+  },
+  "dashboard_import_importAction": {
+    "message": "Choose JSON Backup File"
+  },
+  "dashboard_import_invalidTitle": {
+    "message": "Can't import this backup"
+  },
+  "dashboard_import_invalidGeneric": {
+    "message": "This file is not a valid Your Name for Threads backup."
+  },
+  "dashboard_import_invalidNewerVersion": {
+    "message": "This backup was created by a newer version of Your Name for Threads. Please update the extension and try again."
+  },
+  "dashboard_import_preflightTitle": {
+    "message": "Import Preview"
+  },
+  "dashboard_import_backupExportedAtLabel": {
+    "message": "Backup time"
+  },
+  "dashboard_import_summaryCreate": {
+    "message": "New"
+  },
+  "dashboard_import_summaryUpdate": {
+    "message": "Updated"
+  },
+  "dashboard_import_summaryDelete": {
+    "message": "Deleted"
+  },
+  "dashboard_import_summaryUnchanged": {
+    "message": "Unchanged"
+  },
+  "dashboard_import_summaryReview": {
+    "message": "Needs review"
+  },
+  "dashboard_import_summaryPendingConflicts": {
+    "message": "Pending confirmation after import"
+  },
+  "dashboard_import_summaryNewContacts": {
+    "message": "New contacts"
+  },
+  "dashboard_import_summaryStableDuplicates": {
+    "message": "Confirmed same account"
+  },
+  "dashboard_import_summaryWeakDuplicates": {
+    "message": "Accounts needing confirmation"
+  },
+  "dashboard_import_summaryIdentityMismatches": {
+    "message": "Mismatched account identity"
+  },
+  "dashboard_import_summaryLocallyDeleted": {
+    "message": "Previously deleted"
+  },
+  "dashboard_import_strategyLabel": {
+    "message": "How to handle matching accounts"
+  },
+  "dashboard_import_strategyKeepLocal": {
+    "message": "Keep my data"
+  },
+  "dashboard_import_strategyUseIncoming": {
+    "message": "Use imported data"
+  },
+  "dashboard_import_strategyReviewEach": {
+    "message": "Review each one"
+  },
+  "dashboard_import_startReviewAction": {
+    "message": "Start Review"
+  },
+  "dashboard_import_applyAction": {
+    "message": "Apply Backup"
+  },
+  "dashboard_import_blockingIssuesTitle": {
+    "message": "This backup contains conflicts that can't be resolved automatically"
+  },
+  "dashboard_import_confirmPendingConflicts": {
+    "message": "$1 more items will need confirmation after import"
+  },
+  "dashboard_import_exportFirstAction": {
+    "message": "Export Current Data First"
+  },
+  "dashboard_import_backToReviewAction": {
+    "message": "Back to Review"
+  },
+  "dashboard_import_executeAction": {
+    "message": "Run Import"
+  },
+  "dashboard_import_noUndoNotice": {
+    "message": "This action has no one-click undo. Consider exporting your current data as a backup first."
+  },
+  "dashboard_import_reviewTitle": {
+    "message": "Review Import Items"
+  },
+  "dashboard_import_filterAll": {
+    "message": "All"
+  },
+  "dashboard_import_filterPending": {
+    "message": "Pending"
+  },
+  "dashboard_import_filterDone": {
+    "message": "Done"
+  },
+  "dashboard_import_reviewContinueAction": {
+    "message": "Finish Review"
+  },
+  "dashboard_import_statusPending": {
+    "message": "Pending"
+  },
+  "dashboard_import_statusDone": {
+    "message": "Done"
+  },
+  "dashboard_import_drawerLocalLabel": {
+    "message": "My Data"
+  },
+  "dashboard_import_drawerIncomingLabel": {
+    "message": "Imported Data"
+  },
+  "dashboard_import_finalResultLabel": {
+    "message": "Final Result"
+  },
+  "dashboard_import_adoptLocalAction": {
+    "message": "Use My Data"
+  },
+  "dashboard_import_adoptIncomingAction": {
+    "message": "Use Imported Data"
+  },
+  "dashboard_import_importAsNewAction": {
+    "message": "Import as New Contact"
+  },
+  "dashboard_import_keepDeletedAction": {
+    "message": "Keep Deleted"
+  },
+  "dashboard_import_resurrectAction": {
+    "message": "Add Back"
+  },
+  "dashboard_import_keepActiveAction": {
+    "message": "Keep Contact"
+  },
+  "dashboard_import_confirmWeakIdentityAction": {
+    "message": "Confirm Same Account"
+  },
+  "dashboard_import_saveDecisionAction": {
+    "message": "Save Decision"
+  },
+  "dashboard_import_adoptIncomingIdCheckbox": {
+    "message": "Also adopt the imported account ID"
+  },
+  "dashboard_import_discardConfirmTitle": {
+    "message": "Abandon this import?"
+  },
+  "dashboard_import_discardConfirmDescription": {
+    "message": "Unfinished import progress will be lost. Your current Directory will not be modified."
+  },
+  "dashboard_import_discardConfirmAction": {
+    "message": "Abandon import"
+  },
+  "dashboard_import_concurrencyTitle": {
+    "message": "Your directory has changed"
+  },
+  "dashboard_import_concurrencyDescription": {
+    "message": "Some related contacts were changed or deleted while you were reviewing. To avoid overwriting newer data, this backup needs to be reanalyzed."
+  },
+  "dashboard_import_cancelImportAction": {
+    "message": "Cancel Import"
+  },
+  "dashboard_import_reanalyzeAction": {
+    "message": "Reanalyze"
+  },
+  "dashboard_import_resultTitle": {
+    "message": "Import Complete"
+  },
+  "dashboard_import_resultCreated": {
+    "message": "Created"
+  },
+  "dashboard_import_resultUpdated": {
+    "message": "Updated"
+  },
+  "dashboard_import_resultResurrected": {
+    "message": "Restored deleted contacts"
+  },
+  "dashboard_import_resultDeleted": {
+    "message": "Deleted"
+  },
+  "dashboard_import_resultSkipped": {
+    "message": "Skipped"
+  },
+  "dashboard_import_resultPendingConflicts": {
+    "message": "$1 more items need confirmation"
+  },
+  "dashboard_import_goToConflictsAction": {
+    "message": "Go Resolve"
+  },
+  "dashboard_import_backToDirectoryAction": {
+    "message": "Back to Directory"
+  },
+  "dashboard_import_doneAction": {
+    "message": "Done"
+  },
+  "dashboard_import_commitFailedTitle": {
+    "message": "Couldn't complete the import"
+  },
+  "dashboard_import_commitFailedDescription": {
+    "message": "Please try again later."
+  },
+  "dashboard_import_cancelledTitle": {
+    "message": "Import cancelled"
+  },
+  "dashboard_import_cancelledDescription": {
+    "message": "Your account status changed. Confirm you're signed in to the original account, then submit the import again."
+  },
+  "dashboard_import_sessionExpired": {
+    "message": "The import session has ended. Please choose the backup file again."
+  },
+  "dashboard_about_supportedBrowsersLabel": {
+    "message": "Supported browsers"
+  },
+  "dashboard_about_supportedBrowsers": {
+    "message": "Latest stable Chrome and Edge."
+  },
+  "dashboard_import_reviewItemAction": {
+    "message": "Review"
+  },
+  "dashboard_import_dangerZoneTitle": {
+    "message": "Danger Zone"
+  },
+  "dashboard_import_ownerMismatchTitle": {
+    "message": "This backup belongs to a different Threads account"
+  },
+  "dashboard_import_ownerMismatchBackupOwnerLabel": {
+    "message": "Backup account:"
+  },
+  "dashboard_import_ownerMismatchCurrentOwnerLabel": {
+    "message": "Current account:"
+  },
+  "dashboard_import_ownerMismatchDescription": {
+    "message": "Importing will add this backup's contacts as new entries in the current account's Directory. It will not restore the backup account's own Directory, and any contacts it had already deleted stay deleted here."
+  },
+  "dashboard_import_ownerMismatchConfirmAction": {
+    "message": "Import to $1"
+  },
+  "dashboard_accountUnresolved": {
+    "message": "Could not confirm the current Threads account"
+  },
+  "dashboard_accountUnresolvedDescription": {
+    "message": "Open Threads in a tab where you're logged in, then reopen the Directory from the extension popup."
+  },
+  "dashboard_import_discardContinueAction": {
+    "message": "Continue import"
+  },
+  "dashboard_import_operationLabel": {
+    "message": "What should this backup do?"
+  },
+  "dashboard_import_operationRestore": {
+    "message": "Restore to this backup"
+  },
+  "dashboard_import_operationRestoreDescription": {
+    "message": "Return the Directory to the state it was in when this backup was taken."
+  },
+  "dashboard_import_operationMerge": {
+    "message": "Merge changes"
+  },
+  "dashboard_import_operationMergeDescription": {
+    "message": "Combine this backup's changes with the newer data already on this browser."
+  },
+  "dashboard_import_operationExternal": {
+    "message": "Import another Directory"
+  },
+  "dashboard_import_operationExternalDescription": {
+    "message": "This backup comes from a different Directory, so its contacts are added to the current one as separate entries."
+  },
+  "dashboard_import_summaryRestoreRestored": {
+    "message": "Restored deleted contacts"
+  },
+  "dashboard_import_summaryRestoreReverted": {
+    "message": "Reverted to the backup version"
+  },
+  "dashboard_import_summaryRestoreRemoved": {
+    "message": "Removed (added after the backup)"
+  },
+  "dashboard_import_changesTitleRestore": {
+    "message": "Changes this restore will make"
+  },
+  "dashboard_import_changesTitleMerge": {
+    "message": "Changes this merge will make"
+  },
+  "dashboard_import_changesTitleExternal": {
+    "message": "Changes this import will make"
+  },
+  "dashboard_import_changesUnchangedNote": {
+    "message": "$1 other records stay unchanged."
+  },
+  "dashboard_import_noChangesNotice": {
+    "message": "This backup changes nothing in your Directory."
+  },
+  "dashboard_import_restoreNoUndoNotice": {
+    "message": "Contacts added, edited or deleted since the backup may be lost, and this has no one-click undo. Consider exporting your current data first."
+  },
+  "dashboard_import_summaryKeptLocalNewer": {
+    "message": "Newer local version kept"
+  },
+  "dashboard_import_summaryKeptLocalDeletion": {
+    "message": "Newer local deletion kept"
+  },
+  "dashboard_import_restoreWarning": {
+    "message": "Restoring returns the Directory to the state it was in when the backup was taken. Contacts added, edited or deleted since then may be lost."
+  },
+  "dashboard_import_restoreAction": {
+    "message": "Restore to this backup"
+  },
+  "dashboard_import_restoreConfirmTitle": {
+    "message": "Confirm restore?"
+  },
+  "dashboard_import_restoreConfirmDescription": {
+    "message": "Your current Directory will be replaced by this backup. There is no one-click undo."
+  },
+  "dashboard_import_restoreConfirmAction": {
+    "message": "Confirm restore"
+  },
+  "dashboard_import_clearAccountTitle": {
+    "message": "Clear $1's Directory data"
+  },
+  "dashboard_import_clearAccountDescription": {
+    "message": "Deletes $1's private nicknames, notes and deletion records in this browser. Other Threads accounts are unaffected."
+  },
+  "dashboard_import_clearAccountAction": {
+    "message": "Clear this account's data"
+  },
+  "dashboard_import_clearAccountConfirmTitle": {
+    "message": "Clear $1's Directory data?"
+  },
+  "dashboard_import_clearAccountConfirmDescription": {
+    "message": "This permanently deletes the current account's private nicknames, notes and deletion records in this browser. Other Threads accounts are unaffected. This cannot be undone."
+  },
+  "dashboard_import_clearAccountSuccess": {
+    "message": "This account's Directory data was cleared."
+  },
+  "dashboard_import_clearAccountError": {
+    "message": "Could not clear this account's data. Please try again."
+  },
+  "onboarding_stepProgress": {
+    "message": "Step $1 of $2"
+  },
+  "onboarding_step1_title": {
+    "message": "Your private Threads address book"
+  },
+  "onboarding_step1_body": {
+    "message": "Give people on Threads nicknames and notes that only you can see. Your data stays in your browser."
+  },
+  "onboarding_step2_title": {
+    "message": "Start from Threads"
+  },
+  "onboarding_step2_body": {
+    "message": "Sign in to Threads and open any profile to add a private nickname."
+  },
+  "onboarding_step3_title": {
+    "message": "Remember to back up"
+  },
+  "onboarding_step3_body": {
+    "message": "Your Name for Threads doesn't use cloud sync. Export a JSON backup from Backup & Import every so often."
+  },
+  "onboarding_back": {
+    "message": "Back"
+  },
+  "onboarding_next": {
+    "message": "Next"
+  },
+  "onboarding_openThreads": {
+    "message": "Open Threads"
+  },
+  "dashboard_about_replayTour": {
+    "message": "Replay the tour"
+  },
+  "dashboard_about_intro": {
+    "message": "A local-first, open-source private nickname and notes directory for Threads."
+  },
+  "dashboard_about_privacyHeading": {
+    "message": "Privacy"
+  },
+  "dashboard_about_privacyLocal": {
+    "message": "Nicknames and notes are stored in this browser and processed locally by the extension. They are not sent to the developer automatically."
+  },
+  "dashboard_about_privacyNoTelemetry": {
+    "message": "This project runs no backend service that receives this data, and offers no cloud sync. There is no analytics, usage tracking, automatic crash reporting or advertising tracking."
+  },
+  "dashboard_about_privacyBackup": {
+    "message": "A JSON backup is created only when you export one, for you to save. It contains private nicknames, notes and internal identifiers, so keep it safe and do not post it publicly."
+  },
+  "dashboard_about_privacySharedProfile": {
+    "message": "Different Threads accounts use their own private directories in normal use."
+  },
+  "dashboard_about_privacySharedProfileLimit": {
+    "message": "This separation is functional, not a cryptographic security boundary between people who share the same browser profile. If several people share a computer and need their private data kept apart, use separate browser profiles or operating system accounts."
+  },
+  "dashboard_about_supportHeading": {
+    "message": "Support"
+  },
+  "dashboard_about_supportHelp": {
+    "message": "If something is not working, copy the diagnostics, then report the problem on GitHub."
+  },
+  "dashboard_about_copyDiagnostics": {
+    "message": "Copy diagnostics"
+  },
+  "dashboard_about_clearDiagnostics": {
+    "message": "Clear diagnostics"
+  },
+  "dashboard_about_reportIssue": {
+    "message": "Report an issue on GitHub"
+  },
+  "dashboard_about_copySuccess": {
+    "message": "Diagnostics copied."
+  },
+  "dashboard_about_copyError": {
+    "message": "Could not copy diagnostics. Please try again."
+  },
+  "dashboard_about_clearSuccess": {
+    "message": "Diagnostics cleared."
+  },
+  "dashboard_about_clearError": {
+    "message": "Could not clear diagnostics. Please try again."
+  },
+  "dashboard_about_linksHeading": {
+    "message": "Project"
+  },
+  "dashboard_about_linkSource": {
+    "message": "Source code on GitHub"
+  },
+  "dashboard_about_linkIssues": {
+    "message": "GitHub Issues"
+  },
+  "dashboard_about_linkPrivacy": {
+    "message": "Privacy Policy"
+  },
+  "dashboard_about_independentHeading": {
+    "message": "About this project"
+  },
+  "dashboard_about_independent": {
+    "message": "This is an independent open-source project."
+  },
+  "dashboard_about_vibeCoding": {
+    "message": "Built as an open-source vibe-coding project with assistance from OpenAI models and Claude Code."
+  },
+  "dashboard_about_backupHeading": {
+    "message": "Remember to back up"
+  },
+  "dashboard_about_backupReminder": {
+    "message": "Export a backup regularly, so you do not lose your data if the browser's data is cleared."
+  },
+  "dashboard_about_sharedHeading": {
+    "message": "On a shared computer"
+  },
+  "dashboard_about_supportDiagnostics": {
+    "message": "Diagnostics are kept on this device, up to the 20 most recent events, and are never uploaded automatically. The copied diagnostics include the version, runtime state, counts and error codes."
+  },
+  "dashboard_about_supportPrivate": {
+    "message": "Please do not paste private nicknames, notes, a full JSON backup or recovery data into a public issue. For a security vulnerability or a privacy leak, use the private channel described in the security policy."
+  },
+  "dashboard_about_linkSecurity": {
+    "message": "Security policy"
+  },
+  "dashboard_about_nameNote": {
+    "message": "We came up with plenty of names (Book of Threads, Threads Yūjin-chō, Your Threads' name, Friends on Threads..). This is the one that stuck."
+  },
+  "recovery_title": {
+    "message": "Your data needs recovery"
+  },
+  "recovery_descriptionDirectory": {
+    "message": "Your Name for Threads cannot safely read this account's private directory. To avoid changing it any further, the private directory features are paused for this account. Other accounts are not affected."
+  },
+  "recovery_descriptionGlobal": {
+    "message": "Your Name for Threads cannot safely read its stored data. To avoid changing it any further, the private directory features are paused for every account in this browser."
+  },
+  "recovery_codeLabel": {
+    "message": "Code"
+  },
+  "recovery_checking": {
+    "message": "Checking your data..."
+  },
+  "recovery_exportAction": {
+    "message": "Export recovery data"
+  },
+  "recovery_exportWarningDirectory": {
+    "message": "Recovery data may contain private nicknames, notes and internal identifiers. Do not post it publicly, for example in a GitHub issue."
+  },
+  "recovery_exportWarningGlobal": {
+    "message": "Recovery data may contain private nicknames, notes and internal identifiers, and because all of the stored data is affected it includes every account's data. Do not post it publicly, for example in a GitHub issue."
+  },
+  "recovery_exportSuccess": {
+    "message": "Recovery data saved."
+  },
+  "recovery_exportError": {
+    "message": "Could not export recovery data. Please try again."
+  },
+  "recovery_noRepair": {
+    "message": "There is no automatic repair, and the extension cannot import a recovery file. The file is for you, or a developer, to read."
+  },
+  "recovery_clearDescription": {
+    "message": "Clearing deletes this account's damaged data for good. Other accounts and the settings are not affected. Export recovery data first if you want to keep a copy."
+  },
+  "recovery_clearConfirmTitle": {
+    "message": "Clear this account's data?"
+  },
+  "recovery_clearConfirmDescription": {
+    "message": "This deletes this account's damaged private directory. It cannot be undone. Export recovery data first if you want to keep a copy."
+  },
+  "recovery_globalNoClear": {
+    "message": "Clearing is not offered because the data of every account is affected. Export recovery data and report the problem instead."
+  }
+}

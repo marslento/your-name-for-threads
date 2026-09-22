@@ -1,0 +1,841 @@
+{
+  "extension_name": {
+    "message": "Your Name for Threads",
+    "description": "Extension name shown in the browser toolbar and extensions page."
+  },
+  "extension_description": {
+    "message": "本机保存的 Threads 私人昵称。",
+    "description": "Extension description shown on the extensions page."
+  },
+  "common_close": {
+    "message": "关闭"
+  },
+  "popup_title": {
+    "message": "Your Name for Threads"
+  },
+  "popup_openDashboard": {
+    "message": "打开通讯录"
+  },
+  "popup_currentSiteLabel": {
+    "message": "当前网站："
+  },
+  "popup_threadsSite": {
+    "message": "Threads"
+  },
+  "popup_nonThreadsSite": {
+    "message": "非 Threads"
+  },
+  "popup_threadsGuidance": {
+    "message": "请前往 Threads 个人页添加私人昵称"
+  },
+  "popup_nonThreadsGuidance": {
+    "message": "打开 Threads 后，即可在个人页添加私人昵称。"
+  },
+  "popup_threadsUnresolvedGuidance": {
+    "message": "尚未能确认此标签页的 Threads 账号，请刷新页面或稍后再试。"
+  },
+  "integration_partialUnavailable": {
+    "message": "部分 Threads 整合目前无法使用"
+  },
+  "integration_partialHelp": {
+    "message": "请刷新 Threads 页面后重试。如果持续出现，可以反馈问题。"
+  },
+  "notice_dismiss": {
+    "message": "知道了"
+  },
+  "popup_versionLabel": {
+    "message": "版本"
+  },
+  "profile_addNickname": {
+    "message": "添加昵称"
+  },
+  "profile_editNickname": {
+    "message": "编辑"
+  },
+  "profile_createNicknameTitle": {
+    "message": "添加昵称"
+  },
+  "profile_updateNicknameTitle": {
+    "message": "修改昵称"
+  },
+  "profile_nicknameLabel": {
+    "message": "昵称"
+  },
+  "profile_nicknameInvalid": {
+    "message": "请输入 1 至 25 个字符的昵称"
+  },
+  "profile_cancelNickname": {
+    "message": "取消"
+  },
+  "profile_saveNickname": {
+    "message": "保存"
+  },
+  "profile_deleteNickname": {
+    "message": "删除昵称"
+  },
+  "profile_deleteConfirmationTitle": {
+    "message": "确定要删除这个昵称吗？"
+  },
+  "profile_deleteConfirmationDescription": {
+    "message": "删除后可以重新添加。"
+  },
+  "profile_cancelDelete": {
+    "message": "取消"
+  },
+  "profile_confirmDelete": {
+    "message": "删除"
+  },
+  "profile_nicknameCreated": {
+    "message": "昵称已保存"
+  },
+  "profile_nicknameUpdated": {
+    "message": "昵称已更新"
+  },
+  "profile_deleteSuccess": {
+    "message": "昵称已删除"
+  },
+  "profile_saveError": {
+    "message": "保存失败，请重试"
+  },
+  "profile_deleteError": {
+    "message": "删除失败，请重试"
+  },
+  "profile_notificationsLabel": {
+    "message": "通知"
+  },
+  "profile_pendingConfirmation": {
+    "message": "待确认"
+  },
+  "profile_pendingConflictDescription": {
+    "message": "此昵称有待确认的身份冲突"
+  },
+  "dashboard_sidebar_directory": {
+    "message": "通讯录"
+  },
+  "dashboard_sidebar_settings": {
+    "message": "设置"
+  },
+  "dashboard_sidebar_backupSync": {
+    "message": "备份与导入"
+  },
+  "dashboard_sidebar_about": {
+    "message": "关于与隐私"
+  },
+  "dashboard_conflicts_title": {
+    "message": "身份冲突"
+  },
+  "common_cancel": {
+    "message": "取消"
+  },
+  "dashboard_directory_columnNickname": {
+    "message": "昵称"
+  },
+  "dashboard_directory_columnUsername": {
+    "message": "Threads 账号"
+  },
+  "dashboard_directory_columnNote": {
+    "message": "备注"
+  },
+  "dashboard_directory_columnUpdatedAt": {
+    "message": "最后更新"
+  },
+  "dashboard_directory_columnActions": {
+    "message": "操作"
+  },
+  "dashboard_directory_resolveConflictAction": {
+    "message": "处理冲突"
+  },
+  "dashboard_directory_title": {
+    "message": "私人通讯录"
+  },
+  "dashboard_directory_countLabel": {
+    "message": "$1 位联系人"
+  },
+  "dashboard_directory_conflictBannerLabel": {
+    "message": "$1 条待确认数据"
+  },
+  "dashboard_directory_conflictBannerAction": {
+    "message": "立即处理"
+  },
+  "dashboard_directory_emptyTitle": {
+    "message": "还没有通讯录数据"
+  },
+  "dashboard_directory_emptyDescription": {
+    "message": "在 Threads 个人页添加昵称后，联系人会显示在这里。"
+  },
+  "dashboard_directory_emptyAction": {
+    "message": "打开 Threads"
+  },
+  "dashboard_directory_searchEmptyTitle": {
+    "message": "找不到符合条件的联系人"
+  },
+  "dashboard_directory_searchEmptyAction": {
+    "message": "清除搜索"
+  },
+  "dashboard_directory_searchPlaceholder": {
+    "message": "搜索昵称、账号或备注"
+  },
+  "dashboard_directory_sortLabel": {
+    "message": "排序方式"
+  },
+  "dashboard_directory_sort_updatedDesc": {
+    "message": "最近更新"
+  },
+  "dashboard_directory_sort_updatedAsc": {
+    "message": "最早更新"
+  },
+  "dashboard_directory_sort_nicknameAsc": {
+    "message": "昵称 A–Z"
+  },
+  "dashboard_directory_sort_nicknameDesc": {
+    "message": "昵称 Z–A"
+  },
+  "dashboard_directory_sort_usernameAsc": {
+    "message": "账号 A–Z"
+  },
+  "dashboard_directory_sort_usernameDesc": {
+    "message": "账号 Z–A"
+  },
+  "dashboard_directory_pageSizeLabel": {
+    "message": "每页条数"
+  },
+  "dashboard_directory_pageIndicator": {
+    "message": "第 $1 / $2 页"
+  },
+  "dashboard_directory_prevPage": {
+    "message": "上一页"
+  },
+  "dashboard_directory_nextPage": {
+    "message": "下一页"
+  },
+  "dashboard_drawer_editTitle": {
+    "message": "编辑联系人"
+  },
+  "dashboard_drawer_noteLabel": {
+    "message": "备注"
+  },
+  "dashboard_drawer_noteInvalid": {
+    "message": "备注不可超过 200 个字符"
+  },
+  "dashboard_drawer_createdAtLabel": {
+    "message": "创建时间"
+  },
+  "dashboard_drawer_deleteAction": {
+    "message": "删除联系人"
+  },
+  "dashboard_drawer_saveSuccess": {
+    "message": "已保存"
+  },
+  "dashboard_drawer_discardConfirmTitle": {
+    "message": "放弃未保存的更改？"
+  },
+  "dashboard_drawer_discardConfirmDescription": {
+    "message": "离开后，尚未保存的更改将会丢失。"
+  },
+  "dashboard_drawer_discardConfirmAction": {
+    "message": "放弃更改"
+  },
+  "dashboard_drawer_externalUpdateWarning": {
+    "message": "此联系人已在其他地方被更新"
+  },
+  "dashboard_drawer_reloadLatest": {
+    "message": "重新加载最新数据"
+  },
+  "dashboard_drawer_reloadConfirmTitle": {
+    "message": "重新加载将会丢失当前的更改，确定要继续吗？"
+  },
+  "dashboard_drawer_deletedExternally": {
+    "message": "该联系人已被删除"
+  },
+  "dashboard_drawer_deleteConfirmTitle": {
+    "message": "确定要删除该联系人吗？"
+  },
+  "dashboard_drawer_deleteConfirmDescription": {
+    "message": "删除后可以重新添加，但备注内容将无法恢复。"
+  },
+  "dashboard_drawer_deleteSuccess": {
+    "message": "已删除"
+  },
+  "dashboard_conflicts_emptyTitle": {
+    "message": "没有待确认的身份冲突"
+  },
+  "dashboard_conflicts_columnSourceCount": {
+    "message": "来源数量"
+  },
+  "dashboard_conflicts_columnDetectedAt": {
+    "message": "检测时间"
+  },
+  "dashboard_conflicts_canonicalBadge": {
+    "message": "当前主要数据"
+  },
+  "dashboard_conflicts_sourceLabel": {
+    "message": "来源 $1"
+  },
+  "dashboard_conflicts_finalNicknameLabel": {
+    "message": "最终昵称"
+  },
+  "dashboard_conflicts_finalNoteLabel": {
+    "message": "最终备注"
+  },
+  "dashboard_conflicts_mergeAction": {
+    "message": "合并"
+  },
+  "dashboard_conflicts_staleError": {
+    "message": "审查期间数据已更改，请重新加载后再继续。"
+  },
+  "dashboard_conflicts_mergeSuccess": {
+    "message": "已合并"
+  },
+  "dashboard_conflicts_mergeError": {
+    "message": "合并失败，请再试一次"
+  },
+  "dashboard_settings_enabledLabel": {
+    "message": "Extension 功能"
+  },
+  "dashboard_settings_disabledNotice": {
+    "message": "Extension 功能目前已关闭；重新启用后将应用以下设置。"
+  },
+  "dashboard_settings_nicknameDisplayTitle": {
+    "message": "昵称显示位置"
+  },
+  "dashboard_settings_surface_profile": {
+    "message": "个人页"
+  },
+  "dashboard_settings_surface_feed": {
+    "message": "动态帖子"
+  },
+  "dashboard_settings_surface_replies": {
+    "message": "回复串"
+  },
+  "dashboard_settings_surface_quotes": {
+    "message": "引用内容"
+  },
+  "dashboard_import_homeTitle": {
+    "message": "备份与导入"
+  },
+  "dashboard_import_exportCardTitle": {
+    "message": "导出备份"
+  },
+  "dashboard_import_exportCardDescription": {
+    "message": "导出的文件是纯文本 JSON，包含你的私密昵称与备注，请妥善保存。"
+  },
+  "dashboard_import_exportAction": {
+    "message": "导出备份"
+  },
+  "dashboard_import_exportSuccess": {
+    "message": "已导出备份"
+  },
+  "dashboard_import_exportError": {
+    "message": "导出失败，请稍后重试。"
+  },
+  "dashboard_import_importCardTitle": {
+    "message": "导入备份"
+  },
+  "dashboard_import_importCardDescription": {
+    "message": "选择兼容的 Your Name for Threads 备份文件，将根据通讯录当前状态自动还原或合并。"
+  },
+  "dashboard_import_importAction": {
+    "message": "选择 JSON 备份文件"
+  },
+  "dashboard_import_invalidTitle": {
+    "message": "无法导入此备份"
+  },
+  "dashboard_import_invalidGeneric": {
+    "message": "此文件不是有效的 Your Name for Threads 备份。"
+  },
+  "dashboard_import_invalidNewerVersion": {
+    "message": "此备份由较新版本的 Your Name for Threads 创建。请先更新扩展程序后再试一次。"
+  },
+  "dashboard_import_preflightTitle": {
+    "message": "导入预览"
+  },
+  "dashboard_import_backupExportedAtLabel": {
+    "message": "备份时间"
+  },
+  "dashboard_import_summaryCreate": {
+    "message": "新增"
+  },
+  "dashboard_import_summaryUpdate": {
+    "message": "更新"
+  },
+  "dashboard_import_summaryDelete": {
+    "message": "删除"
+  },
+  "dashboard_import_summaryUnchanged": {
+    "message": "维持不变"
+  },
+  "dashboard_import_summaryReview": {
+    "message": "需要审查"
+  },
+  "dashboard_import_summaryPendingConflicts": {
+    "message": "导入后待确认"
+  },
+  "dashboard_import_summaryNewContacts": {
+    "message": "新联系人"
+  },
+  "dashboard_import_summaryStableDuplicates": {
+    "message": "确认为同一账号"
+  },
+  "dashboard_import_summaryWeakDuplicates": {
+    "message": "需要确认的账号比对"
+  },
+  "dashboard_import_summaryIdentityMismatches": {
+    "message": "账号身份不一致"
+  },
+  "dashboard_import_summaryLocallyDeleted": {
+    "message": "先前已删除"
+  },
+  "dashboard_import_strategyLabel": {
+    "message": "重复账号的处理方式"
+  },
+  "dashboard_import_strategyKeepLocal": {
+    "message": "保留我的数据"
+  },
+  "dashboard_import_strategyUseIncoming": {
+    "message": "使用导入的数据"
+  },
+  "dashboard_import_strategyReviewEach": {
+    "message": "逐条审查"
+  },
+  "dashboard_import_startReviewAction": {
+    "message": "开始审查"
+  },
+  "dashboard_import_applyAction": {
+    "message": "应用备份"
+  },
+  "dashboard_import_blockingIssuesTitle": {
+    "message": "此备份包含无法自动处理的冲突"
+  },
+  "dashboard_import_confirmPendingConflicts": {
+    "message": "导入完成后另有 $1 项需要确认"
+  },
+  "dashboard_import_exportFirstAction": {
+    "message": "先导出当前数据"
+  },
+  "dashboard_import_backToReviewAction": {
+    "message": "返回审查"
+  },
+  "dashboard_import_executeAction": {
+    "message": "执行导入"
+  },
+  "dashboard_import_noUndoNotice": {
+    "message": "此操作没有一键撤销功能，建议先导出当前数据作为备份。"
+  },
+  "dashboard_import_reviewTitle": {
+    "message": "审查导入项目"
+  },
+  "dashboard_import_filterAll": {
+    "message": "全部"
+  },
+  "dashboard_import_filterPending": {
+    "message": "尚未处理"
+  },
+  "dashboard_import_filterDone": {
+    "message": "已处理"
+  },
+  "dashboard_import_reviewContinueAction": {
+    "message": "完成审查"
+  },
+  "dashboard_import_statusPending": {
+    "message": "尚未处理"
+  },
+  "dashboard_import_statusDone": {
+    "message": "已处理"
+  },
+  "dashboard_import_drawerLocalLabel": {
+    "message": "我的数据"
+  },
+  "dashboard_import_drawerIncomingLabel": {
+    "message": "导入的数据"
+  },
+  "dashboard_import_finalResultLabel": {
+    "message": "最终结果"
+  },
+  "dashboard_import_adoptLocalAction": {
+    "message": "采用我的数据"
+  },
+  "dashboard_import_adoptIncomingAction": {
+    "message": "采用导入的数据"
+  },
+  "dashboard_import_importAsNewAction": {
+    "message": "导入为新联系人"
+  },
+  "dashboard_import_keepDeletedAction": {
+    "message": "保持删除"
+  },
+  "dashboard_import_resurrectAction": {
+    "message": "重新加入"
+  },
+  "dashboard_import_keepActiveAction": {
+    "message": "保留联系人"
+  },
+  "dashboard_import_confirmWeakIdentityAction": {
+    "message": "确认为同一账号"
+  },
+  "dashboard_import_saveDecisionAction": {
+    "message": "保存决定"
+  },
+  "dashboard_import_adoptIncomingIdCheckbox": {
+    "message": "同时采用导入数据的账号 ID"
+  },
+  "dashboard_import_discardConfirmTitle": {
+    "message": "放弃此次导入？"
+  },
+  "dashboard_import_discardConfirmDescription": {
+    "message": "尚未完成的导入进度将会丢失，当前的通讯录数据不会被修改。"
+  },
+  "dashboard_import_discardConfirmAction": {
+    "message": "放弃导入"
+  },
+  "dashboard_import_concurrencyTitle": {
+    "message": "通讯录已有变更"
+  },
+  "dashboard_import_concurrencyDescription": {
+    "message": "你在审查期间，部分相关联系人已被修改或删除。为避免覆盖较新的数据，需要重新分析此备份。"
+  },
+  "dashboard_import_cancelImportAction": {
+    "message": "取消导入"
+  },
+  "dashboard_import_reanalyzeAction": {
+    "message": "重新分析"
+  },
+  "dashboard_import_resultTitle": {
+    "message": "导入完成"
+  },
+  "dashboard_import_resultCreated": {
+    "message": "新增"
+  },
+  "dashboard_import_resultUpdated": {
+    "message": "更新"
+  },
+  "dashboard_import_resultResurrected": {
+    "message": "恢复已删除的数据"
+  },
+  "dashboard_import_resultDeleted": {
+    "message": "删除"
+  },
+  "dashboard_import_resultSkipped": {
+    "message": "已跳过"
+  },
+  "dashboard_import_resultPendingConflicts": {
+    "message": "另有 $1 项需要确认"
+  },
+  "dashboard_import_goToConflictsAction": {
+    "message": "前往处理"
+  },
+  "dashboard_import_backToDirectoryAction": {
+    "message": "返回私密通讯录"
+  },
+  "dashboard_import_doneAction": {
+    "message": "完成"
+  },
+  "dashboard_import_commitFailedTitle": {
+    "message": "无法完成导入"
+  },
+  "dashboard_import_commitFailedDescription": {
+    "message": "请稍后重试。"
+  },
+  "dashboard_import_cancelledTitle": {
+    "message": "导入已取消"
+  },
+  "dashboard_import_cancelledDescription": {
+    "message": "账号状态已变更。请确认已登录原账号后，再重新提交导入。"
+  },
+  "dashboard_import_sessionExpired": {
+    "message": "导入会话已结束，请重新选择备份文件。"
+  },
+  "dashboard_about_supportedBrowsersLabel": {
+    "message": "支持的浏览器"
+  },
+  "dashboard_about_supportedBrowsers": {
+    "message": "最新稳定版 Chrome 与 Edge"
+  },
+  "dashboard_import_reviewItemAction": {
+    "message": "审查"
+  },
+  "dashboard_import_dangerZoneTitle": {
+    "message": "危险操作"
+  },
+  "dashboard_import_ownerMismatchTitle": {
+    "message": "此备份属于另一个 Threads 账号"
+  },
+  "dashboard_import_ownerMismatchBackupOwnerLabel": {
+    "message": "备份账号："
+  },
+  "dashboard_import_ownerMismatchCurrentOwnerLabel": {
+    "message": "目前账号："
+  },
+  "dashboard_import_ownerMismatchDescription": {
+    "message": "导入后，此备份中的联系人会以新条目加入当前账号的通讯录，不会还原备份账号本身的通讯录，备份中已删除的联系人在这里也不会被还原。"
+  },
+  "dashboard_import_ownerMismatchConfirmAction": {
+    "message": "导入到 $1"
+  },
+  "dashboard_accountUnresolved": {
+    "message": "无法确认目前的 Threads 账号"
+  },
+  "dashboard_accountUnresolvedDescription": {
+    "message": "请在已登录 Threads 的标签页打开，再从扩展弹出窗口重新打开通讯录。"
+  },
+  "dashboard_import_discardContinueAction": {
+    "message": "继续导入"
+  },
+  "dashboard_import_operationLabel": {
+    "message": "要如何使用这份备份？"
+  },
+  "dashboard_import_operationRestore": {
+    "message": "还原到这份备份"
+  },
+  "dashboard_import_operationRestoreDescription": {
+    "message": "让当前通讯录回到这份备份创建时的状态。"
+  },
+  "dashboard_import_operationMerge": {
+    "message": "合并变更"
+  },
+  "dashboard_import_operationMergeDescription": {
+    "message": "把这份备份的变更，与这个浏览器上较新的本地数据合在一起。"
+  },
+  "dashboard_import_operationExternal": {
+    "message": "导入另一份通讯录"
+  },
+  "dashboard_import_operationExternalDescription": {
+    "message": "这份备份来自另一份通讯录，其中的联系人会以新的条目加入当前的通讯录。"
+  },
+  "dashboard_import_summaryRestoreRestored": {
+    "message": "恢复已删除的数据"
+  },
+  "dashboard_import_summaryRestoreReverted": {
+    "message": "恢复成备份版本"
+  },
+  "dashboard_import_summaryRestoreRemoved": {
+    "message": "移除备份后新增的数据"
+  },
+  "dashboard_import_changesTitleRestore": {
+    "message": "本次还原的变更"
+  },
+  "dashboard_import_changesTitleMerge": {
+    "message": "本次合并的变更"
+  },
+  "dashboard_import_changesTitleExternal": {
+    "message": "本次导入的变更"
+  },
+  "dashboard_import_changesUnchangedNote": {
+    "message": "另有 $1 项数据维持不变。"
+  },
+  "dashboard_import_noChangesNotice": {
+    "message": "这份备份不会造成任何变更。"
+  },
+  "dashboard_import_restoreNoUndoNotice": {
+    "message": "备份后的新增、修改与删除可能会丢失，且无法一键撤销。建议先导出当前数据。"
+  },
+  "dashboard_import_summaryKeptLocalNewer": {
+    "message": "保留较新的本地版本"
+  },
+  "dashboard_import_summaryKeptLocalDeletion": {
+    "message": "保留较新的本地删除"
+  },
+  "dashboard_import_restoreWarning": {
+    "message": "还原会让当前通讯录回到备份创建时的状态。备份之后新增、修改或删除的数据可能会丢失。"
+  },
+  "dashboard_import_restoreAction": {
+    "message": "还原到这份备份"
+  },
+  "dashboard_import_restoreConfirmTitle": {
+    "message": "确认还原？"
+  },
+  "dashboard_import_restoreConfirmDescription": {
+    "message": "当前通讯录将被这份备份取代。此操作没有一键恢复。"
+  },
+  "dashboard_import_restoreConfirmAction": {
+    "message": "确认还原"
+  },
+  "dashboard_import_clearAccountTitle": {
+    "message": "清除 $1 的通讯录数据"
+  },
+  "dashboard_import_clearAccountDescription": {
+    "message": "删除 $1 在这个浏览器中的私人昵称、备注与删除记录。其他 Threads 账号的数据不受影响。"
+  },
+  "dashboard_import_clearAccountAction": {
+    "message": "清除此账号数据"
+  },
+  "dashboard_import_clearAccountConfirmTitle": {
+    "message": "清除 $1 的通讯录数据？"
+  },
+  "dashboard_import_clearAccountConfirmDescription": {
+    "message": "此操作会永久删除当前账号在此浏览器中的私人昵称、备注与删除记录。其他 Threads 账号不受影响。此操作无法恢复。"
+  },
+  "dashboard_import_clearAccountSuccess": {
+    "message": "已清除此账号的通讯录数据。"
+  },
+  "dashboard_import_clearAccountError": {
+    "message": "无法清除此账号数据，请再试一次。"
+  },
+  "onboarding_stepProgress": {
+    "message": "第 $1 步，共 $2 步"
+  },
+  "onboarding_step1_title": {
+    "message": "私人 Threads 通讯录"
+  },
+  "onboarding_step1_body": {
+    "message": "为 Threads 上的人建立只有你看得到的昵称与备注。数据保存在你的浏览器中。"
+  },
+  "onboarding_step2_title": {
+    "message": "从 Threads 开始"
+  },
+  "onboarding_step2_body": {
+    "message": "登录 Threads，打开任意一个个人页，即可添加私人昵称。"
+  },
+  "onboarding_step3_title": {
+    "message": "记得备份"
+  },
+  "onboarding_step3_body": {
+    "message": "Your Name for Threads 不使用云端同步。建议定期从「备份与导入」导出 JSON 备份。"
+  },
+  "onboarding_back": {
+    "message": "上一步"
+  },
+  "onboarding_next": {
+    "message": "下一步"
+  },
+  "onboarding_openThreads": {
+    "message": "打开 Threads"
+  },
+  "dashboard_about_replayTour": {
+    "message": "重新查看使用导览"
+  },
+  "dashboard_about_intro": {
+    "message": "本机优先、开源的 Threads 私人昵称与备注通讯录。"
+  },
+  "dashboard_about_privacyHeading": {
+    "message": "隐私"
+  },
+  "dashboard_about_privacyLocal": {
+    "message": "昵称与备注保存在当前的浏览器中，由扩展程序在本机处理，不会自动发送给开发者。"
+  },
+  "dashboard_about_privacyNoTelemetry": {
+    "message": "本项目不运营接收这些数据的后端服务，也不提供云端同步。不做分析、使用行为追踪、自动崩溃报告或广告追踪。"
+  },
+  "dashboard_about_privacyBackup": {
+    "message": "只有在你主动导出时，才会生成 JSON 备份供你保存。备份文件包含私人昵称、备注及内部标识信息，请妥善保管，不要公开发布。"
+  },
+  "dashboard_about_privacySharedProfile": {
+    "message": "不同 Threads 账号在正常使用流程中，会使用各自的私人通讯录。"
+  },
+  "dashboard_about_privacySharedProfileLimit": {
+    "message": "这种区隔属于功能上的区分，并不是共用同一个浏览器 Profile 的人之间的加密安全边界。若多人共用同一台电脑，并需要彼此隔离私人数据，建议使用不同的浏览器配置文件（Profile）或操作系统账号。"
+  },
+  "dashboard_about_supportHeading": {
+    "message": "支持"
+  },
+  "dashboard_about_supportHelp": {
+    "message": "遇到问题时，请先复制诊断信息，再到 GitHub 反馈问题。"
+  },
+  "dashboard_about_copyDiagnostics": {
+    "message": "复制诊断信息"
+  },
+  "dashboard_about_clearDiagnostics": {
+    "message": "清除诊断记录"
+  },
+  "dashboard_about_reportIssue": {
+    "message": "到 GitHub 反馈问题"
+  },
+  "dashboard_about_copySuccess": {
+    "message": "已复制诊断信息。"
+  },
+  "dashboard_about_copyError": {
+    "message": "无法复制诊断信息，请重试。"
+  },
+  "dashboard_about_clearSuccess": {
+    "message": "已清除诊断记录。"
+  },
+  "dashboard_about_clearError": {
+    "message": "无法清除诊断记录，请重试。"
+  },
+  "dashboard_about_linksHeading": {
+    "message": "项目"
+  },
+  "dashboard_about_linkSource": {
+    "message": "GitHub 源代码"
+  },
+  "dashboard_about_linkIssues": {
+    "message": "GitHub Issues"
+  },
+  "dashboard_about_linkPrivacy": {
+    "message": "隐私政策"
+  },
+  "dashboard_about_independentHeading": {
+    "message": "关于本项目"
+  },
+  "dashboard_about_independent": {
+    "message": "这是独立的开源项目。"
+  },
+  "dashboard_about_vibeCoding": {
+    "message": "本项目以 vibe coding 方式开发，开发过程使用 OpenAI 模型与 Claude Code 协助。"
+  },
+  "dashboard_about_backupHeading": {
+    "message": "记得备份"
+  },
+  "dashboard_about_backupReminder": {
+    "message": "记得定期导出备份，避免浏览器数据被清除后丢失。"
+  },
+  "dashboard_about_sharedHeading": {
+    "message": "共用电脑时"
+  },
+  "dashboard_about_supportDiagnostics": {
+    "message": "诊断记录保存在本机，最多保留最近 20 条事件，不会自动上传。复制的诊断信息包含版本、运行状态、数据条数及错误代码。"
+  },
+  "dashboard_about_supportPrivate": {
+    "message": "请勿在公开 Issue 中粘贴私人昵称、备注、完整 JSON 备份或恢复数据。若涉及安全漏洞或隐私泄露，请按安全报告说明使用私密渠道。"
+  },
+  "dashboard_about_linkSecurity": {
+    "message": "安全报告说明"
+  },
+  "dashboard_about_nameNote": {
+    "message": "脆名簿、脆脆友人帐、你的脆名、脆上好朋友……名字想了不少，就这样吧。"
+  },
+  "recovery_title": {
+    "message": "数据需要修复"
+  },
+  "recovery_descriptionDirectory": {
+    "message": "Your Name for Threads 无法安全读取当前的私人通讯录数据。为避免进一步修改，私人通讯录功能已暂停。其他账号不受影响。"
+  },
+  "recovery_descriptionGlobal": {
+    "message": "Your Name for Threads 无法安全读取已保存的数据。为避免进一步修改，此浏览器中所有账号的私人通讯录功能已暂停。"
+  },
+  "recovery_codeLabel": {
+    "message": "代码"
+  },
+  "recovery_checking": {
+    "message": "正在检查你的数据……"
+  },
+  "recovery_exportAction": {
+    "message": "导出恢复数据"
+  },
+  "recovery_exportWarningDirectory": {
+    "message": "恢复数据可能包含私人昵称、备注及内部标识信息。请勿直接公开贴到 GitHub Issue。"
+  },
+  "recovery_exportWarningGlobal": {
+    "message": "恢复数据可能包含私人昵称、备注及内部标识信息，并且因为所有已保存的数据都受影响，也包含所有账号的数据。请勿直接公开贴到 GitHub Issue。"
+  },
+  "recovery_exportSuccess": {
+    "message": "已保存恢复数据。"
+  },
+  "recovery_exportError": {
+    "message": "无法导出恢复数据，请重试。"
+  },
+  "recovery_noRepair": {
+    "message": "本扩展不提供自动修复，也无法导入恢复文件。此文件供你或开发者查看。"
+  },
+  "recovery_clearDescription": {
+    "message": "清除会永久删除此账号已损坏的数据，其他账号与设置不受影响。若想保留副本，请先导出恢复数据。"
+  },
+  "recovery_clearConfirmTitle": {
+    "message": "要清除此账号的数据吗？"
+  },
+  "recovery_clearConfirmDescription": {
+    "message": "这会删除此账号已损坏的私人通讯录，且无法撤销。若想保留副本，请先导出恢复数据。"
+  },
+  "recovery_globalNoClear": {
+    "message": "因为所有账号的数据都受影响，所以不提供清除功能。请改为导出恢复数据并反馈问题。"
+  }
+}
