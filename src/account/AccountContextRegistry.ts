@@ -51,7 +51,8 @@ export interface ThreadsTabContext {
   /**
    * Documents of this tab that were replaced or left. A report still in flight from one of them proves nothing
    * about the page the tab shows now, and must neither confirm an account nor overwrite a newer document's record.
-   * Bounded: a tab that reloads all day must not grow this without limit.
+   * Kept for the tab's lifetime, including worker restarts. Evicting an old ID would make a delayed report
+   * from that document look new again. Tab removal clears this history with the rest of the context.
    */
   retiredDocumentIds?: string[];
   /** See the module comment. Absent only for a context a test built directly with `setTabContext`, which reads as older than any real report (0). */
@@ -59,7 +60,6 @@ export interface ThreadsTabContext {
 }
 
 const SESSION_KEY = "tpd:tabContexts";
-const MAX_RETIRED_DOCUMENTS = 8;
 
 let queue: Promise<unknown> = Promise.resolve();
 
@@ -84,7 +84,7 @@ async function writeAll(contexts: Record<number, ThreadsTabContext>): Promise<vo
 function withRetired(retired: readonly string[] | undefined, documentId: string | undefined): string[] {
   const kept = retired ?? [];
   if (documentId === undefined || kept.includes(documentId)) return [...kept];
-  return [...kept, documentId].slice(-MAX_RETIRED_DOCUMENTS);
+  return [...kept, documentId];
 }
 
 /** Only ever for a context a caller built itself (tests, or the report path below); production code goes through `recordTabReport`. */

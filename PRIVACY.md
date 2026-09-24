@@ -1,6 +1,6 @@
 # Privacy
 
-Last updated: 2026-09-19. This applies to Your Name for Threads 1.0, which has not been published yet.
+Last updated: 2026-09-24. This applies to Your Name for Threads 1.0.0.
 
 Your Name for Threads keeps your private nicknames and notes for Threads accounts on your own computer. This page says what it stores, what it reads, what it is allowed to do, and what leaves your browser. It is written from the [data handling matrix](docs/privacy/data-handling-matrix.md), which is checked against the code, and it agrees with the About & Privacy page inside the extension.
 

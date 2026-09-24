@@ -170,7 +170,7 @@ describe("T12 and the release workflow", () => {
     expect(browserTests).toContain("pnpm install --frozen-lockfile");
     expect(browserTests).toContain("pnpm test:e2e");
     expect([...browserTests.matchAll(/^\s*-?\s*uses:\s*(\S+)/gm)].map(match => match[1])).toEqual([
-      "actions/checkout@v4", "pnpm/action-setup@v4", "actions/setup-node@v4", "actions/upload-artifact@v4",
+      "actions/checkout@11d5960a326750d5838078e36cf38b85af677262", "pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1", "actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020", "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
     ]);
   });
 

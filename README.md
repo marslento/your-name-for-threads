@@ -1,10 +1,12 @@
 # Your Name for Threads
 
+English | [繁體中文](README.zh-TW.md)
+
 A local-first, open-source private nickname and notes directory for Threads.
 
 Add personal nicknames to Threads profile pages, the feed, replies and quoted posts. Keep private notes in the extension's Dashboard, where you can search, edit and back up your directory. Each Threads account has its own directory in this browser.
 
-Version 1.0.0 is being prepared for its first store submission. Store listings are not available yet, and [manual browser acceptance is still in progress](docs/verification/current-status.md).
+Version 1.0.0 is available on Chrome Web Store and Microsoft Edge Add-ons. See the [release verification status](docs/verification/current-status.md) for recorded evidence and remaining checks.
 
 ## Privacy at a glance
 
@@ -17,6 +19,13 @@ The details are in [PRIVACY.md](PRIVACY.md), and the table they come from is the
 ## Browsers
 
 Latest stable Chrome and Edge. Other Chromium-based browsers are not officially supported.
+
+## Install
+
+- [Install from Chrome Web Store](https://chromewebstore.google.com/detail/your-name-for-threads/jmpaegbcheebaflefpfappfbiimgknoa)
+- [Install from Microsoft Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/your-name-for-threads/ojnkchiogffjbniepbngfokiapfahmpb)
+
+After installing, pin Your Name for Threads to the toolbar and open it to complete the introduction. Sign in to Threads, visit someone's profile and choose **Add nickname**. From that Threads tab, open the extension and choose **Open Directory** to manage your data.
 
 ## Install from source
 

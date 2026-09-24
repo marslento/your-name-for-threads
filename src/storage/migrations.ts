@@ -286,9 +286,12 @@ function readDirectoryRecord(value: unknown, key: string): DirectoryRecord {
   }
 
   const contacts = readDirectoryCollection<ThreadContact>(value, "contacts", key);
+  const activeUsernames = new Set<string>();
   for (const [contactId, contact] of Object.entries(contacts)) {
     assertValidContact(contact, key);
     if (contact.id !== contactId) throw new Error(`Invalid storage collection: directories.${key}.contacts`);
+    if (activeUsernames.has(contact.username)) throw new Error(`Invalid storage collection: directories.${key}.contacts`);
+    activeUsernames.add(contact.username);
   }
   const tombstones = readDirectoryCollection<ContactTombstone>(value, "tombstones", key);
   for (const tombstone of Object.values(tombstones)) {

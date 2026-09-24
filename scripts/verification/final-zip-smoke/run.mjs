@@ -63,41 +63,45 @@ async function until(test, what, timeout = 25000) {
 
 // ---- The ZIP, before any browser -----------------------------------------------------------------------------------------
 
-const bytes = readFileSync(ZIP);
-result.zip.bytes = bytes.length;
-result.zip.sha256 = createHash("sha256").update(bytes).digest("hex");
-
-function tool(command, args) {
-  try {
-    execFileSync(command, args, { stdio: "pipe" });
-    return { ok: true };
-  } catch (error) {
-    return { ok: false, detail: String(error?.message ?? error).split("\n")[0] };
-  }
-}
-const tested = tool("unzip", ["-tq", ZIP]);
-check("the ZIP passes `unzip -t`", tested.ok, tested.detail ?? "no errors in the archive");
-let unpacked = tool("unzip", ["-q", ZIP, "-d", extracted]);
-if (!unpacked.ok) {
-  mkdirSync(extracted, { recursive: true });
-  unpacked = tool("tar", ["-xf", ZIP, "-C", extracted]);
-}
-check("the ZIP extracts", unpacked.ok && existsSync(join(extracted, "manifest.json")), unpacked.detail ?? "manifest.json is at the top of the archive");
-
 let manifest;
-if (existsSync(join(extracted, "manifest.json"))) {
-  manifest = JSON.parse(readFileSync(join(extracted, "manifest.json"), "utf8"));
-  const audit = auditPackage(extracted, { packageJson: PACKAGE_JSON });
-  check("the package audit passes on the extracted ZIP", audit.findings.length === 0, audit.findings.length === 0 ? `ok, ${audit.files} files` : audit.findings);
-  const listed = (function walk(dir, prefix = "") {
-    return readdirSync(dir, { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? walk(join(dir, e.name), `${prefix}${e.name}/`) : [`${prefix}${e.name}`]));
-  })(extracted);
-  result.zip.files = listed.length;
-  check("the ZIP holds no source map, TypeScript source or test fixture", !listed.some((f) => /\.map$|\.tsx?$|fixtures?\/|\.test\./.test(f)), `${listed.length} files`);
-  result.zip.manifestVersion = manifest.version;
-  result.zip.packageVersion = JSON.parse(readFileSync(PACKAGE_JSON, "utf8")).version;
-  check("the manifest version is package.json's version", manifest.version === result.zip.packageVersion, `${manifest.version} and ${result.zip.packageVersion}`);
-  check("the permissions are storage alone, and the only host is www.threads.com", JSON.stringify(manifest.permissions) === '["storage"]' && JSON.stringify(manifest.host_permissions) === '["https://www.threads.com/*"]', { permissions: manifest.permissions, host_permissions: manifest.host_permissions });
+try {
+  const bytes = readFileSync(ZIP);
+  result.zip.bytes = bytes.length;
+  result.zip.sha256 = createHash("sha256").update(bytes).digest("hex");
+
+  function tool(command, args) {
+    try {
+      execFileSync(command, args, { stdio: "pipe" });
+      return { ok: true };
+    } catch (error) {
+      return { ok: false, detail: String(error?.message ?? error).split("\n")[0] };
+    }
+  }
+  const tested = tool("unzip", ["-tq", ZIP]);
+  check("the ZIP passes `unzip -t`", tested.ok, tested.detail ?? "no errors in the archive");
+  let unpacked = tool("unzip", ["-q", ZIP, "-d", extracted]);
+  if (!unpacked.ok) {
+    mkdirSync(extracted, { recursive: true });
+    unpacked = tool("tar", ["-xf", ZIP, "-C", extracted]);
+  }
+  check("the ZIP extracts", unpacked.ok && existsSync(join(extracted, "manifest.json")), unpacked.detail ?? "manifest.json is at the top of the archive");
+
+  if (existsSync(join(extracted, "manifest.json"))) {
+    manifest = JSON.parse(readFileSync(join(extracted, "manifest.json"), "utf8"));
+    const audit = auditPackage(extracted, { packageJson: PACKAGE_JSON });
+    check("the package audit passes on the extracted ZIP", audit.findings.length === 0, audit.findings.length === 0 ? `ok, ${audit.files} files` : audit.findings);
+    const listed = (function walk(dir, prefix = "") {
+      return readdirSync(dir, { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? walk(join(dir, e.name), `${prefix}${e.name}/`) : [`${prefix}${e.name}`]));
+    })(extracted);
+    result.zip.files = listed.length;
+    check("the ZIP holds no source map, TypeScript source or test fixture", !listed.some((f) => /\.map$|\.tsx?$|fixtures?\/|\.test\./.test(f)), `${listed.length} files`);
+    result.zip.manifestVersion = manifest.version;
+    result.zip.packageVersion = JSON.parse(readFileSync(PACKAGE_JSON, "utf8")).version;
+    check("the manifest version is package.json's version", manifest.version === result.zip.packageVersion, `${manifest.version} and ${result.zip.packageVersion}`);
+    check("the permissions are storage alone, and the only host is www.threads.com", JSON.stringify(manifest.permissions) === '["storage"]' && JSON.stringify(manifest.host_permissions) === '["https://www.threads.com/*"]', { permissions: manifest.permissions, host_permissions: manifest.host_permissions });
+  }
+} catch (error) {
+  check("the ZIP preflight completes", false, String(error?.message ?? error).split("\n")[0]);
 }
 
 // ---- The stand-in for Threads ----------------------------------------------------------------------------------------------
@@ -126,8 +130,8 @@ function finish(code) {
 }
 let child;
 
-if (!manifest) {
-  check("there is a manifest to load", false, "the ZIP did not extract");
+if (!manifest || result.checks.some((c) => !c.ok)) {
+  if (!manifest) check("there is a manifest to load", false, "the ZIP did not provide a readable manifest");
   await finish(1);
 }
 

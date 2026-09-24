@@ -194,11 +194,21 @@ export class ContactStore implements ContactStore {
     this.byThreadsUserId.clear();
     this.byUsername.clear();
 
+    // Storage change events bypass the loader; never trust a last-wins username index.
+    const seenUsernames = new Set<string>();
+    const ambiguousUsernames = new Set<string>();
+    for (const contact of Object.values(this.contacts)) {
+      if (seenUsernames.has(contact.username)) ambiguousUsernames.add(contact.username);
+      seenUsernames.add(contact.username);
+    }
+
     for (const [key, id] of Object.entries(this.identityIndex)) {
       const contact = this.contacts[id];
       if (!contact) continue;
       if (key.startsWith("threads:")) this.byThreadsUserId.set(key.slice("threads:".length), contact);
-      if (key.startsWith("username:")) this.byUsername.set(key.slice("username:".length), contact);
+      if (key === `username:${contact.username}` && !ambiguousUsernames.has(contact.username)) {
+        this.byUsername.set(contact.username, contact);
+      }
     }
   }
 }

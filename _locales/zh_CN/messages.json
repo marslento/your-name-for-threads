@@ -460,6 +460,9 @@
   "dashboard_import_importAsNewAction": {
     "message": "导入为新联系人"
   },
+  "dashboard_import_usernameAlreadySaved": {
+    "message": "你的名录已保存这个账号名称，无法再导入为新联系人。选择保留我的数据，即可跳过这个项目。"
+  },
   "dashboard_import_keepDeletedAction": {
     "message": "保持删除"
   },

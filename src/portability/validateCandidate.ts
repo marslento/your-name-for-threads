@@ -11,6 +11,7 @@ export type CandidateValidationIssue =
   | { code: "invalid_nickname"; contactId: string }
   | { code: "invalid_note"; contactId: string }
   | { code: "invalid_username"; contactId: string }
+  | { code: "duplicate_username"; contactId: string; username: string }
   | { code: "invalid_threads_user_id"; contactId: string }
   | { code: "invalid_timestamp"; contactId: string }
   | { code: "active_and_tombstone_same_id"; contactId: string }
@@ -63,6 +64,7 @@ export function validateCandidateSnapshot(candidate: DirectorySnapshot): Candida
     issues.push({ code: "invalid_directory_id" });
   }
 
+  const activeUsernames = new Set<string>();
   for (const [key, contact] of candidate.contacts) {
     if (!isNonBlank(contact.id)) {
       issues.push({ code: "invalid_contact_id", contactId: contact.id });
@@ -93,6 +95,10 @@ export function validateCandidateSnapshot(candidate: DirectorySnapshot): Candida
     if (!isCanonicalUsername(contact.username)) {
       issues.push({ code: "invalid_username", contactId: contact.id });
     }
+    if (activeUsernames.has(contact.username)) {
+      issues.push({ code: "duplicate_username", contactId: contact.id, username: contact.username });
+    }
+    activeUsernames.add(contact.username);
     if (contact.threadsUserId !== undefined && !isValidThreadsUserId(contact.threadsUserId)) {
       issues.push({ code: "invalid_threads_user_id", contactId: contact.id });
     }

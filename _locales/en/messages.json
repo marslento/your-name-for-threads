@@ -460,6 +460,9 @@
   "dashboard_import_importAsNewAction": {
     "message": "Import as New Contact"
   },
+  "dashboard_import_usernameAlreadySaved": {
+    "message": "This username is already saved in your Directory, so it cannot be imported as a new contact. Keep your existing contact to skip this item."
+  },
   "dashboard_import_keepDeletedAction": {
     "message": "Keep Deleted"
   },

@@ -2,7 +2,9 @@
 
 # Chrome Web Store listing
 
-First manual submission: version 1.0.0 (not yet published). Later updates use the release workflow described in [Release pipeline](release-pipeline.md).
+Version 1.0.0 is published at [Chrome Web Store](https://chromewebstore.google.com/detail/your-name-for-threads/jmpaegbcheebaflefpfappfbiimgknoa). The owner confirmed publication on 2026-09-24 and supplied the store update date, 2026-09-23. Later updates use the release workflow described in [Release pipeline](release-pipeline.md).
+
+The fields below remain a submission reference, not a verified copy of the live dashboard. Outstanding review notes and checks remain open; publication alone does not complete them.
 
 `tests/repo/store-listings.test.ts` holds what a machine can hold: the summary is the manifest's own description, the addresses are the ones the extension links to, the descriptions repeat the README and About & Privacy sentences word for word and are the same text as the Edge listing's, every row of the data table is a row of the Data Handling Matrix, and the two permissions here are the two in the manifest. It cannot say whether the copy is good, or whether the dashboard's form is what is described here.
 

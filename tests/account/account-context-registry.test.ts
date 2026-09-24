@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
   __resetAccountContextRegistryQueueForTests,
@@ -187,15 +187,40 @@ describe("AccountContextRegistry", () => {
       expect((await getTabContext(1))?.retiredDocumentIds).toBeUndefined();
     });
 
-    it("bounds how many retired documents a tab remembers", async () => {
+    it.each([false, true])("rejects old documents after twenty replacements, including after a worker restart (explicit retirement: %s)", async (explicitRetirement) => {
       installFakeChromeSession();
-      for (let n = 0; n < 20; n += 1) await recordTabReport(1, `doc-${n}`, ALICE);
+      await recordTabReport(1, "doc-0", ALICE);
+      for (let n = 1; n <= 20; n += 1) {
+        if (explicitRetirement) await retireTabDocument(1, `doc-${n - 1}`);
+        await recordTabReport(1, `doc-${n}`, BOB);
+      }
+      const before = await getTabContext(1);
 
-      const retired = (await getTabContext(1))?.retiredDocumentIds ?? [];
+      vi.resetModules(); // Recreate worker memory while keeping chrome.storage.session.
+      const restarted = await import("../../src/account/AccountContextRegistry");
+      for (let n = 0; n < 20; n += 1) {
+        await expect(restarted.recordTabReport(1, `doc-${n}`, ALICE)).resolves.toBeUndefined();
+        await expect(restarted.recordTabReport(1, `doc-${n}`, { state: "unresolved" })).resolves.toBeUndefined();
+      }
 
-      expect(retired.length).toBeLessThanOrEqual(8);
-      expect(retired).toContain("doc-18");
-      expect(retired).not.toContain("doc-0");
+      expect(await restarted.getTabContext(1)).toEqual(before);
+      expect(before?.retiredDocumentIds).toEqual(Array.from({ length: 20 }, (_, n) => `doc-${n}`));
+      await restarted.retireTabDocument(1, "doc-0");
+      expect(await restarted.getTabContext(1)).toEqual(before); // Repeated retirement does not duplicate IDs.
+    });
+
+    it("clears retirement history on tab close without removing another tab's history", async () => {
+      const fake = installFakeChromeSession();
+      installTabRemovalCleanup();
+      for (const tabId of [1, 2]) {
+        for (let n = 0; n < 21; n += 1) await recordTabReport(tabId, `doc-${tabId}-${n}`, ALICE);
+      }
+      const other = await getTabContext(2);
+      fake.fireTabRemoved(1);
+      // Queue a mutation after the removal listener to await its completion.
+      await clearTabContext(99);
+      expect(await getTabContext(1)).toBeUndefined();
+      expect(await getTabContext(2)).toEqual(other);
     });
 
     it("works with no document id at all (a browser that gives none), by tab alone", async () => {

@@ -24,6 +24,23 @@ function baseSnapshot(): DirectorySnapshot {
 }
 
 describe("validateCandidateSnapshot", () => {
+  it("rejects username collisions introduced while combining otherwise valid contacts", () => {
+    const snapshot = baseSnapshot();
+    snapshot.contacts.set("b", { ...snapshot.contacts.get("a")!, id: "b", threadsUserId: "456" });
+
+    expect(validateCandidateSnapshot(snapshot)).toMatchObject({ ok: false, issues: expect.arrayContaining([
+      { code: "duplicate_username", contactId: "b", username: "alice" },
+    ]) });
+  });
+
+  it("allows shared stable IDs when active usernames differ", () => {
+    const snapshot = baseSnapshot();
+    snapshot.contacts.get("a")!.threadsUserId = "123";
+    snapshot.contacts.set("b", { ...snapshot.contacts.get("a")!, id: "b", username: "alice_old" });
+
+    expect(validateCandidateSnapshot(snapshot)).toEqual({ ok: true });
+  });
+
   it("accepts a well-formed candidate", () => {
     expect(validateCandidateSnapshot(baseSnapshot())).toEqual({ ok: true });
   });

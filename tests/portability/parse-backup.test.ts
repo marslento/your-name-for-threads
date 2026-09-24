@@ -16,6 +16,21 @@ const validText = () =>
   });
 
 describe("parseBackupText", () => {
+  it("rejects duplicate canonical usernames in an untrusted backup", () => {
+    const backup = JSON.parse(validText());
+    backup.contacts = ["alice", "alice"].map((username, index) => ({
+      id: `contact-${index}`, username, nickname: "Private name",
+      threadsUserId: String(100 + index),
+      createdAt: "2026-01-01T00:00:00.000Z",
+      updatedAt: "2026-01-01T00:00:00.000Z",
+      identityUpdatedAt: "2026-01-01T00:00:00.000Z",
+    }));
+
+    expect(parseBackupText(JSON.stringify(backup))).toMatchObject({
+      ok: false, error: { code: "invalid_invariant" },
+    });
+  });
+
   it("parses a valid V2 backup", () => {
     const result = parseBackupText(validText());
 

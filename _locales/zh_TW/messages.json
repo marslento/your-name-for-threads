@@ -460,6 +460,9 @@
   "dashboard_import_importAsNewAction": {
     "message": "匯入為新的聯絡人"
   },
+  "dashboard_import_usernameAlreadySaved": {
+    "message": "你的名錄已儲存這個帳號名稱，無法再匯入為新的聯絡人。選擇保留我的資料，即可略過這個項目。"
+  },
   "dashboard_import_keepDeletedAction": {
     "message": "保持刪除"
   },

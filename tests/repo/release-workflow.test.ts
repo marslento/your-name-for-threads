@@ -86,14 +86,14 @@ describe("what it is trusted with", () => {
     expect(text()).not.toMatch(/pull_request_target|workflow_run/);
   });
 
-  it("uses only the four actions it has been reviewed for, each at a version", () => {
+  it("uses only the four actions it has been reviewed for, each at a verified commit", () => {
     const actions = steps(job("package")).flatMap((step) => (step.uses ? [step.uses] : []));
 
-    expect(actions).toEqual(["actions/checkout@v4", "pnpm/action-setup@v4", "actions/setup-node@v4", "actions/upload-artifact@v4"]);
+    expect(actions).toEqual(["actions/checkout@11d5960a326750d5838078e36cf38b85af677262", "pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1", "actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020", "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02"]);
   });
 
   it("keeps no repository credential in the checkout, since nothing here pushes", () => {
-    expect(job("package")).toMatch(/uses: actions\/checkout@v4\n {8}with:\n {10}fetch-depth: 0\n {10}persist-credentials: false/);
+    expect(job("package")).toMatch(/uses: actions\/checkout@11d5960a326750d5838078e36cf38b85af677262\n {8}with:\n {10}fetch-depth: 0\n {10}persist-credentials: false/);
   });
 
   it("cannot run forever", () => {
@@ -106,17 +106,17 @@ describe("what it does, in order", () => {
 
   it("checks the commit is on main, installs from the frozen lockfile, tests, builds, audits, zips, audits the ZIP and stores the artifact, in that order", () => {
     const order = [
-      runOf(list(), "actions/checkout@v4"),
+      runOf(list(), "actions/checkout@11d5960a326750d5838078e36cf38b85af677262"),
       runOf(list(), 'git merge-base --is-ancestor "$GITHUB_SHA" origin/main'),
-      runOf(list(), "pnpm/action-setup@v4"),
-      runOf(list(), "actions/setup-node@v4"),
+      runOf(list(), "pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1"),
+      runOf(list(), "actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020"),
       runOf(list(), "pnpm install --frozen-lockfile"),
       runOf(list(), "run: pnpm test"),
       runOf(list(), "run: pnpm build"),
       runOf(list(), 'pnpm release:audit --release --tag "$GITHUB_REF_NAME"'),
       runOf(list(), "make-release-zip.mjs dist"),
       runOf(list(), "unzip -t"),
-      runOf(list(), "actions/upload-artifact@v4"),
+      runOf(list(), "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02"),
     ];
 
     expect(order.every((index) => index >= 0), `every step is there: ${order.join(", ")}`).toBe(true);
@@ -158,7 +158,7 @@ describe("what it does, in order", () => {
 
     expect(script).toContain("release/SHA256SUMS");
     expect(script).toContain("release/release-notes.md");
-    expect(script).toMatch(/uses: actions\/upload-artifact@v4\n {8}with:\n {10}name: release\n {10}path: release\/\n {10}if-no-files-found: error/);
+    expect(script).toMatch(/uses: actions\/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02\n {8}with:\n {10}name: release\n {10}path: release\/\n {10}if-no-files-found: error/);
   });
 
   it("hands the next job the version and the checksum of what it built, and nothing else", () => {
@@ -208,13 +208,13 @@ describe.each(STORES)("the $title job", ({ name, script, credentials: CREDENTIAL
   });
 
   it("checks out the tagged commit without keeping a credential, downloads the artifact, sets up Node, and submits, in that order, using three reviewed actions", () => {
-    const order = [runOf(list(), "actions/checkout@v4"), runOf(list(), "actions/download-artifact@v4"), runOf(list(), "actions/setup-node@v4"), runOf(list(), script)];
+    const order = [runOf(list(), "actions/checkout@11d5960a326750d5838078e36cf38b85af677262"), runOf(list(), "actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093"), runOf(list(), "actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020"), runOf(list(), script)];
 
     expect(order.every((index) => index >= 0)).toBe(true);
     expect([...order].sort((a, b) => a - b)).toEqual(order);
-    expect(list().flatMap((step) => (step.uses ? [step.uses] : []))).toEqual(["actions/checkout@v4", "actions/download-artifact@v4", "actions/setup-node@v4"]);
-    expect(block()).toMatch(/uses: actions\/checkout@v4\n {8}with:\n {10}persist-credentials: false/);
-    expect(block()).toMatch(/uses: actions\/download-artifact@v4\n {8}with:\n {10}name: release\n {10}path: release\n/);
+    expect(list().flatMap((step) => (step.uses ? [step.uses] : []))).toEqual(["actions/checkout@11d5960a326750d5838078e36cf38b85af677262", "actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093", "actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020"]);
+    expect(block()).toMatch(/uses: actions\/checkout@11d5960a326750d5838078e36cf38b85af677262\n {8}with:\n {10}persist-credentials: false/);
+    expect(block()).toMatch(/uses: actions\/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093\n {8}with:\n {10}name: release\n {10}path: release\n/);
   });
 
   it("gives each credential to the submitting step alone, from the environment's secrets, and to no other step or the job", () => {
@@ -271,8 +271,8 @@ describe("the GitHub release job", () => {
   });
 
   it("uses one reviewed action to fetch the artifact, and checks out, builds and installs nothing", () => {
-    expect(list().flatMap((step) => (step.uses ? [step.uses] : []))).toEqual(["actions/download-artifact@v4"]);
-    expect(block()).toMatch(/uses: actions\/download-artifact@v4\n {8}with:\n {10}name: release\n {10}path: release\n/);
+    expect(list().flatMap((step) => (step.uses ? [step.uses] : []))).toEqual(["actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093"]);
+    expect(block()).toMatch(/uses: actions\/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093\n {8}with:\n {10}name: release\n {10}path: release\n/);
     expect(block()).not.toMatch(/checkout|pnpm|npm |yarn|vite|tsc|make-release-zip|node scripts|curl |wget|actions\/cache/);
   });
 

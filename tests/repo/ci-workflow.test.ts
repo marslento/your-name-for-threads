@@ -57,10 +57,10 @@ describe("what it is trusted with", () => {
     expect(text()).not.toMatch(/secrets\.|GITHUB_TOKEN|environment:|chrome-webstore|edge-add|publish|release create|gh release/i);
   });
 
-  it("uses only the three actions it has been reviewed for, each at a version", () => {
+  it("uses only the three actions it has been reviewed for, each at a verified commit", () => {
     const actions = [...text().matchAll(/^\s*-?\s*uses:\s*(\S+)/gm)].map((match) => match[1]);
 
-    expect(actions).toEqual(["actions/checkout@v4", "pnpm/action-setup@v4", "actions/setup-node@v4"]);
+    expect(actions).toEqual(["actions/checkout@11d5960a326750d5838078e36cf38b85af677262", "pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1", "actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020"]);
   });
 
   it("pins Node and caches the pnpm store, and cannot run forever", () => {

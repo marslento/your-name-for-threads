@@ -2,7 +2,9 @@
 
 # Microsoft Edge Add-ons listing
 
-First manual submission through Partner Center: version 1.0.0 (not yet published). Later updates use the release workflow described in [Release pipeline](release-pipeline.md).
+Version 1.0.0 is published at [Microsoft Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/your-name-for-threads/ojnkchiogffjbniepbngfokiapfahmpb). The owner confirmed publication on 2026-09-24 and supplied the store update date, 2026-09-23. Later updates use the release workflow described in [Release pipeline](release-pipeline.md).
+
+The fields below remain a submission reference, not a verified copy of the live dashboard. Outstanding review notes and checks remain open; publication alone does not complete them. The ID in the public listing URL is not the Partner Center Product ID required by the update API.
 
 The listing text, the purpose, the permission justifications, the reviewer's instructions and the data table are the same as the Chrome listing's, word for word, and a test holds them equal (`tests/repo/store-listings.test.ts`), so the two stores and the privacy policy cannot disagree. The same test holds the rest to what a machine can hold: the summary is the manifest's own description, the addresses are the ones the extension links to, the descriptions repeat the README and About & Privacy sentences word for word, every row of the data table is a row of the Data Handling Matrix, and the two permissions here are the two in the manifest. It cannot say whether the copy is good, or whether Partner Center's form is what is described here.
 

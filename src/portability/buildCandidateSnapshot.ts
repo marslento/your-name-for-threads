@@ -99,6 +99,7 @@ function processExternalMatch(
     const itemId = `external:${match.incoming.id}:weak`;
     const decision = decisions.get(itemId);
     if (!decision) { issues.push({ type: "missing_decision", itemId }); return; }
+    if (decision.kind === "keep_local") return;
     if (decision.kind === "import_as_new") {
       const id = createUuid();
       candidateContacts.set(id, newContactFromIncoming(match.incoming, id, operationNow));

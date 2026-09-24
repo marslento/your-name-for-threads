@@ -13,7 +13,9 @@ export interface ReviewItemContext {
 }
 
 function incomingIdFromItemId(itemId: string): string {
-  return itemId.split(":")[1] ?? "";
+  // The prefix and final kind are fixed; the accepted contact ID between
+  // them can itself contain colons, whitespace, or Unicode.
+  return /^external:([\s\S]+):(new|stable|weak|mismatch|deleted)$/.exec(itemId)?.[1] ?? "";
 }
 
 interface IncomingIndexes {

@@ -4,7 +4,9 @@ Notable changes to Your Name for Threads are recorded here. The format follows [
 
 ## [Unreleased]
 
-Version 1.0.0 is prepared for the first store submission. Publication to the Chrome Web Store, Microsoft Edge Add-ons and GitHub Releases is still pending.
+## [1.0.0] - 2026-09-23
+
+First release on [Chrome Web Store](https://chromewebstore.google.com/detail/your-name-for-threads/jmpaegbcheebaflefpfappfbiimgknoa) and [Microsoft Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/your-name-for-threads/ojnkchiogffjbniepbngfokiapfahmpb). The owner confirmed publication and supplied the version's store update date on 2026-09-24. GitHub Release publication is tracked separately.
 
 ### Added
 
@@ -22,7 +24,7 @@ Version 1.0.0 is prepared for the first store submission. Publication to the Chr
 - The extension's icons.
 - Bug-report and feature-request forms for GitHub, a security policy, a privacy policy, contributing notes and an MIT license.
 - A data handling matrix (`docs/privacy/data-handling-matrix.md`) that says what is stored, where, and for how long, and tests that keep it honest.
-- A GitHub Pages site with a home page, a privacy page and a support page, ready to publish from the `site/` folder but not published yet. The privacy page is `PRIVACY.md` rendered, so the two cannot disagree, and the site loads no scripts, fonts or images from anywhere.
+- A GitHub Pages site with a home page, a privacy page and a support page, configured to deploy from the `site/` folder. The privacy page is rendered from `PRIVACY.md`, and the site loads no scripts, fonts or images from anywhere.
 
 ### Changed
 

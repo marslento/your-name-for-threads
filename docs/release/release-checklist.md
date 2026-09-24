@@ -110,6 +110,8 @@ This stage is for later automated updates, after initial store setup. Follow `do
 
 ## After publication
 
+For 1.0.0, the owner confirmed both store listings on 2026-09-24 and supplied the store update date, 2026-09-23. Links have been added to the local README and site. Signed-out verification, deployment and store-installed smoke results are still unverified in this follow-up; see the [current status](../verification/current-status.md). Leave the combined checks below open until all their conditions have evidence.
+
 - [ ] Once each store approves, verify its public listing signed out. Add the real links to the site's home page and README and complete the site's publication follow-up.
 - [ ] Record submission and publication outcomes, including partial failure. For an automated update, record the workflow run and identical ZIP attached to the GitHub release. Follow pipeline recovery instructions; do not rebuild a failed upload under the same version.
 

@@ -8,7 +8,7 @@ import {
   SheetTitle
 } from '../../components/ui/sheet'
 import { t } from '../../i18n/t'
-import { normalizeNickname, normalizeNote } from '../../domain/validation'
+import { normalizeNickname, normalizeNote, normalizeUsername } from '../../domain/validation'
 import { FinalContactEditor } from '../review/FinalContactEditor'
 import { PrivateDataComparison } from '../review/PrivateDataComparison'
 import { SourceContactCard } from '../review/SourceContactCard'
@@ -260,9 +260,11 @@ function StableDuplicateReview ({
 
 function WeakDuplicateReview ({
   context,
+  usernameAlreadySaved,
   onSave
 }: {
   context: ReviewItemContext
+  usernameAlreadySaved: boolean
   onSave: (decision: ImportReviewDecision) => void
 }) {
   const local = context.localContact
@@ -310,14 +312,27 @@ function WeakDuplicateReview ({
         ) : null}
       </PrivateDataComparison>
 
+      {usernameAlreadySaved ? (
+        <p className='text-sm text-muted-foreground'>{t('dashboard_import_usernameAlreadySaved')}</p>
+      ) : null}
       {!confirming ? (
-        <div className='flex gap-2'>
+        <div className='flex flex-wrap gap-2'>
           <Button type='button' onClick={() => setConfirming(true)}>
             {t('dashboard_import_confirmWeakIdentityAction')}
           </Button>
+          {usernameAlreadySaved ? (
+            <Button
+              type='button'
+              variant='outline'
+              onClick={() => onSave({ kind: 'keep_local', itemId: context.item.itemId })}
+            >
+              {t('dashboard_import_strategyKeepLocal')}
+            </Button>
+          ) : null}
           <Button
             type='button'
             variant='outline'
+            disabled={usernameAlreadySaved}
             onClick={() =>
               onSave({ kind: 'import_as_new', itemId: context.item.itemId })
             }
@@ -369,32 +384,40 @@ function WeakDuplicateReview ({
 
 function IdentityMismatchReview ({
   context,
+  usernameAlreadySaved,
   onSave
 }: {
   context: ReviewItemContext
+  usernameAlreadySaved: boolean
   onSave: (decision: ImportReviewDecision) => void
 }) {
   // Must not show a merge Final Result editor (Phase 3 §47) - only these two actions.
   return (
-    <div className='flex gap-2'>
-      <Button
-        type='button'
-        variant='outline'
-        onClick={() =>
-          onSave({ kind: 'keep_local', itemId: context.item.itemId })
-        }
-      >
-        {t('dashboard_import_strategyKeepLocal')}
-      </Button>
-      <Button
-        type='button'
-        variant='outline'
-        onClick={() =>
-          onSave({ kind: 'import_as_new', itemId: context.item.itemId })
-        }
-      >
-        {t('dashboard_import_importAsNewAction')}
-      </Button>
+    <div className='flex flex-col gap-4'>
+      {usernameAlreadySaved ? (
+        <p className='text-sm text-muted-foreground'>{t('dashboard_import_usernameAlreadySaved')}</p>
+      ) : null}
+      <div className='flex gap-2'>
+        <Button
+          type='button'
+          variant='outline'
+          onClick={() =>
+            onSave({ kind: 'keep_local', itemId: context.item.itemId })
+          }
+        >
+          {t('dashboard_import_strategyKeepLocal')}
+        </Button>
+        <Button
+          type='button'
+          variant='outline'
+          disabled={usernameAlreadySaved}
+          onClick={() =>
+            onSave({ kind: 'import_as_new', itemId: context.item.itemId })
+          }
+        >
+          {t('dashboard_import_importAsNewAction')}
+        </Button>
+      </div>
     </div>
   )
 }
@@ -450,6 +473,11 @@ function DrawerBody ({
   onSave: (decision: ImportReviewDecision) => void
 }) {
   const context = resolveReviewItemContext(item, session)
+  const incomingUsername = context.incomingContact?.username
+  const usernameAlreadySaved = incomingUsername !== undefined &&
+    [...session.localBaseline.contacts.values()].some(contact =>
+      normalizeUsername(contact.username) === normalizeUsername(incomingUsername)
+    )
 
   switch (item.kind) {
     case 'review_private_data':
@@ -461,9 +489,9 @@ function DrawerBody ({
     case 'external_stable_duplicate':
       return <StableDuplicateReview context={context} onSave={onSave} />
     case 'external_weak_duplicate':
-      return <WeakDuplicateReview context={context} onSave={onSave} />
+      return <WeakDuplicateReview context={context} usernameAlreadySaved={usernameAlreadySaved} onSave={onSave} />
     case 'external_identity_mismatch':
-      return <IdentityMismatchReview context={context} onSave={onSave} />
+      return <IdentityMismatchReview context={context} usernameAlreadySaved={usernameAlreadySaved} onSave={onSave} />
     case 'external_locally_deleted':
       return <LocallyDeletedReview context={context} onSave={onSave} />
     default:

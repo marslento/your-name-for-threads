@@ -97,10 +97,13 @@ describe.each(STORES)("the $store listing", ({ store, file, second, other, most,
     expect(existsSync(join(ROOT, "site", "privacy", "index.html"))).toBe(true);
   });
 
-  it("names no other address than the site, the repository, Threads and the store's own documentation", () => {
+  it("names only the site, repository, Threads, official documentation and its own published listing", () => {
     const allowed = [SITE, GITHUB_REPO_URL, "https://www.threads.com/", "https://developer.chrome.com/", "https://learn.microsoft.com/"];
+    const published = store === "Chrome"
+      ? "https://chromewebstore.google.com/detail/your-name-for-threads/jmpaegbcheebaflefpfappfbiimgknoa"
+      : "https://microsoftedge.microsoft.com/addons/detail/your-name-for-threads/ojnkchiogffjbniepbngfokiapfahmpb";
 
-    for (const address of urls(doc)) expect(allowed.some((prefix) => address.startsWith(prefix)), address).toBe(true);
+    for (const address of urls(doc)) expect(address === published || allowed.some((prefix) => address.startsWith(prefix)), address).toBe(true);
   });
 
   describe.each(LANGUAGES)("in $heading", ({ heading, locale: name, unofficial }) => {

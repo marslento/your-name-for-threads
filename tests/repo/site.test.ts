@@ -276,7 +276,8 @@ describe("the home page", () => {
   const bullets = (markdown: string) => markdown.split("## Privacy at a glance")[1].split("\n## ")[0].split("\n").filter((line) => line.startsWith("- ")).map((line) => line.slice(2).replace(/`/g, ""));
 
   it("gives the README's 'Privacy at a glance' as it stands, and no more claims than that", () => {
-    const items = [...between(html, "main").matchAll(/<li>([\s\S]*?)<\/li>/g)].map((match) => plain(match[1]));
+    const privacy = html.split('<h2 id="privacy-at-a-glance">')[1].split("<h2")[0];
+    const items = [...privacy.matchAll(/<li>([\s\S]*?)<\/li>/g)].map((match) => plain(match[1]));
 
     expect(items).toEqual(bullets(read("README.md")));
   });
@@ -365,11 +366,11 @@ describe("the Pages workflow", () => {
     expect(text()).not.toMatch(/^\s*(?:-\s*)?run:/m);
   });
 
-  it("uses only the three actions it has been reviewed for, each at a version, and uploads exactly site/", () => {
+  it("uses only the three actions it has been reviewed for, each at a verified commit, and uploads exactly site/", () => {
     const actions = [...text().matchAll(/^\s*-?\s*uses:\s*(\S+)/gm)].map((match) => match[1]);
 
-    expect(actions).toEqual(["actions/checkout@v4", "actions/upload-pages-artifact@v3", "actions/deploy-pages@v4"]);
-    expect(text()).toMatch(/upload-pages-artifact@v3\n\s+with:\n\s+path:\s*site\s*$/m);
+    expect(actions).toEqual(["actions/checkout@11d5960a326750d5838078e36cf38b85af677262", "actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa", "actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e"]);
+    expect(text()).toMatch(/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa\n\s+with:\n\s+path:\s*site\s*$/m);
   });
 
   it("deploys to the github-pages environment, one deployment at a time, and cannot run forever", () => {

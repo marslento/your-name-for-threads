@@ -17,6 +17,23 @@ function contact(overrides: Partial<ThreadContact>): ThreadContact {
 }
 
 describe("reconcileIdentityDerivedState", () => {
+  it.each([false, true])("omits an ambiguous username regardless of contact order (reversed: %s)", (reversed) => {
+    const contacts = [
+      contact({ id: "a", username: "alice", threadsUserId: "123" }),
+      contact({ id: "b", username: "alice", threadsUserId: "456" }),
+      contact({ id: "c", username: "alice" }),
+      contact({ id: "d", username: "bob" }),
+    ];
+    if (reversed) contacts.reverse();
+    const result = reconcileIdentityDerivedState({
+      contacts: new Map(contacts.map((value) => [value.id, value])),
+      existingConflicts: new Map(),
+      now: "2026-01-05T00:00:00.000Z",
+    });
+
+    expect(result.identityIndex).toEqual({ "threads:123": "a", "threads:456": "b", "username:bob": "d" });
+  });
+
   it("indexes a unique stable ID", () => {
     const a = contact({ id: "a", threadsUserId: "123", username: "alice" });
     const result = reconcileIdentityDerivedState({
