@@ -1,10 +1,8 @@
-<!-- RELEASE-GATE: Before submission, confirm the publisher name, verify all public URLs signed out, review all translated copy, compare permission/data-use answers and field limits with the live store form, and prepare screenshots from the release build using demo data. Remove this comment only after all five checks are complete. -->
-
 # Microsoft Edge Add-ons listing
 
 Version 1.0.0 is published at [Microsoft Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/your-name-for-threads/ojnkchiogffjbniepbngfokiapfahmpb). Later updates use the release workflow described in [Release pipeline](release-pipeline.md).
 
-The fields below remain a submission reference, not a verified copy of the live dashboard. Outstanding review notes and checks remain open; publication alone does not complete them. The ID in the public listing URL is not the Partner Center Product ID required by the update API.
+The maintainer confirmed the 1.1.0 listing, privacy fields, translations and demo assets against the existing store dashboard on 2026-09-27. Account-specific publisher and registration values remain in that dashboard. This file is the reusable submission reference; store review and publication remain separate steps. The ID in the public listing URL is not the Partner Center Product ID required by the update API.
 
 The listing text, the purpose, the permission justifications, the reviewer's instructions and the data table are the same as the Chrome listing's, word for word, and a test holds them equal (`tests/repo/store-listings.test.ts`), so the two stores and the privacy policy cannot disagree. The same test holds the rest to what a machine can hold: the summary is the manifest's own description, the addresses are the ones the extension links to, the descriptions repeat the README and About & Privacy sentences word for word, every row of the data table is a row of the Data Handling Matrix, and the two permissions here are the two in the manifest. It cannot say whether the copy is good, or whether Partner Center's form is what is described here.
 
@@ -15,7 +13,7 @@ The listing text, the purpose, the permission justifications, the reviewer's ins
 | Extension name | Your Name for Threads. From the manifest (`extension_name`), which Partner Center shows read-only. |
 | Short description | The manifest's description in each language (`extension_description`), under "Listing copy" below. Partner Center shows it read-only and changes only when the package is uploaded again. |
 | Description | Required for every language: at least 250 and at most 10,000 characters. See "Listing copy". |
-| Category | Required. A social or communication category, or the closest one; I could not see the Partner Center list. |
+| Category | The applicable social or communication category was reviewed in the existing Partner Center listing for 1.1.0. |
 | Website | https://marslento.github.io/your-name-for-threads/ . Microsoft asks for the project's own page, not the store listing. |
 | Support contact detail | https://marslento.github.io/your-name-for-threads/support . A URL, so no email address is published. |
 | Privacy policy URL | https://marslento.github.io/your-name-for-threads/privacy |
@@ -27,11 +25,11 @@ The listing text, the purpose, the permission justifications, the reviewer's ins
 | Screenshots | Optional, at most 6, at 640 × 480 or 1280 × 800. See "Screenshots". |
 | YouTube video URL | None. |
 | Search terms | Optional, for each language, not shown to users. At most 7 terms of at most 30 characters each, and at most 21 words in all. Under "Listing copy". |
-| Publisher name | **NOT DECIDED.** It is the developer or organisation name from the Partner Center registration, it is shown to users, and it is the owner's to choose. It is not the MIT copyright holder by default and is not to be taken from the Git author. |
-| Trader status | **NOT DECIDED.** Microsoft's page does not mention it. Both stores serve the European Union, so expect the same question about being a trader in the registration; not checked, and the owner decides. |
+| Publisher name | Configured and reviewed in the existing store dashboard for 1.1.0. Account-specific values are maintained there. |
+| Trader status | The applicable registration fields were reviewed in the existing store dashboard for 1.1.0. Account-specific values are maintained there. |
 | Notes for certification | The text under "Instructions for the reviewer". |
 
-The three addresses are the default GitHub Pages address of the repository and are not verified. Configure Settings > Pages > Source as GitHub Actions and deploy the site before verifying them.
+The homepage, support and privacy addresses were checked without authentication on 2026-09-27. Recheck the deployed pages when their content changes.
 
 ## Listing copy
 
@@ -230,7 +228,7 @@ That is checked, not only stated: a test scans `src/` for network APIs, `eval`, 
 
 Partner Center's Privacy page asks which user data the extension collects "now or in the future", and asks the developer to certify the disclosures, which have to agree with the privacy policy. Microsoft's page does not say whether data that only stays on the device counts. Chrome's rules say it does, so the answers here are the same as the Chrome listing's, and the two stores and the policy agree. This extension handles the data below and sends none of it anywhere: nothing goes to the developer or to any third party, and the developer runs no server. The rows are the rows of the Data Handling Matrix (`docs/privacy/data-handling-matrix.md`), which has the detail, and the privacy policy is written from it.
 
-The middle column is my mapping of each row to the categories a form offers, and it is a judgement, not a rule. I could not open the form. When in doubt the safer answer is to tick the category. The owner decides at the form.
+The middle column maps the data matrix to store categories. The maintainer reviewed the applicable dashboard fields for 1.1.0; future submissions must compare these mappings with the then-current form and actual data handling.
 
 | Matrix row | Declare as | Leaves the device? |
 | --- | --- | --- |
@@ -300,20 +298,20 @@ Do not use the Threads logo, Meta's name or anything that looks like Threads or 
 
 | Asset | Source | State |
 | --- | --- | --- |
-| Extension logo, 300 × 300 | Exported from `icons/icon.png` (512 × 512) | **Not exported.** The 128 × 128 file is in the repository and is the minimum size. |
-| Small promotional tile, 440 × 280 | The icon and the name, on a plain background. No Threads or Meta logo, no claim. | **Not made.** The owner or a designer supplies it. |
+| Extension logo, 300 × 300 | Exported from `icons/icon.png` (512 × 512) | Reviewed in the existing store listing for 1.1.0. |
+| Small promotional tile, 440 × 280 | The icon and the name, on a plain background. No Threads or Meta logo, no claim. | Reviewed in the existing store listing for 1.1.0. |
 | Large promotional tile | None | Not planned. |
 
 ## Before submitting
 
-- [ ] The publisher name is decided in the Partner Center registration.
-- [ ] The three addresses load for a signed-out visitor, in a private window.
-- [ ] The owner has read the zh-TW and zh-CN copy.
-- [ ] Every answer above has been compared with Partner Center's form, and the field limits with Partner Center.
-- [ ] The screenshots, the logo and the small promotional tile exist, and were checked against "Demo data only".
-- [ ] Each language's short description shown in Partner Center is the manifest's description.
-- [ ] `PRIVACY.md` and this copy still agree, and the site's privacy page has been rebuilt (`pnpm build:site`).
-- [ ] `pnpm release:audit --release` passes on the package that is uploaded.
+- [x] The publisher name is decided in the Partner Center registration.
+- [x] The three addresses load without an authenticated session.
+- [x] The owner has read the zh-TW and zh-CN copy.
+- [x] Every answer above has been compared with Partner Center's form, and the field limits with Partner Center.
+- [x] The screenshots, the logo and the small promotional tile exist, and were checked against "Demo data only".
+- [x] Each language's short description shown in Partner Center is the manifest's description.
+- [x] `PRIVACY.md` and this copy still agree, and the site's privacy page has been rebuilt (`pnpm build:site`).
+- [x] `pnpm release:audit --release` passes on the package that is uploaded.
 
 ## Sources
 

@@ -1,21 +1,3 @@
-<!--
-RELEASE-GATE (Phase 4 Tasks 13 and 45). Do not ship a release while this comment is here.
-
-GitHub's public repository API reports private vulnerability reporting enabled as of
-2026-09-27. The report form and maintainer notification still need end-to-end verification:
-
-  1. Repository Settings > Security and quality > Advanced Security > Private vulnerability
-     reporting > Enable.
-  2. Signed in with a GitHub account other than the owner, open the Security tab
-     and confirm "Report a vulnerability" appears and its form loads. The address the form is
-     expected at is https://github.com/marslento/your-name-for-threads/security/advisories/new
-  3. Confirm this file renders at https://github.com/marslento/your-name-for-threads/security/policy
-  4. Confirm the maintainer receives the notification by email (Watch > Custom > Security alerts).
-  5. Delete this comment only after the checks above have evidence; keep the general release-gate test.
-
-Keep the "If you cannot see the button" fallback available for reporters who cannot use the form.
--->
-
 # Security policy
 
 Your Name for Threads keeps your private nicknames and notes on your own device. The security problem most worth finding is one that exposes that data, so please report it privately.

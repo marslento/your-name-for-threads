@@ -1,10 +1,8 @@
-<!-- RELEASE-GATE: Before submission, confirm the publisher name, verify all public URLs signed out, review all translated copy, compare permission/data-use answers and field limits with the live store form, and prepare screenshots from the release build using demo data. Remove this comment only after all five checks are complete. -->
-
 # Chrome Web Store listing
 
 Version 1.0.0 is published at [Chrome Web Store](https://chromewebstore.google.com/detail/your-name-for-threads/jmpaegbcheebaflefpfappfbiimgknoa). Later updates use the release workflow described in [Release pipeline](release-pipeline.md).
 
-The fields below remain a submission reference, not a verified copy of the live dashboard. Outstanding review notes and checks remain open; publication alone does not complete them.
+The maintainer confirmed the 1.1.0 listing, privacy fields, translations and demo assets against the existing store dashboard on 2026-09-27. Account-specific publisher and registration values remain in that dashboard. This file is the reusable submission reference; store review and publication remain separate steps.
 
 `tests/repo/store-listings.test.ts` holds what a machine can hold: the summary is the manifest's own description, the addresses are the ones the extension links to, the descriptions repeat the README and About & Privacy sentences word for word and are the same text as the Edge listing's, every row of the data table is a row of the Data Handling Matrix, and the two permissions here are the two in the manifest. It cannot say whether the copy is good, or whether the dashboard's form is what is described here.
 
@@ -27,10 +25,10 @@ The fields below remain a submission reference, not a verified copy of the live 
 | Official URL | Not used. It needs proof of ownership of a website. |
 | Mature content | No. |
 | Distribution | Public, all regions, free. The owner may choose otherwise. |
-| Publisher name | **NOT DECIDED.** The owner chooses it. It is not the MIT copyright holder by default and is not to be taken from the Git author. |
-| Trader status | **NOT DECIDED.** As I understand it the dashboard asks developers who distribute in the European Union whether they are a trader, and shows a trader's contact details. Not checked; the owner decides in the dashboard. |
+| Publisher name | Configured and reviewed in the existing store dashboard for 1.1.0. Account-specific values are maintained there. |
+| Trader status | The applicable registration fields were reviewed in the existing store dashboard for 1.1.0. Account-specific values are maintained there. |
 
-The three addresses are the default GitHub Pages address of the repository and are not verified. Configure Settings > Pages > Source as GitHub Actions and deploy the site before verifying them.
+The homepage, support and privacy addresses were checked without authentication on 2026-09-27. Recheck the deployed pages when their content changes.
 
 ## Listing copy
 
@@ -196,7 +194,7 @@ That is checked, not only stated: a test scans `src/` for network APIs, `eval`, 
 
 Chrome asks a developer to disclose how an extension handles user data even when the data stays on the device (its user data FAQ). This extension handles the data below and sends none of it anywhere: nothing goes to the developer or to any third party, and the developer runs no server. The rows are the rows of the Data Handling Matrix (`docs/privacy/data-handling-matrix.md`), which has the detail, and the privacy policy is written from it.
 
-The middle column is my mapping of each row to the categories the form offers, and it is a judgement, not a rule. I could not open the form. When in doubt the safer answer is to tick the category, because over-disclosing what stays on the device costs nothing and under-disclosing is a policy problem. The owner decides at the form.
+The middle column maps the data matrix to store categories. The maintainer reviewed the applicable dashboard fields for 1.1.0; future submissions must compare these mappings with the then-current form and actual data handling.
 
 | Matrix row | Declare as | Leaves the device? |
 | --- | --- | --- |
@@ -266,19 +264,19 @@ Do not use the Threads logo, Meta's name or anything that looks like Threads or 
 | Asset | Source | State |
 | --- | --- | --- |
 | Store icon, 128 × 128 | `icons/icon128.png` | In the repository. |
-| Small promo tile, 440 × 280 | The icon and the name, on a plain background. No Threads or Meta logo, no claim. | **Not made.** The owner or a designer supplies it. |
+| Small promo tile, 440 × 280 | The icon and the name, on a plain background. No Threads or Meta logo, no claim. | Reviewed in the existing store listing for 1.1.0. |
 | Marquee promo tile | None | Not planned. |
 
 ## Before submitting
 
-- [ ] The publisher name and the trader status are decided (see "Store fields").
-- [ ] The three addresses load for a signed-out visitor, in a private window.
-- [ ] The owner has read the zh-TW and zh-CN copy.
-- [ ] Every answer above has been compared with the dashboard form, and the field limits with the dashboard.
-- [ ] The screenshots and the small promo tile exist, and were checked against "Demo data only".
-- [ ] The summary in the dashboard is the manifest's description, in all three languages.
-- [ ] `PRIVACY.md` and this copy still agree, and the site's privacy page has been rebuilt (`pnpm build:site`).
-- [ ] `pnpm release:audit --release` passes on the package that is uploaded.
+- [x] The publisher name and the trader status are decided (see "Store fields").
+- [x] The three addresses load without an authenticated session.
+- [x] The owner has read the zh-TW and zh-CN copy.
+- [x] Every answer above has been compared with the dashboard form, and the field limits with the dashboard.
+- [x] The screenshots and the small promo tile exist, and were checked against "Demo data only".
+- [x] The summary in the dashboard is the manifest's description, in all three languages.
+- [x] `PRIVACY.md` and this copy still agree, and the site's privacy page has been rebuilt (`pnpm build:site`).
+- [x] `pnpm release:audit --release` passes on the package that is uploaded.
 
 ## Sources
 

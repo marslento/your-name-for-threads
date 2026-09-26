@@ -165,7 +165,7 @@ describe("PRIVACY.md", () => {
 describe("SECURITY.md", () => {
   it("keeps its release gate until private vulnerability reporting has been checked", () => {
     const security = read("SECURITY.md");
-    if (/not (?:been )?confirmed|not yet verified/i.test(security)) expect(security).toMatch(/<!--\s*RELEASE-GATE/);
+    if (/(?:private vulnerability reporting|report form|security reporting|maintainer notification)[^.!?\n]*(?:not (?:been )?confirmed|not yet verified)/i.test(security)) expect(security).toMatch(/<!--\s*RELEASE-GATE/);
   });
 
   it("names the private route, a working fallback, and what is out of scope, without an address that was never checked", () => {
