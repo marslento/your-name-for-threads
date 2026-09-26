@@ -65,7 +65,7 @@ describe("what it is trusted with", () => {
   it("uses only the reviewed setup and candidate-artifact actions, each at a verified commit", () => {
     const actions = [...text().matchAll(/^\s*-?\s*uses:\s*(\S+)/gm)].map((match) => match[1]);
 
-    expect(actions).toEqual(["actions/checkout@11d5960a326750d5838078e36cf38b85af677262", "pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1", "actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020", "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02"]);
+    expect(actions).toEqual(["actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1", "pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413", "actions/setup-node@820762786026740c76f36085b0efc47a31fe5020", "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a", "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c"]);
   });
 
   it("uploads only the candidate directory after its audit, never a production release", () => {
@@ -75,6 +75,18 @@ describe("what it is trusted with", () => {
     expect(text()).not.toMatch(/--release\b|--tag\b|publish-(?:chrome|edge)|release create|secrets\.|environment:/);
   });
 
+  it("downloads the candidate after upload and verifies its checksum and original ZIP bytes", () => {
+    const script = text();
+    const download = script.indexOf("actions/download-artifact@");
+    const checksum = script.indexOf("(cd downloaded-candidate && sha256sum -c SHA256SUMS)");
+    const compare = script.indexOf('cmp "candidate/your-name-for-threads-${version}.zip" "downloaded-candidate/your-name-for-threads-${version}.zip"');
+
+    expect(script).toMatch(/uses: actions\/download-artifact@[a-f0-9]{40}\n\s+with:\n\s+name: candidate-\$\{\{ github.sha \}\}\n\s+path: downloaded-candidate/);
+    expect(download).toBeGreaterThan(script.indexOf("actions/upload-artifact@"));
+    expect(checksum).toBeGreaterThan(download);
+    expect(compare).toBeGreaterThan(checksum);
+    expect(script.slice(download)).toContain("set -euo pipefail");
+  });
   it("pins Node and caches the pnpm store, and cannot run forever", () => {
     expect(text()).toMatch(/node-version:\s*\d+/);
     expect(text()).toMatch(/cache:\s*pnpm/);
