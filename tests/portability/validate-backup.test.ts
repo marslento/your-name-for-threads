@@ -34,6 +34,24 @@ const tombstone = (contactId: string, overrides: Record<string, unknown> = {}) =
 });
 
 describe("validateBackupInvariants", () => {
+  it("rejects two distinct active contacts claiming the same username", () => {
+    const result = validateBackupInvariants(backup({ contacts: [
+      { ...contact("a"), username: "alice", threadsUserId: "123" },
+      { ...contact("b"), username: "alice", threadsUserId: "456" },
+    ] }));
+
+    expect(result).toMatchObject({ ok: false, issues: expect.arrayContaining([
+      { code: "duplicate_username", contactId: "b", username: "alice" },
+    ]) });
+  });
+
+  it("allows a deleted contact's username to be reused by an active contact", () => {
+    expect(validateBackupInvariants(backup({
+      contacts: [{ ...contact("a"), username: "alice" }],
+      tombstones: [{ ...tombstone("b"), username: "alice" }],
+    }))).toEqual({ ok: true });
+  });
+
   it("accepts a well-formed snapshot", () => {
     expect(validateBackupInvariants(backup({ contacts: [contact("a")] }))).toEqual({ ok: true });
   });

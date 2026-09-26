@@ -1,6 +1,6 @@
 import { countBindingsToDirectory, getBoundDirectoryId } from "../domain/accountBindings";
 import { clearAccountDirectory, type ClearAccountDirectoryResult } from "../domain/clearAccountDirectory";
-import type { DirectoryRecord } from "../domain/directory";
+import { DirectoryFullError, MAX_DIRECTORY_RECORDS, type DirectoryRecord } from "../domain/directory";
 import { resetDirectory, type ResetDirectoryResult } from "../domain/resetDirectory";
 import { normalizeThreadsUserId } from "../domain/validation";
 import { RecoveryBlockedError } from "../recovery/RecoveryBlockedError";
@@ -25,7 +25,11 @@ import type { ExtensionStorageV4 } from "./schema";
  */
 let queue: Promise<unknown> = Promise.resolve();
 
-function enqueue<T>(task: () => Promise<T>): Promise<T> {
+/**
+ * Exported for the recovery restore (`src/recovery/recoveryRestore.ts`), which must share this queue but lives outside
+ * this module: it needs the recovery reader and its validators, which the content scripts that load this module do not.
+ */
+export function enqueue<T>(task: () => Promise<T>): Promise<T> {
   const result = queue.then(task, task);
   queue = result.then(
     () => undefined,
@@ -149,6 +153,12 @@ export function mutateOwnerDirectory<T>(input: {
       const outcome = input.mutate(current);
       if (!outcome.write) {
         return outcome.result;
+      }
+
+      // Only growth is refused, so a Directory already past the limit can still be edited and emptied.
+      const size = (record: DirectoryRecord) => Object.keys(record.contacts).length + Object.keys(record.tombstones).length;
+      if (size(outcome.record) > MAX_DIRECTORY_RECORDS && size(outcome.record) > size(current)) {
+        throw new DirectoryFullError();
       }
 
       const finalDirectoryId = outcome.record.directoryId || input.createDirectoryId();

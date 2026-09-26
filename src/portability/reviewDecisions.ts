@@ -35,7 +35,7 @@ const VALID_DECISION_KINDS_BY_ITEM_KIND: Record<ImportPreflightItemKind, Readonl
   review_lifecycle: ["keep_active", "keep_tombstone", "choose_identity_snapshot"],
   external_new: [],
   external_stable_duplicate: ["keep_local", "use_incoming_private_data", "custom_private_data"],
-  external_weak_duplicate: ["confirm_weak_identity", "import_as_new"],
+  external_weak_duplicate: ["keep_local", "confirm_weak_identity", "import_as_new"],
   external_identity_mismatch: ["keep_local", "import_as_new"],
   external_locally_deleted: ["keep_deleted", "resurrect"],
 };

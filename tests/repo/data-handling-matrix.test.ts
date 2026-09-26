@@ -121,6 +121,7 @@ describe("data handling matrix: agrees with the code", () => {
     expect(filesMatching(/chrome\.storage\.local\.(set|remove|clear)\b/)).toEqual([
       "src/diagnostics/diagnosticCoordinator.ts",
       "src/onboarding/onboardingState.ts",
+      "src/recovery/recoveryRestore.ts",
       "src/release/productNotice.ts",
       "src/storage/BrowserStorageContactsRepository.ts",
       "src/storage/directoryAccess.ts",
@@ -251,6 +252,20 @@ describe("data handling matrix: agrees with the code", () => {
 
     if (callers.length === 0) expect(retention).toMatch(/not swept/);
     else expect(retention, `${callers.join(", ")} now sweeps it; rewrite the retention cell`).not.toMatch(/not swept/);
+  });
+
+  it("says what reads a Recovery dump back, as the code does: nothing, or since 1.1.0 only the single-account restore", () => {
+    const reader = filesMatching(/RECOVERY_FORMAT|your-name-for-threads-recovery/).includes("src/recovery/recoveryImport.ts");
+    const purpose = dataRow("Recovery dump").Purpose;
+
+    if (reader) {
+      expect(purpose).toContain("Restore from a recovery file");
+      expect(purpose).toContain("a single account's file only, for that same signed-in account");
+      expect(purpose).toContain("only into that account's empty Directory or back over the damaged Directory it came from");
+      expect(purpose).not.toMatch(/nothing in the extension reads it back/);
+    } else {
+      expect(purpose).toMatch(/nothing in the extension reads it back/);
+    }
   });
 
   it("calls the Recovery dump planned until its format tag appears in the code", () => {

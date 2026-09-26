@@ -353,6 +353,27 @@ describe("an account switch does one controlled full scan (checklist 52)", () =>
       page.stop();
     }
   });
+
+  it("takes the old owner's nicknames off the page, separators too, before the new owner's are drawn (Codex Security scan 0905)", async () => {
+    // Alice calls carol 阿明 and Bob has no name for her; Bob calls dave 小華 (the storage above).
+    const scan = vi.spyOn(scanner, "scanAuthorCandidatesInBatches");
+    const account = new SwitchableAccount(confirmed(ALICE, "alice"));
+    const page = open(1, account);
+    const asDrawn = page.feed.innerHTML;
+    try {
+      await until(() => page.labels() === 1);
+
+      account.set(confirmed(BOB, "bob"));
+      await until(() => documentScans(scan) === 2);
+      expect(page.feed.innerHTML, "carol's post, as Threads drew it").toBe(asDrawn);
+
+      page.feed.insertAdjacentHTML("beforeend", post("dave"));
+      await until(() => page.labels() === 1);
+      expect(document.querySelector("[data-tpd-nickname]")?.textContent).toBe("[小華]");
+    } finally {
+      page.stop();
+    }
+  });
 });
 
 describe("rendered occurrences are not kept (checklist 53)", () => {

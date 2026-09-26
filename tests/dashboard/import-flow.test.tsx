@@ -7,7 +7,9 @@ import type { AccountResolutionState } from "../../src/account/accountTypes";
 import type { CurrentAccountResolver } from "../../src/account/CurrentAccountResolver";
 import { reportDiagnostic } from "../../src/diagnostics/reportDiagnostic";
 import { t } from "../../src/i18n/t";
-import type { DirectoryRecord } from "../../src/domain/directory";
+import { DirectoryFullError, MAX_DIRECTORY_RECORDS, type DirectoryRecord } from "../../src/domain/directory";
+import { BrowserDirectoryRepository } from "../../src/storage/BrowserDirectoryRepository";
+import * as backupExport from "../../src/dashboard/backup/runBackupExport";
 import type { ExtensionStorageV4 } from "../../src/storage/schema";
 
 // Diagnostics are exercised in tests/diagnostics; here they are only observed.
@@ -241,6 +243,19 @@ afterEach(() => {
 });
 
 describe("Backup & Import flow", () => {
+  it("keeps a limited-export warning visible before a restore can replace local data", async () => {
+    const warning = "Full data downloaded; this file cannot currently be restored.";
+    vi.spyOn(backupExport, "runBackupExport").mockResolvedValueOnce({ ok: true, restoreWarning: warning });
+    const storage = installStorage(pristineDirectory("local-dir"));
+    window.location.hash = "#/backup-sync";
+    await renderApp(<App accountResolver={resolvedOwner()} />);
+    await chooseBackupFile(backupFile(validBackup({ directoryId: "incoming-dir" })));
+    fireEvent.click(await screen.findByRole("button", { name: t("dashboard_import_exportFirstAction") }));
+    expect(await screen.findByText(warning)).toBeTruthy();
+    expect(screen.queryByRole("heading", { name: t("dashboard_import_resultTitle") })).toBeNull();
+    expect(storage.snapshot().directoryId).toBe("local-dir");
+  });
+
   it("shows the generic invalid-backup message for malformed JSON without navigating away", async () => {
     installStorage(pristineDirectory());
     window.location.hash = "#/backup-sync";
@@ -373,8 +388,8 @@ describe("Backup & Import flow", () => {
     expect(await screen.findByRole("heading", { name: t("dashboard_import_homeTitle") })).toBeTruthy();
   });
 
-  it("identity mismatch review shows no merge editor, only Keep Local / Import as New", async () => {
-    installStorage({
+  it.each(["999", undefined])("duplicate username review (%s) prevents Import as New and allows Keep Local", async (incomingThreadsUserId) => {
+    const storage = installStorage({
       ...pristineDirectory("local-dir"),
       contacts: {
         "local-1": {
@@ -399,7 +414,7 @@ describe("Backup & Import flow", () => {
             {
               id: "incoming-1",
               username: "alice",
-              threadsUserId: "999",
+              threadsUserId: incomingThreadsUserId,
               nickname: "Incoming Alice",
               createdAt: "2026-01-01T00:00:00.000Z",
               updatedAt: "2026-01-01T00:00:00.000Z",
@@ -415,18 +430,58 @@ describe("Backup & Import flow", () => {
     await screen.findByRole("heading", { name: t("dashboard_import_reviewTitle") });
     fireEvent.click(screen.getByRole("button", { name: t("dashboard_import_reviewItemAction") }));
 
-    await screen.findByRole("button", { name: t("dashboard_import_importAsNewAction") });
+    const importAsNew = await screen.findByRole("button", { name: t("dashboard_import_importAsNewAction") });
+    expect((importAsNew as HTMLButtonElement).disabled).toBe(true);
+    expect(screen.getByText(t("dashboard_import_usernameAlreadySaved"))).toBeTruthy();
     expect(screen.queryByLabelText(t("profile_nicknameLabel"))).toBeNull();
     expect(screen.getByRole("button", { name: t("dashboard_import_strategyKeepLocal") })).toBeTruthy();
 
-    fireEvent.click(screen.getByRole("button", { name: t("dashboard_import_importAsNewAction") }));
+    const writesBeforeDecision = storage.writeCount();
+    fireEvent.click(importAsNew);
+    expect(storage.writeCount()).toBe(writesBeforeDecision);
+    expect(screen.getByRole("dialog")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: t("dashboard_import_strategyKeepLocal") }));
 
     await waitFor(() => expect((screen.getByRole("button", { name: t("dashboard_import_reviewContinueAction") }) as HTMLButtonElement).disabled).toBe(false));
     fireEvent.click(screen.getByRole("button", { name: t("dashboard_import_reviewContinueAction") }));
     fireEvent.click(await screen.findByRole("button", { name: t("dashboard_import_executeAction") }));
 
     await screen.findByRole("heading", { name: t("dashboard_import_resultTitle") });
-    expect(within(screen.getByText(t("dashboard_import_resultCreated")).parentElement!).getByText("1")).toBeTruthy();
+    const saved = storage.snapshot().contacts as Record<string, { username: string; threadsUserId: string }>;
+    expect(Object.keys(saved)).toEqual(["local-1"]);
+    expect(saved["local-1"]).toMatchObject({ username: "alice", threadsUserId: "123" });
+  });
+
+  it.each(["999", undefined])("merged-alias review (%s) still imports a new contact when the username is available", async (incomingThreadsUserId) => {
+    const stamp = "2026-01-01T00:00:00.000Z";
+    const storage = installStorage({
+      directory: { directoryId: "local-dir" },
+      contacts: {
+        canonical: { id: "canonical", username: "bob", threadsUserId: "123", nickname: "Bob", createdAt: stamp, updatedAt: stamp, identityUpdatedAt: stamp },
+      },
+      tombstones: {
+        merged: { contactId: "merged", username: "alice", threadsUserId: "123", createdAt: stamp, deletedAt: stamp, reason: "merged", mergedIntoContactId: "canonical" },
+      },
+    });
+    window.location.hash = "#/backup-sync";
+    await renderApp(<App accountResolver={resolvedOwner()} />);
+    await chooseBackupFile(backupFile(validBackup({
+      directoryId: "other-dir",
+      contacts: [{ id: "incoming", username: "alice", threadsUserId: incomingThreadsUserId, nickname: "Alice", createdAt: stamp, updatedAt: stamp, identityUpdatedAt: stamp }],
+    })));
+    fireEvent.click(await screen.findByRole("button", { name: t("dashboard_import_startReviewAction") }));
+    await screen.findByRole("heading", { name: t("dashboard_import_reviewTitle") });
+    fireEvent.click(screen.getByRole("button", { name: t("dashboard_import_reviewItemAction") }));
+    const importAsNew = await screen.findByRole("button", { name: t("dashboard_import_importAsNewAction") });
+    expect((importAsNew as HTMLButtonElement).disabled).toBe(false);
+    expect(screen.queryByText(t("dashboard_import_usernameAlreadySaved"))).toBeNull();
+    fireEvent.click(importAsNew);
+    await waitFor(() => expect((screen.getByRole("button", { name: t("dashboard_import_reviewContinueAction") }) as HTMLButtonElement).disabled).toBe(false));
+    fireEvent.click(screen.getByRole("button", { name: t("dashboard_import_reviewContinueAction") }));
+    fireEvent.click(await screen.findByRole("button", { name: t("dashboard_import_executeAction") }));
+    await screen.findByRole("heading", { name: t("dashboard_import_resultTitle") });
+    const saved = Object.values(storage.snapshot().contacts as Record<string, { username: string }>);
+    expect(saved.map((contact) => contact.username).sort()).toEqual(["alice", "bob"]);
   });
 
   it("locally deleted contact can be explicitly resurrected, reusing the local contactId", async () => {
@@ -533,6 +588,46 @@ describe("Backup & Import flow", () => {
     expect(allButton.getAttribute("aria-pressed")).toBe("false");
     const pendingButton = within(filterGroup).getByRole("button", { name: t("dashboard_import_filterPending") });
     expect(pendingButton.getAttribute("aria-pressed")).toBe("true");
+  });
+
+  it("starts each review filter on its first page and retains a decision made on the last page", async () => {
+    const contacts = Array.from({ length: 101 }, (_, index) => ({
+      id: `contact-${index}`,
+      username: `user_${index}`,
+      nickname: "Local name",
+      createdAt: "2026-01-01T00:00:00.000Z",
+      updatedAt: "2026-01-01T00:00:00.000Z",
+      identityUpdatedAt: "2026-01-01T00:00:00.000Z",
+    }));
+    installStorage({ contacts: Object.fromEntries(contacts.map((contact) => [contact.id, contact])) });
+    window.location.hash = "#/backup-sync";
+    await renderApp(<App accountResolver={resolvedOwner()} />);
+    await chooseBackupFile(backupFile(validBackup({
+      contacts: contacts.map((contact) => ({ ...contact, nickname: "Incoming name" })),
+    })));
+    fireEvent.click(await screen.findByRole("button", { name: t("dashboard_import_startReviewAction") }));
+    await screen.findByRole("heading", { name: t("dashboard_import_reviewTitle") });
+
+    fireEvent.click(screen.getByRole("button", { name: t("dashboard_directory_nextPage") }));
+    fireEvent.click(screen.getByRole("button", { name: t("dashboard_directory_nextPage") }));
+    expect(screen.getByText("@user_100")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: t("dashboard_import_reviewItemAction") }));
+    fireEvent.change(await screen.findByLabelText(t("profile_nicknameLabel")), { target: { value: "Reviewed last contact" } });
+    fireEvent.click(screen.getByRole("button", { name: t("dashboard_import_saveDecisionAction") }));
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    expect(screen.getByText(t("dashboard_directory_pageIndicator", ["2", "2"]))).toBeTruthy();
+    expect((screen.getByRole("button", { name: t("dashboard_import_reviewContinueAction") }) as HTMLButtonElement).disabled).toBe(true);
+
+    fireEvent.click(screen.getByRole("button", { name: t("dashboard_import_filterAll") }));
+    expect(screen.getByText(t("dashboard_directory_pageIndicator", ["1", "3"]))).toBeTruthy();
+    expect(screen.getByText("@user_0")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: t("dashboard_import_filterDone") }));
+    expect(screen.getAllByRole("row")).toHaveLength(2);
+    expect(screen.getByText("@user_100")).toBeTruthy();
+    expect(screen.getByRole("button", { name: t("profile_editNickname") })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: t("dashboard_import_filterPending") }));
+    expect(screen.getByText(t("dashboard_directory_pageIndicator", ["1", "2"]))).toBeTruthy();
+    expect(screen.queryByText("@user_100")).toBeNull();
   });
 
   it("keeping a locally deleted contact deleted shows its own Keep Deleted count, not generic Skipped", async () => {
@@ -1355,6 +1450,18 @@ describe("Import cancellation and navigation guard (Phase 3.6 §28-§31)", () =>
     fireEvent.click(screen.getByRole("button", { name: t("dashboard_import_applyAction") }));
 
     await screen.findByRole("heading", { name: t("dashboard_import_resultTitle") });
+    expect(reportDiagnostic).not.toHaveBeenCalled();
+  });
+
+  it("says the Directory would be too big, not to try again later, and records no fault (Codex Security scan 0905)", async () => {
+    await startImport();
+    vi.spyOn(BrowserDirectoryRepository.prototype, "commitOwnerDirectory").mockRejectedValue(new DirectoryFullError());
+
+    fireEvent.click(screen.getByRole("button", { name: t("dashboard_import_applyAction") }));
+
+    expect(await screen.findByText(t("dashboard_import_directoryFullTitle"))).toBeTruthy();
+    expect(screen.getByText(t("dashboard_import_directoryFullDescription", MAX_DIRECTORY_RECORDS.toLocaleString()))).toBeTruthy();
+    expect(screen.queryByText(t("dashboard_import_commitFailedDescription"))).toBeNull();
     expect(reportDiagnostic).not.toHaveBeenCalled();
   });
 });

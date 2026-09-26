@@ -15,6 +15,10 @@ describe("damaged identity metadata fails closed for its own Directory", () => {
   const good = contact("c1", "carol", "300");
   const conflict = { id: "k1", threadsUserId: "300", contactIds: ["c1"], detectedAt: AT };
   const cases: Array<[string, Record<string, unknown>]> = [
+    ["duplicate active usernames with a last-wins index", {
+      contacts: { c1: good, c3: contact("c3", "carol", "301") },
+      identityIndex: { "username:carol": "c3", "threads:300": "c1", "threads:301": "c3" },
+    }],
     ["numeric identity points at a different person", { identityIndex: { "threads:400": "c1" } }],
     ["username points at a different person", { identityIndex: { "username:dave": "c1" } }],
     ["index points at a missing contact", { identityIndex: { "threads:300": "missing" } }],
@@ -37,6 +41,7 @@ describe("damaged identity metadata fails closed for its own Directory", () => {
 
     expect(validateStorageHealth(raw)).toEqual({ kind: "directory_error", directoryId: ALICE_DIR, code: "DIRECTORY_INVALID" });
     await expect(repository.getByIdentity(ALICE, { username: "dave", threadsUserId: "400" })).rejects.toThrow();
+    await expect(repository.upsertNickname(ALICE, { identity: { username: "carol" }, nickname: "Changed", now: AT })).rejects.toThrow();
     expect(area.snapshot()).toEqual(raw);
     await repository.upsertNickname(BOB, { identity: { username: "erin", threadsUserId: "500" }, nickname: "Demo", now: AT });
     expect((area.snapshot().directories as Record<string, unknown>)[ALICE_DIR]).toEqual(damaged);

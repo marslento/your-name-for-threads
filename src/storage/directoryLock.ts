@@ -50,6 +50,14 @@ export function installDirectoryLockArbiter(): void {
   });
 }
 
+/** The lock could not be taken, and the caller asked never to run without it. `fn` did not run. */
+export class DirectoryLockUnavailableError extends Error {
+  constructor() {
+    super("The Directory lock is unavailable");
+    this.name = "DirectoryLockUnavailableError";
+  }
+}
+
 /**
  * Runs `fn` while holding the exclusive cross-context Directory lock -
  * acquired from background regardless of which context calls this (content
@@ -58,17 +66,24 @@ export function installDirectoryLockArbiter(): void {
  * that only stubs `chrome.storage`, for instance) rather than throwing -
  * `directoryAccess.ts`'s own in-process `enqueue` still applies in that
  * case, same as before this lock existed.
+ *
+ * `required: true` has no fallback (recovery restore, spec T4): when the lock cannot be connected, or its port closes
+ * before it is granted, this throws `DirectoryLockUnavailableError` and `fn` never runs.
  */
-export async function withDirectoryLock<T>(fn: () => Promise<T>): Promise<T> {
-  if (typeof chrome === "undefined" || typeof chrome.runtime?.connect !== "function") {
+export async function withDirectoryLock<T>(fn: () => Promise<T>, options: { required?: boolean } = {}): Promise<T> {
+  const unlocked = () => {
+    if (options.required) throw new DirectoryLockUnavailableError();
     return fn();
+  };
+  if (typeof chrome === "undefined" || typeof chrome.runtime?.connect !== "function") {
+    return unlocked();
   }
 
   let port: chrome.runtime.Port;
   try {
     port = chrome.runtime.connect({ name: DIRECTORY_LOCK_PORT_NAME });
   } catch {
-    return fn();
+    return unlocked();
   }
 
   try {
@@ -79,7 +94,8 @@ export async function withDirectoryLock<T>(fn: () => Promise<T>): Promise<T> {
           resolve();
         }
       };
-      const onDisconnect = () => reject(new Error("Directory lock port disconnected before being granted."));
+      const onDisconnect = () =>
+        reject(options.required ? new DirectoryLockUnavailableError() : new Error("Directory lock port disconnected before being granted."));
       port.onMessage.addListener(onMessage);
       port.onDisconnect.addListener(onDisconnect);
     });

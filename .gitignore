@@ -12,6 +12,10 @@ coverage
 /.superpowers/
 /skills-lock.json
 /_private/
+/.codex/
+/docs/superpowers/
+your-name-for-threads-recovery-*.json
+your-name-for-threads-backup-*.json
 
 # Playwright
 /test-results/
@@ -19,3 +23,4 @@ coverage
 /blob-report/
 /playwright/.cache/
 /playwright/.auth/
+/results

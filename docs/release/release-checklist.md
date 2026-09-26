@@ -63,6 +63,7 @@ These requirements apply to the first manual submission and later updates.
 ### R10. Recovery
 
 - [ ] Exercise a damaged Directory in each browser: only its account is blocked, a healthy account remains usable, no automatic repair occurs, raw export works and the backup importer refuses it, and clearing affects only the damaged account.
+- [ ] Exercise Restore from a recovery file in each browser (manual acceptance R6 to R10) and record the evidence for each: A3, restore after clearing and then a normal backup round-trip; A4, restore straight over the damaged Directory with no empty Directory in between; A5, refusal of a normal non-empty target, one with only deleted records and one with only pending conflicts, with nothing changed and no clear offered; A12, an account change during the file read and before confirming, with no late preview or restore; A14, a write whose result cannot be confirmed, where Check Again finds it instead of writing twice. A14 needs a controlled failure; if a browser cannot produce one, record that and cite `tests/recovery/recovery-restore.test.ts` instead of marking it passed.
 
 ### R11. Accessibility
 
@@ -109,6 +110,8 @@ This stage is for later automated updates, after initial store setup. Follow `do
 - [ ] The approver reviews artifact evidence and authorizes those same bytes. Chrome and Edge upload the same artifact without rebuilding; the GitHub release attaches it after both store jobs succeed.
 
 ## After publication
+
+The README and site include the 1.0.0 store links. For each release, verify the public listings, deployed site and store-installed build before closing the combined checks below. Record results against that release's version and artifact.
 
 - [ ] Once each store approves, verify its public listing signed out. Add the real links to the site's home page and README and complete the site's publication follow-up.
 - [ ] Record submission and publication outcomes, including partial failure. For an automated update, record the workflow run and identical ZIP attached to the GitHub release. Follow pipeline recovery instructions; do not rebuild a failed upload under the same version.

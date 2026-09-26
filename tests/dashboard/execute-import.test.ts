@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it } from "vitest";
 
 import type { ThreadContact } from "../../src/domain/contact";
-import type { DirectoryRecord } from "../../src/domain/directory";
+import { DirectoryFullError, type DirectoryRecord } from "../../src/domain/directory";
 import { executeImport } from "../../src/dashboard/backup/executeImport";
 import { analyzeSelfMerge } from "../../src/portability/analyzeImport";
 import type { BackupSnapshotV2 } from "../../src/portability/backupTypes";
@@ -70,12 +70,42 @@ function backup(contacts: ThreadContact[]): BackupSnapshotV2 {
 }
 
 describe("executeImport", () => {
+  it("refuses a self-merge username collision without writing either private record", async () => {
+    const localContact = contact({ id: "a", nickname: "Private local name", threadsUserId: "123" });
+    const initial = directoryWith({ a: localContact });
+    const repository = fakeRepository(initial);
+    const localSnapshot = { directoryId: DIR_ID, contacts: new Map([["a", localContact]]), tombstones: new Map() };
+    // Each snapshot is valid separately, but merging them would bind alice to two people.
+    const incoming = backup([contact({ id: "b", nickname: "Different person", threadsUserId: "456" })]);
+    const session: ImportSession = {
+      sessionId: "collision",
+      lineage: "same_lineage",
+      mode: "self_merge",
+      source: incoming,
+      localBaseline: localSnapshot,
+      preflight: analyzeSelfMerge(localSnapshot, incoming),
+      reviewDecisions: new Map(),
+      concurrencyBaseline: captureConcurrencyBaseline("self_merge", localSnapshot, incoming),
+    };
+
+    const outcome = await executeImport({
+      ownerThreadsUserId: OWNER, session, repository,
+      clock: () => "2026-09-14T00:00:00.000Z", createUuid: () => "generated-1",
+    });
+
+    expect(outcome).toMatchObject({ status: "invalid_candidate", issues: expect.arrayContaining([
+      { code: "duplicate_username", contactId: "b", username: "alice" },
+    ]) });
+    expect(repository.setCount()).toBe(0);
+    expect(repository.latest()).toEqual(initial);
+  });
+
   it("commits a self-merge with exactly one repository write", async () => {
     const localContact = contact({ id: "a", nickname: "Local", updatedAt: "2026-01-01T00:00:00.000Z" });
     const repository = fakeRepository(directoryWith({ a: localContact }));
 
     const localSnapshot = { directoryId: DIR_ID, contacts: new Map([["a", localContact]]), tombstones: new Map() };
-    const incomingBackup = backup([contact({ id: "b", nickname: "New" })]);
+    const incomingBackup = backup([contact({ id: "b", username: "bob", nickname: "New" })]);
     const preflight = analyzeSelfMerge(localSnapshot, incomingBackup);
     const baseline = captureConcurrencyBaseline("self_merge", localSnapshot, incomingBackup);
 
@@ -187,7 +217,10 @@ describe("executeImport", () => {
     expect(repository.setCount()).toBe(0);
   });
 
-  it("reports commit_failed instead of a false success when the repository write throws", async () => {
+  it.each([
+    ["commit_failed", new Error("storage full")],
+    ["directory_full", new DirectoryFullError()],
+  ] as const)("reports %s instead of a false success when the repository write throws", async (status, thrown) => {
     const localSnapshot = { directoryId: DIR_ID, contacts: new Map(), tombstones: new Map() };
     const incomingBackup = backup([contact({ id: "a" })]);
     const preflight = analyzeSelfMerge(localSnapshot, incomingBackup);
@@ -200,7 +233,7 @@ describe("executeImport", () => {
         return directoryWith();
       },
       async commitOwnerDirectory() {
-        throw new Error("storage full");
+        throw thrown;
       },
     };
 
@@ -223,7 +256,7 @@ describe("executeImport", () => {
       createUuid: () => "id",
     });
 
-    expect(outcome.status).toBe("commit_failed");
+    expect(outcome.status).toBe(status);
   });
 });
 

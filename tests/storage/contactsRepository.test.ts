@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
+import { validateStorageHealth } from "../../src/recovery/validateStorageHealth";
 import { BrowserStorageContactsRepository } from "../../src/storage/BrowserStorageContactsRepository";
 import type { ExtensionStorageV4 } from "../../src/storage/schema";
 import { __resetMigrationCoordinatorForTests } from "../../src/storage/migrations";
@@ -253,6 +254,30 @@ describe("BrowserStorageContactsRepository", () => {
         observedAt: "2026-01-02T00:00:00.000Z",
       }),
     ).resolves.toEqual({ type: "cached-only" });
+  });
+
+  it("does not replace an existing stable ID through username fallback", async () => {
+    const area = installStorage();
+    const repository = new BrowserStorageContactsRepository();
+    const contact = await repository.upsertNickname(OWNER, {
+      identity: { username: "carol", threadsUserId: "300" },
+      nickname: "Friend",
+      now: "2026-03-01T00:00:00.000Z",
+    });
+    const before = area.snapshot();
+    const writes = area.writeCount();
+
+    expect(
+      await repository.attachStableIdentity(OWNER, {
+        username: "carol",
+        threadsUserId: "301",
+        observedAt: "2026-03-02T00:00:00.000Z",
+      }),
+    ).toEqual({ type: "identity-mismatch", contact });
+    // Before the guard this wrote ID 301 over 300 and left the old `threads:300` index behind, which the loader rejects.
+    expect(area.snapshot()).toEqual(before);
+    expect(area.writeCount()).toBe(writes);
+    expect(validateStorageHealth(area.snapshot())).toEqual({ kind: "healthy" });
   });
 
   it("persists a pending conflict without changing either contact or any identity index", async () => {

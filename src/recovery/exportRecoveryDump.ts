@@ -7,8 +7,9 @@ import type { RecoveryCode } from "./recoveryTypes";
  * A Recovery dump is not a Backup (Phase 4 Task 20, design summary section 19). It is the raw stored data,
  * kept exactly as it is so a person or a developer can look at it and so nothing is lost before damaged
  * data is cleared. Its top-level `format` is different from a Backup's, and the Backup importer rejects
- * it on that alone (`parseBackupText`), so a dump can never be mistaken for one, restored from, or merged.
- * There is no importer for it and, in v1.0, no repair: nothing in the extension reads this format back.
+ * it on that alone (`parseBackupText`), so a dump can never be mistaken for one or merged into data.
+ * Since 1.1.0 exactly one reader exists, `recoveryImport.ts`: a single-account dump that passes every check can be
+ * restored into that account's empty Directory, or back over the damaged one it came from. Nothing repairs it in place.
  */
 export const RECOVERY_FORMAT = "your-name-for-threads-recovery" as const;
 export const CURRENT_RECOVERY_VERSION = 1 as const;

@@ -5,8 +5,16 @@ const graphemeSegmenter = new Intl.Segmenter(undefined, {
   granularity: "grapheme",
 });
 
-export function countVisibleCharacters(value: string): number {
-  return [...graphemeSegmenter.segment(value)].length;
+/**
+ * Stops once the count passes `stopAfter`, so checking a limit costs the limit and not the input: a field in an
+ * imported backup can be megabytes long, and spreading every segment into an array cost about 57 MB per million
+ * characters (Codex Security scan 0905, finding 2).
+ */
+export function countVisibleCharacters(value: string, stopAfter = Infinity): number {
+  const segments = graphemeSegmenter.segment(value)[Symbol.iterator]();
+  let count = 0;
+  while (count <= stopAfter && !segments.next().done) count += 1;
+  return count;
 }
 
 export function normalizeNickname(value: string): string {
@@ -16,7 +24,7 @@ export function normalizeNickname(value: string): string {
     throw new Error("Nickname is required");
   }
 
-  if (countVisibleCharacters(nickname) > MAX_NICKNAME_LENGTH) {
+  if (countVisibleCharacters(nickname, MAX_NICKNAME_LENGTH) > MAX_NICKNAME_LENGTH) {
     throw new Error(`Nickname must be ${MAX_NICKNAME_LENGTH} visible characters or fewer`);
   }
 
@@ -26,7 +34,7 @@ export function normalizeNickname(value: string): string {
 export function normalizeNote(value: string): string {
   const note = value.trim();
 
-  if (countVisibleCharacters(note) > MAX_NOTE_LENGTH) {
+  if (countVisibleCharacters(note, MAX_NOTE_LENGTH) > MAX_NOTE_LENGTH) {
     throw new Error(`Note must be ${MAX_NOTE_LENGTH} visible characters or fewer`);
   }
 

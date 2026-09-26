@@ -97,6 +97,9 @@
   "profile_saveError": {
     "message": "Couldn't save. Please try again."
   },
+  "profile_directoryFull": {
+    "message": "Your Directory is full ($1 contacts, deleted ones included), so this nickname wasn't saved."
+  },
   "profile_deleteError": {
     "message": "Couldn't delete. Please try again."
   },
@@ -328,6 +331,9 @@
   "dashboard_import_exportError": {
     "message": "Export failed. Please try again."
   },
+  "dashboard_import_exportRestoreLimited": {
+    "message": "Your complete data has been downloaded, but this file exceeds the current restore limits: $1 records including deleted contacts, and $2 MiB. It cannot currently be imported. Do not rely on this file alone before clearing or replacing your saved data."
+  },
   "dashboard_import_importCardTitle": {
     "message": "Import Backup"
   },
@@ -460,6 +466,9 @@
   "dashboard_import_importAsNewAction": {
     "message": "Import as New Contact"
   },
+  "dashboard_import_usernameAlreadySaved": {
+    "message": "This username is already saved in your Directory, so it cannot be imported as a new contact. Keep your existing contact to skip this item."
+  },
   "dashboard_import_keepDeletedAction": {
     "message": "Keep Deleted"
   },
@@ -534,6 +543,12 @@
   },
   "dashboard_import_commitFailedDescription": {
     "message": "Please try again later."
+  },
+  "dashboard_import_directoryFullTitle": {
+    "message": "Your Directory would be too big"
+  },
+  "dashboard_import_directoryFullDescription": {
+    "message": "A Directory holds at most $1 contacts, deleted ones included. Nothing was imported."
   },
   "dashboard_import_cancelledTitle": {
     "message": "Import cancelled"
@@ -776,7 +791,7 @@
     "message": "Remember to back up"
   },
   "dashboard_about_backupReminder": {
-    "message": "Export a backup regularly, so you do not lose your data if the browser's data is cleared."
+    "message": "Export a backup regularly, and check any warning before relying on it for restoration."
   },
   "dashboard_about_sharedHeading": {
     "message": "On a shared computer"
@@ -818,24 +833,192 @@
     "message": "Recovery data may contain private nicknames, notes and internal identifiers, and because all of the stored data is affected it includes every account's data. Do not post it publicly, for example in a GitHub issue."
   },
   "recovery_exportSuccess": {
-    "message": "Recovery data saved."
+    "message": "Recovery data exported. Check that the file was downloaded; it can be restored only if it passes all checks."
   },
   "recovery_exportError": {
     "message": "Could not export recovery data. Please try again."
   },
   "recovery_noRepair": {
-    "message": "There is no automatic repair, and the extension cannot import a recovery file. The file is for you, or a developer, to read."
+    "message": "There is no automatic repair: nothing changes this account's data until you choose an action below and confirm it."
   },
   "recovery_clearDescription": {
-    "message": "Clearing deletes this account's damaged data for good. Other accounts and the settings are not affected. Export recovery data first if you want to keep a copy."
+    "message": "Clearing deletes this account's damaged data for good. Other accounts and the settings are not affected. Clearing is not a step of restoring: a recovery file can be restored without clearing first. To keep a copy, export recovery data first; a downloaded file can be restored only if it passes all checks."
   },
   "recovery_clearConfirmTitle": {
     "message": "Clear this account's data?"
   },
   "recovery_clearConfirmDescription": {
-    "message": "This deletes this account's damaged private directory. It cannot be undone. Export recovery data first if you want to keep a copy."
+    "message": "This deletes this account's damaged private directory. It cannot be undone. To keep a copy, export recovery data first; a downloaded file can be restored only if it passes all checks."
   },
   "recovery_globalNoClear": {
     "message": "Clearing is not offered because the data of every account is affected. Export recovery data and report the problem instead."
+  },
+  "dashboard_import_invalidRecoveryFile": {
+    "message": "This is a recovery file, not a backup. Use Restore from a recovery file below."
+  },
+  "recovery_restore_title": {
+    "message": "Restore from a recovery file"
+  },
+  "recovery_restore_description": {
+    "message": "Choose a recovery file this extension saved for this account. It is checked first, and nothing changes until you confirm. It can go only into this account's empty directory, or back over the damaged directory it came from."
+  },
+  "recovery_restore_chooseFile": {
+    "message": "Choose Recovery File"
+  },
+  "recovery_restore_reading": {
+    "message": "Checking the file..."
+  },
+  "recovery_restore_operationEmpty": {
+    "message": "This file can be restored into this account's empty directory."
+  },
+  "recovery_restore_operationDamaged": {
+    "message": "This file matches this account's damaged directory, which can be repaired from it."
+  },
+  "recovery_restore_previewKeeps": {
+    "message": "Keeps the contacts and deleted records, and rebuilds the lookup index and pending conflicts."
+  },
+  "recovery_restore_identityNote": {
+    "message": "Keeps the ID each contact currently stores. This restore does not verify Threads identities."
+  },
+  "recovery_restore_labelExportedAt": {
+    "message": "Exported"
+  },
+  "recovery_restore_labelContacts": {
+    "message": "Contacts"
+  },
+  "recovery_restore_labelTombstones": {
+    "message": "Deleted records"
+  },
+  "recovery_restore_labelRebuiltIndex": {
+    "message": "Lookup entries after rebuilding"
+  },
+  "recovery_restore_labelRebuiltConflicts": {
+    "message": "Pending conflicts after rebuilding"
+  },
+  "recovery_restore_labelOriginalIndex": {
+    "message": "Lookup entries in the file"
+  },
+  "recovery_restore_labelOriginalConflicts": {
+    "message": "Pending conflicts in the file"
+  },
+  "recovery_restore_unreadable": {
+    "message": "Unreadable, will be rebuilt"
+  },
+  "recovery_restore_mismatchSummary": {
+    "message": "Lookup entries that name a different Threads ID than the contact stores: $1"
+  },
+  "recovery_restore_mismatchItem": {
+    "message": "@$1: stored ID $2, lookup entry $3"
+  },
+  "recovery_restore_mismatchNoStoredId": {
+    "message": "none"
+  },
+  "recovery_restore_mismatchMore": {
+    "message": "Showing the first $1 of $2."
+  },
+  "recovery_restore_action": {
+    "message": "Restore"
+  },
+  "recovery_restore_confirmTitle": {
+    "message": "Restore from this recovery file?"
+  },
+  "recovery_restore_confirmDescription": {
+    "message": "The file's contacts and deleted records are saved to this account in one step, and the lookup index and pending conflicts are rebuilt. Keeps the ID each contact currently stores; this restore does not verify Threads identities."
+  },
+  "recovery_restore_retry": {
+    "message": "Check Again"
+  },
+  "recovery_restore_issueCount": {
+    "message": "Problems found: $1. The first ones:"
+  },
+  "recovery_restore_issue_invalidField": {
+    "message": "not a valid value"
+  },
+  "recovery_restore_issue_keyMismatch": {
+    "message": "stored under a different ID"
+  },
+  "recovery_restore_issue_duplicateUsername": {
+    "message": "the same username as another contact"
+  },
+  "recovery_restore_issue_invalidLineage": {
+    "message": "a deleted record that does not fit the contacts"
+  },
+  "recovery_restore_error_invalidJson": {
+    "message": "This file is not valid JSON. Nothing was changed."
+  },
+  "recovery_restore_error_unsupportedFormat": {
+    "message": "This is not a recovery file. A backup is imported with Import Backup on the Backup & Import page. Nothing was changed."
+  },
+  "recovery_restore_error_unsupportedVersion": {
+    "message": "This recovery file comes from a version this extension cannot read. Nothing was changed."
+  },
+  "recovery_restore_error_unsupportedScope": {
+    "message": "This recovery file holds every account's data. This version can restore only a single account's recovery file. Nothing was changed."
+  },
+  "recovery_restore_error_fileTooLarge": {
+    "message": "This file is larger than 10 MiB, more than a restore can read. Nothing was changed."
+  },
+  "recovery_restore_error_tooManyRecords": {
+    "message": "This file holds more than 20,000 contacts and deleted records together, more than a restore can handle. Nothing was changed."
+  },
+  "recovery_restore_error_invalidStructure": {
+    "message": "This recovery file is incomplete or not in the expected form, so none of it can be trusted. Nothing was changed."
+  },
+  "recovery_restore_error_invalidRecords": {
+    "message": "Some records in this file are not valid, so the whole file was refused. Nothing was changed, and no record was trimmed or skipped."
+  },
+  "recovery_restore_error_ownerMismatch": {
+    "message": "This recovery file belongs to another Threads account. It can be restored only while that account is signed in. Nothing was changed."
+  },
+  "recovery_restore_error_unsupportedStorage": {
+    "message": "Restoring is not available while the extension's saved data as a whole is damaged or not yet set up. Nothing was changed."
+  },
+  "recovery_restore_error_targetNotEmpty": {
+    "message": "This account already has data. This version does not merge or overwrite, and your current data is unchanged. Keep the recovery file."
+  },
+  "recovery_restore_error_sourceTargetMismatch": {
+    "message": "The file differs from the data kept for this account. Export this account's recovery data again, then check the new file."
+  },
+  "recovery_restore_error_directoryIdOccupied": {
+    "message": "This file's directory ID is already used by other data in this browser, so it was not restored. Nothing was changed."
+  },
+  "recovery_restore_error_concurrentChange": {
+    "message": "This account's data is not what was checked, so this restore stops here. Choose the file again to check what is stored now."
+  },
+  "recovery_restore_error_authorityRevoked": {
+    "message": "The signed-in account changed, so this restore does not go on here. To continue, sign in again and choose the file again."
+  },
+  "recovery_restore_error_lockUnavailable": {
+    "message": "The extension could not make sure that no other tab is changing this data at the same time. Nothing was restored. Try again."
+  },
+  "recovery_restore_error_storageReadFailed": {
+    "message": "The saved data could not be read. Nothing was restored. Try again."
+  },
+  "recovery_restore_error_storageWriteFailed": {
+    "message": "The restore could not be saved. Check again; do not clear your data first."
+  },
+  "recovery_restore_error_verificationFailed": {
+    "message": "The restore's result cannot be confirmed yet. Check again; do not clear your data first."
+  },
+  "recovery_restore_success": {
+    "message": "Directory restored. Contacts: $1, deleted records: $2. You can now export a normal backup."
+  },
+  "recovery_restore_alreadyRestored": {
+    "message": "This recovery file was already restored. Contacts: $1, deleted records: $2. You can now export a normal backup."
+  },
+  "recovery_restore_goToBackup": {
+    "message": "Go to Backup & Import"
+  },
+  "recovery_restore_dismiss": {
+    "message": "Dismiss"
+  },
+  "recovery_restore_globalUnsupported": {
+    "message": "Restoring from a recovery file is not available when every account's data is affected: this version restores only a single account's recovery file."
+  },
+  "recovery_restore_exportHint": {
+    "message": "A recovery file can be restored only if it passes all checks. A successful download does not guarantee that it can be restored."
+  },
+  "recovery_restore_committing": {
+    "message": "Restoring from the recovery file..."
   }
 }

@@ -2,7 +2,9 @@
 
 # Chrome Web Store listing
 
-First manual submission: version 1.0.0 (not yet published). Later updates use the release workflow described in [Release pipeline](release-pipeline.md).
+Version 1.0.0 is published at [Chrome Web Store](https://chromewebstore.google.com/detail/your-name-for-threads/jmpaegbcheebaflefpfappfbiimgknoa). Later updates use the release workflow described in [Release pipeline](release-pipeline.md).
+
+The fields below remain a submission reference, not a verified copy of the live dashboard. Outstanding review notes and checks remain open; publication alone does not complete them.
 
 `tests/repo/store-listings.test.ts` holds what a machine can hold: the summary is the manifest's own description, the addresses are the ones the extension links to, the descriptions repeat the README and About & Privacy sentences word for word and are the same text as the Edge listing's, every row of the data table is a row of the Data Handling Matrix, and the two permissions here are the two in the manifest. It cannot say whether the copy is good, or whether the dashboard's form is what is described here.
 
@@ -56,7 +58,7 @@ What you can do
 • Use several Threads accounts in the same browser. Each account keeps its own directory.
 • Switch nicknames off on profile pages, in the feed, in replies or in quoted posts, or turn the whole extension off, in Settings.
 • Export a JSON backup and import it again. Before anything is written you see a preview of the changes.
-• If your saved data is ever damaged, the extension pauses that account's private features and lets you save a recovery file first. Your other accounts are not affected.
+• If your saved data is ever damaged, the extension pauses that account's private features and lets you save a recovery file first. A single account's recovery file can then be restored, after checks and your confirmation, into that account's empty directory or back over the damaged one. Your other accounts are not affected.
 
 Privacy
 Nicknames and notes are stored in this browser and processed locally by the extension. They are not sent to the developer automatically.
@@ -98,7 +100,7 @@ Your Name for Threads 是你的私人 Threads 通訊錄。暱稱會顯示在個�
 • 同一個瀏覽器登入多個 Threads 帳號時，每個帳號各有自己的通訊錄。
 • 在「設定」中分別開關個人頁、動態貼文、回覆串與引用內容中的暱稱，或關閉整個擴充功能。
 • 匯出 JSON 備份，需要時再匯入。寫入任何資料之前，你會先看到變更預覽。
-• 若儲存的資料受損，擴充功能會暫停該帳號的私人功能，並讓你先儲存一份復原檔。其他帳號不受影響。
+• 若儲存的資料受損，擴充功能會暫停該帳號的私人功能，並讓你先儲存一份復原檔。單一帳號的復原檔通過檢查並經你確認後，可復原到該帳號的空通訊錄，或修復原本受損的通訊錄。其他帳號不受影響。
 
 隱私
 暱稱與備註儲存在目前的瀏覽器中，由擴充功能在本機處理，不會自動傳送給開發者。
@@ -140,7 +142,7 @@ Your Name for Threads 是你的私人 Threads 通讯录。昵称会显示在个�
 • 同一个浏览器登录多个 Threads 账号时，每个账号各有自己的通讯录。
 • 在“设置”中分别开关个人页、动态帖子、回复串与引用内容中的昵称，或关闭整个扩展程序。
 • 导出 JSON 备份，需要时再导入。写入任何数据之前，你会先看到变更预览。
-• 若保存的数据受损，扩展程序会暂停该账号的私人功能，并让你先保存一份恢复文件。其他账号不受影响。
+• 若保存的数据受损，扩展程序会暂停该账号的私人功能，并让你先保存一份恢复文件。单个账号的恢复文件通过检查并经你确认后，可恢复到该账号的空通讯录，或修复原本受损的通讯录。其他账号不受影响。
 
 隐私
 昵称与备注保存在当前的浏览器中，由扩展程序在本机处理，不会自动发送给开发者。

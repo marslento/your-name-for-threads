@@ -24,7 +24,7 @@ import type {
 import type { ContactStore } from "../../src/storage/ContactStore";
 import { BrowserStorageContactsRepository } from "../../src/storage/BrowserStorageContactsRepository";
 import type { ExtensionStorageV4 } from "../../src/storage/schema";
-import type { DirectoryRecord } from "../../src/domain/directory";
+import { DirectoryFullError, MAX_DIRECTORY_RECORDS, type DirectoryRecord } from "../../src/domain/directory";
 import { __resetMigrationCoordinatorForTests } from "../../src/storage/migrations";
 import { MountRegistry } from "../../src/content/runtime/MountRegistry";
 import { surfaceHealth } from "../../src/shared/surfaceHealth";
@@ -1042,6 +1042,26 @@ describe("ProfileSurfaceAdapter", () => {
       .toBe("dark");
     expect(passiveSuccess).not.toHaveBeenCalled();
     expect(passiveError).not.toHaveBeenCalled();
+  });
+
+  it("says the Directory is full, not to try again, when that is why a save was refused (Codex Security scan 0905)", async () => {
+    showProfile("alice");
+    const store = new MutableContactStore();
+    store.current = contact({ threadsUserId: "123" });
+    const repository = new RecordingRepository();
+    repository.upsertImplementation = async () => {
+      throw new DirectoryFullError();
+    };
+    const error = vi.spyOn(toast, "error").mockReturnValue("toast");
+    const { adapter } = createAdapter({ store, repository });
+    await reconcile(adapter);
+
+    fireEvent.click(profileUi().ui.getByRole("button", { name: t("profile_editNickname") }));
+    fireEvent.click(profilePortalUi().ui.getByRole("button", { name: t("profile_saveNickname") }));
+    await act(async () => {});
+
+    expect(profilePortalUi().ui.getByRole("dialog")).toBeTruthy();
+    expect(error).toHaveBeenLastCalledWith(t("profile_directoryFull", MAX_DIRECTORY_RECORDS.toLocaleString()));
   });
 
   it("cleanup invalidates pending work and removes only the owned Profile host", async () => {

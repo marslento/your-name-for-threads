@@ -1,8 +1,4 @@
-import type {
-  AccountEvidence,
-  CurrentAccountUsernameEvidence,
-  StrongViewerEvidence,
-} from "./accountTypes";
+import type { StrongViewerEvidence } from "./accountTypes";
 import { isValidThreadsUserId, normalizeThreadsUserId, normalizeUsername } from "../domain/validation";
 
 /**
@@ -64,22 +60,15 @@ function collectViewerDefines(node: unknown, into: unknown[]): void {
  *
  * The three outcomes are deliberately NOT collapsed into `evidence | null`
  * (Phase 3.5 review round 6, High #1): "the server says nobody is signed
- * in" and "the bootstrap isn't here" are opposite facts, and only the
- * second one may ever be answered by weaker evidence. Merging them let a
- * logged-out page's leftover nav anchor re-authorize the account that just
- * signed out.
+ * in" and "the bootstrap isn't here" are opposite facts. The first ends the
+ * resolver's retries at once (a logout); only the second is worth asking
+ * again. Neither confirms anyone.
  */
 export type StrongViewerEvidenceResult =
   | { readonly kind: "confirmed"; readonly evidence: StrongViewerEvidence }
-  /** Positive proof of no single confirmable viewer: `viewer: null`, a malformed viewer, or defines that disagree. Fails closed - no fallback may override it. */
+  /** Positive proof of no single confirmable viewer: `viewer: null`, a malformed viewer, or defines that disagree. Fails closed. */
   | { readonly kind: "explicitly-unresolved" }
-  /** Nothing that could name the viewer was in the document at all. Only this may fall back. */
-  | { readonly kind: "unavailable" };
-
-/** Same three outcomes after the DOM anchor fallback has had its turn. */
-export type ViewerEvidenceResult =
-  | { readonly kind: "confirmed"; readonly evidence: AccountEvidence }
-  | { readonly kind: "explicitly-unresolved" }
+  /** Nothing that could name the viewer was in the document at all. */
   | { readonly kind: "unavailable" };
 
 /**
@@ -95,8 +84,9 @@ export type ViewerEvidenceResult =
  *   since there is then no single answer this could safely confirm
  * - a blob that names the define but cannot be parsed -> explicitly-unresolved,
  *   since "unreadable" is not "absent"
- * - no such define anywhere in the document -> unavailable, the one
- *   outcome the DOM anchor fallback is allowed to answer.
+ * - no such define anywhere in the document -> unavailable. Nothing else in
+ *   the page stands in for it: the navigation's profile link did once, through
+ *   a username-to-ID cache the page can feed (removed, Codex Security scan 092502).
  */
 export function readStrongViewerEvidence(doc: Document): StrongViewerEvidenceResult {
   const viewers: unknown[] = [];
@@ -118,11 +108,11 @@ export function readStrongViewerEvidence(doc: Document): StrongViewerEvidenceRes
 
   const candidates = new Map<string, StrongViewerEvidence>();
   for (const viewer of viewers) {
-    if (!isRecord(viewer)) continue; // includes the logged-out `viewer: null`
+    if (!isRecord(viewer)) return { kind: "explicitly-unresolved" }; // includes the logged-out `viewer: null`
     const rawId = viewer[VIEWER_ID_FIELD];
     const rawUsername = viewer.username;
-    if (typeof rawId !== "string" || !isValidThreadsUserId(rawId)) continue;
-    if (typeof rawUsername !== "string") continue;
+    if (typeof rawId !== "string" || !isValidThreadsUserId(rawId)) return { kind: "explicitly-unresolved" };
+    if (typeof rawUsername !== "string") return { kind: "explicitly-unresolved" };
 
     try {
       const evidence: StrongViewerEvidence = {
@@ -132,7 +122,8 @@ export function readStrongViewerEvidence(doc: Document): StrongViewerEvidenceRes
       };
       candidates.set(evidence.threadsUserId, evidence);
     } catch {
-      // A username/id that fails normalization is not evidence.
+      // Invalid evidence cannot be overridden by another, valid viewer.
+      return { kind: "explicitly-unresolved" };
     }
   }
 
@@ -141,49 +132,4 @@ export function readStrongViewerEvidence(doc: Document): StrongViewerEvidenceRes
   // about who the viewer is has to fail closed.
   if (candidates.size === 1 && !unreadable) return { kind: "confirmed", evidence: [...candidates.values()][0] };
   return { kind: "explicitly-unresolved" };
-}
-
-/**
- * DOM fallback anchor (Phase 3.5 Task 12), used only when the bootstrap
- * define is unavailable. The primary navigation's own profile link is the
- * one place in the document that points at the CURRENT account rather than
- * at whoever is being viewed - on a live session's `/@zuck` page, the nav
- * held only links to the signed-in user's profile while the surrounding
- * page carried 21 links to other people's.
- *
- * Deliberately username-only: this anchor carries no numeric ID, so it can
- * never confirm an owner by itself - the caller must resolve it against an
- * unexpired `identityCache` entry first (Task 12). Refuses whenever the nav
- * names more than one distinct account, since "which of these is the
- * viewer" is exactly the question this anchor exists to answer.
- */
-export function readCurrentAccountAnchor(doc: Document): CurrentAccountUsernameEvidence | null {
-  const usernames = new Set<string>();
-  for (const link of doc.querySelectorAll('nav a[href^="/@"], [role="navigation"] a[href^="/@"]')) {
-    const match = /^\/@([^/?#]+)/.exec(link.getAttribute("href") ?? "");
-    if (!match) continue;
-    try {
-      usernames.add(normalizeUsername(match[1]));
-    } catch {
-      // Not a usable anchor.
-    }
-  }
-
-  if (usernames.size !== 1) return null;
-  return { source: "current-account-username", username: [...usernames][0] };
-}
-
-/**
- * Strong evidence first; the DOM anchor gets a turn ONLY when the bootstrap
- * had nothing at all to say (Phase 3.5 review round 6, High #1). An
- * explicit "no viewer" is a stronger fact than any username the page still
- * happens to render, so it is returned untouched - a nav bar left over from
- * the account that just signed out must never re-confirm that account.
- */
-export function readViewerEvidence(doc: Document): ViewerEvidenceResult {
-  const strong = readStrongViewerEvidence(doc);
-  if (strong.kind !== "unavailable") return strong;
-
-  const anchor = readCurrentAccountAnchor(doc);
-  return anchor === null ? { kind: "unavailable" } : { kind: "confirmed", evidence: anchor };
 }

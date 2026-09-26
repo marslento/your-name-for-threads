@@ -29,21 +29,16 @@ export function startThreadsPrivateDirectory(
   const clock = () => new Date().toISOString();
   const repository = new BrowserStorageContactsRepository((owner) => writeAuthority.capture(owner));
   // Phase 3.5 Tasks 11-13/16: real Threads viewer evidence drives account
-  // resolution in production. A DOM-anchor username only ever confirms an
-  // owner through an unexpired identityCache entry - `getCachedIdentity`
-  // returns null for an expired one, which keeps this unresolved.
+  // resolution in production - the bootstrap's viewer and nothing else. The
+  // identity cache the page feeds is for display only (Codex Security scan 092502).
   const accountResolver: CurrentAccountResolver =
-    injectedAccountResolver ??
-    new ThreadsAccountResolver(targetDocument, {
-      resolveCachedUsername: async (username, now) =>
-        (await repository.getCachedIdentity(username, now))?.threadsUserId ?? null,
-      clock,
-    });
+    injectedAccountResolver ?? new ThreadsAccountResolver(targetDocument);
   const ownedAccountResolver =
     accountResolver instanceof ThreadsAccountResolver ? accountResolver : null;
   // Phase 4 Task 18: an account whose data needs recovery reads as unresolved from here on, so it gets
   // exactly what an unconfirmed account gets - no private UI, no loaded contacts, no writes - and the
-  // runtime, the write authority and the identity coordinator each obey the gate without knowing why.
+  // runtime and the write authority obey the gate without knowing why. Identity observations only
+  // update the public cache and display; they do not write to a private Directory.
   const gatedResolver = new RecoveryAwareAccountResolver(accountResolver);
   const writeAuthority = new AccountWriteAuthority(gatedResolver);
   const getOwnerThreadsUserId = () => ownerThreadsUserIdFromState(gatedResolver.getState());
@@ -86,7 +81,6 @@ export function startThreadsPrivateDirectory(
       profile.invalidateIdentity();
       runtime.identityDiscovered();
     },
-    getOwnerThreadsUserId,
   );
   const bridge = new NetworkIdentityBridge(
     targetWindow,
@@ -217,15 +211,11 @@ export function startThreadsPrivateDirectory(
       })
       .catch(() => {
         if (!active) return;
-        // Fallback must be consistent across every enabled-gated piece -
-        // Profile, the runtime, and the MAIN-world observer all fall back
-        // to the same enabled state rather than three different ones.
-        profile.setEnabled(true);
-        runtime.setEnabled(true);
-        notifyMainWorldEnabled(true);
-        runtime.identityDiscovered();
-        // Feed nickname display is best-effort; Profile falls back to its
-        // pre-settings behavior if the surface settings could not be loaded.
+        // A successful contact load does not establish permission to display
+        // private data. Keep every gate closed until settings can be read.
+        profile.setEnabled(false);
+        runtime.setEnabled(false);
+        notifyMainWorldEnabled(false);
       });
   } catch {
     stop();

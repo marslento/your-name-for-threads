@@ -30,8 +30,10 @@ z.config({ jitless: true });
  */
 export const isoTimestamp = z.iso.datetime({ message: "Invalid timestamp" });
 
-/** At least one non-whitespace character - no specific ID format (e.g. UUID) is assumed or enforced. Exported for the same reason as `isoTimestamp` above. */
-export const nonBlankId = z.string().refine((value) => value.trim().length > 0, { message: "must not be blank" });
+/** Legacy non-UUID IDs remain valid, but imported storage keys cannot name prototype machinery. Shared with the final candidate gate. */
+export const nonBlankId = z.string()
+  .refine((value) => value.trim().length > 0, { message: "must not be blank" })
+  .refine((value) => !["__proto__", "constructor", "prototype"].includes(value), { message: "reserved storage key" });
 
 /**
  * Reuses the exact domain rule (`normalizeNickname`) rather than
@@ -62,7 +64,7 @@ export const nicknameField = z.string().refine(
  */
 const noteField = z
   .string()
-  .refine((value) => countVisibleCharacters(value) <= MAX_NOTE_LENGTH, {
+  .refine((value) => countVisibleCharacters(value, MAX_NOTE_LENGTH) <= MAX_NOTE_LENGTH, {
     message: `Note must be ${MAX_NOTE_LENGTH} visible characters or fewer`,
   })
   .optional();
@@ -84,7 +86,8 @@ const usernameField = z.string().min(1).refine(
   { message: "Username must already be in canonical (normalized) form" },
 );
 
-const ThreadContactSchema = z
+/** Exported for the recovery reader (`src/recovery/recoveryImport.ts`), which holds each stored record to this same strict shape. */
+export const ThreadContactSchema = z
   .object({
     id: nonBlankId,
     threadsUserId: threadsUserIdField,
@@ -97,7 +100,7 @@ const ThreadContactSchema = z
   })
   .strict();
 
-const ContactTombstoneSchema = z
+export const ContactTombstoneSchema = z
   .object({
     contactId: nonBlankId,
     threadsUserId: threadsUserIdField,

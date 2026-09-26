@@ -14,7 +14,7 @@ Your Name for Threads stores private nicknames and notes in the current browser 
 | MAIN-world observer (`src/page/identityObserver.ts`) | Wrap the page's fetch/XHR response handling while enabled, retaining username/ID pairs and passing them across an untrusted page bridge |
 | Dashboard (`src/dashboard`) | Directory editing, conflict review, settings, backup/import, About and diagnostics; usable only with a valid account session |
 | Storage/domain/portability (`src/storage`, `src/domain`, `src/portability`) | Validate persisted data, migrate supported schemas, apply account-scoped changes and validate complete import candidates |
-| Recovery (`src/recovery`) | Quarantine damaged data, export its raw bytes as JSON data, and allow an explicit scoped clear |
+| Recovery (`src/recovery`) | Quarantine damaged data, export its raw bytes as JSON data, allow an explicit scoped clear, and restore a checked single-account recovery file |
 
 The manifest requests `storage` and the exact Threads host. It does not request broad site access, cookies, history or cloud storage. Details and API-specific reasoning belong in the [permission audit](release/permission-audit.md).
 
@@ -56,13 +56,15 @@ Directory mutations acquire the existing cross-context lock, read fresh storage 
 
 The backup format tag remains `threads-private-directory-backup` and the current backup version is 2. Branding changes do not change that compatibility tag. Supported earlier storage/backup formats keep their migrations and tests.
 
-Restore, Merge and External Import each produce a validated preview/candidate before application. Account/session changes discard the preview. Recovery dumps have a separate purpose and are rejected by the backup importer. No import executes file content as code; schema parsing must not use dynamic code generation under the extension CSP.
+Restore, Merge and External Import each produce a validated preview/candidate before application. Account/session changes discard the preview. Recovery dumps have a separate purpose and are rejected by the backup importer; since 1.1.0 they have a reader of their own (below). No import executes file content as code; schema parsing must not use dynamic code generation under the extension CSP.
 
 ## Damage and diagnostics
 
 A damaged Directory is retained and quarantined without automatic repair. The affected account enters Recovery; other valid Directories remain usable. A damaged top-level collection can block all Directory access. Writes must preserve quarantined records, not drop them while saving a healthy account.
 
-Recovery export and clear require current authority. A raw export is a local recovery aid, not an importable backup. Clearing is explicit and scoped; ordinary app opening must never repair or overwrite broken payloads.
+Recovery export and clear require current authority. A raw export is a local recovery aid, not a backup. Clearing is explicit and scoped; ordinary app opening must never repair or overwrite broken payloads.
+
+Restoring a recovery file (1.1.0) is its own entry point, on the Recovery page and under Backup & Import. `recoveryImport.ts` reads only a single-account file for the signed-in account, holds every record to the backup's strict schema and candidate checks, and rebuilds the index and pending conflicts rather than trusting them. `recoveryTarget.ts` decides, from raw storage and without writing, whether the target is the account's truly empty Directory or its own damaged Directory still holding exactly the file's records; anything else is refused, never merged or overwritten. `recoveryRestore.ts` previews without writing or migrating, then commits under the existing queue and the cross-context lock with no unlocked fallback, re-reading storage and repeating every check, as a single `set` of `directories` and `accountBindings`, and confirms the result by reading it back. It lives outside `directoryAccess.ts` only so that the content scripts, which load that module, do not carry the reader's validators. The preview and file stay in the authorized page's memory. A confirmed restore is the account's operation, not the card's: the App keeps it - running, its outcome, and for a result that could not be confirmed the preview for Check Again - because the write itself ends Recovery and can unmount the Recovery page before the result has been read back. Check Again never writes the same preview twice. Every page under the App reads that state: while any restore for the account is being committed, the restore card, export and clear are held off wherever they are, and Backup & Import reads the account's Directory again once a restore is done, whichever control started it.
 
 Diagnostics use a closed code taxonomy, closed states, counts and versions. Events are rebuilt from allowlists when written and read. The background coordinator serializes updates to the separate 20-event buffer. No error message, URL, username, nickname or note can enter a free-text field. Copying a summary is explicit and nothing is uploaded automatically.
 

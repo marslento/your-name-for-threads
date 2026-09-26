@@ -385,6 +385,31 @@ describe("handleSourceReport", () => {
     expect(fresh.state).toBe("active");
   });
 
+  it("an old report after twenty replacements cannot revive authority or disturb the current Dashboard", async () => {
+    await confirmedSource(1, "doc-0", ALICE);
+    const old = await open(1);
+    for (let n = 1; n <= 20; n += 1) await handleSourceReport(1, `doc-${n}`, BOB);
+    const current = await open(1);
+    const before = await getTabContext(1);
+    const closed = [...fake.removeCalls];
+
+    vi.resetModules();
+    const restarted = await import("../../src/background/dashboardLifecycle");
+    await restarted.handleSourceReport(1, "doc-0", ALICE);
+    await restarted.handleSourceReport(1, "doc-0", { state: "unresolved" });
+
+    expect(await getTabContext(1)).toEqual(before);
+    expect(sessions()[old.sessionId].state).toBe("invalid");
+    expect(active()).toEqual([current]);
+    expect(fake.removeCalls).toEqual(closed);
+    expect(await restarted.openDashboard(1)).toEqual({ ok: true, sessionId: current.sessionId });
+
+    await restarted.handleSourceUnloading(1, "doc-20");
+    await restarted.handleSourceReport(1, "doc-0", ALICE);
+    expect(await restarted.openDashboard(1)).toEqual({ ok: false, error: "source_tab_not_confirmed" });
+    expect(active()).toEqual([]);
+  });
+
   it("two sources reporting at the same instant each end only their own Dashboard, and neither report is lost", async () => {
     await confirmedSource(1, "doc-1", ALICE);
     await confirmedSource(2, "doc-2", BOB);
