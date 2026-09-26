@@ -296,8 +296,10 @@ describe("the release gates", () => {
     expect(auditReleaseGates(root)).toEqual([]);
   });
 
-  it("(control) sees the marker the repository itself has today, so a release is refused until it is dealt with", () => {
-    expect(auditReleaseGates(ROOT).map((finding) => finding.path.split(":")[0])).toContain("SECURITY.md");
+  it("(control) reports a known marker independently of the repository release status", () => {
+    const root = repository({ "SECURITY.md": "<!-- RELEASE-GATE: confirm reporting -->\n" });
+
+    expect(auditReleaseGates(root).map((finding) => finding.path)).toEqual(["SECURITY.md:1"]);
   });
 });
 
