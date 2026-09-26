@@ -3,26 +3,15 @@ import type { AccountResolutionState } from "./accountTypes";
 import type { CurrentAccountResolver } from "./CurrentAccountResolver";
 import { reportAccountContext } from "./reportAccountContext";
 import { RevalidationStateMachine } from "./RevalidationStateMachine";
-import { readViewerEvidence } from "./viewerEvidence";
+import { readStrongViewerEvidence } from "./viewerEvidence";
 
 export interface ThreadsAccountResolverOptions {
-  /**
-   * Resolves a DOM-anchor username to a numeric Threads user ID through an
-   * UNEXPIRED `identityCache` entry, or `null` (Phase 3.5 Task 12).
-   * `BrowserStorageContactsRepository.getCachedIdentity` already drops
-   * expired entries and returns null, which is the whole contract here: a
-   * username alone must never confirm an owner.
-   */
-  resolveCachedUsername: (username: string, now: string) => Promise<string | null>;
   machine?: RevalidationStateMachine;
-  clock?: () => string;
   report?: (state: AccountResolutionState) => void;
   /**
-   * The bootstrap define this reads is server-rendered, so it is in the DOM
-   * before this ever runs. The DOM anchor fallback is not: it only appears
-   * once the app hydrates, which can land after `document_idle`. These
-   * bounded retries exist for that case alone - they never loosen what
-   * counts as evidence, they only re-ask.
+   * The bootstrap define this reads is server-rendered, so it should be in the
+   * DOM before this ever runs. These bounded retries only re-read it in case
+   * it lands later; they never loosen what counts as evidence.
    */
   hydrationRetryDelayMs?: number;
   hydrationRetries?: number;
@@ -45,11 +34,11 @@ export interface ThreadsAccountResolverOptions {
  * Dashboard session backed by this tab - always reflects what this tab can
  * currently prove.
  *
- * Only two things ever confirm an owner: strong viewer evidence carrying a
- * numeric Threads user ID, or a current-account DOM anchor whose username
- * resolves through an unexpired `identityCache` entry. Anything else -
- * including a page full of other people's user objects - leaves this
- * unresolved, so no private Directory is ever opened.
+ * Only strong viewer evidence carrying a numeric Threads user ID ever
+ * confirms an owner. Anything else - a page full of other people's user
+ * objects, the navigation's profile link, a username the `identityCache`
+ * knows (the page can feed that cache) - leaves this unresolved, so no
+ * private Directory is ever opened.
  *
  * Navigation and reload replace the document, which tears this instance
  * down and starts a fresh one against fresh evidence; the background's
@@ -70,7 +59,6 @@ export interface ThreadsAccountResolverOptions {
  */
 export class ThreadsAccountResolver implements CurrentAccountResolver {
   private readonly machine: RevalidationStateMachine;
-  private readonly clock: () => string;
   private readonly report: (state: AccountResolutionState) => void;
   private readonly retryDelayMs: number;
   private readonly retries: number;
@@ -80,16 +68,13 @@ export class ThreadsAccountResolver implements CurrentAccountResolver {
   private unsubscribeReport: (() => void) | null = null;
   private retryHandle: ReturnType<typeof setTimeout> | null = null;
   private attemptsLeft = 0;
-  /** Drops an in-flight async username resolution whose answer arrived after a newer attempt (or after `stop()`). */
-  private generation = 0;
   private active = false;
 
   constructor(
     private readonly doc: Document,
-    private readonly options: ThreadsAccountResolverOptions,
+    options: ThreadsAccountResolverOptions = {},
   ) {
     this.machine = options.machine ?? new RevalidationStateMachine();
-    this.clock = options.clock ?? (() => new Date().toISOString());
     this.report = options.report ?? reportAccountContext;
     this.retryDelayMs = options.hydrationRetryDelayMs ?? 1_000;
     this.retries = options.hydrationRetries ?? 5;
@@ -116,7 +101,6 @@ export class ThreadsAccountResolver implements CurrentAccountResolver {
   stop(): void {
     if (!this.active) return;
     this.active = false;
-    this.generation += 1;
     this.clearRetry();
     this.unsubscribeReport?.();
     this.unsubscribeReport = null;
@@ -136,8 +120,7 @@ export class ThreadsAccountResolver implements CurrentAccountResolver {
    */
   async refresh(): Promise<void> {
     if (!this.active) return;
-    const generation = ++this.generation;
-    const result = readViewerEvidence(this.doc);
+    const result = readStrongViewerEvidence(this.doc);
 
     if (result.kind === "explicitly-unresolved") {
       // The page itself says there is no viewer (or none it can name
@@ -154,32 +137,7 @@ export class ThreadsAccountResolver implements CurrentAccountResolver {
       return;
     }
 
-    const evidence = result.evidence;
-    if (evidence.source === "strong-viewer") {
-      this.machine.confirm(evidence.threadsUserId, evidence.username);
-      return;
-    }
-
-    if (evidence.source === "weak") {
-      this.retryOrGiveUp();
-      return;
-    }
-
-    let threadsUserId: string | null = null;
-    try {
-      threadsUserId = await this.options.resolveCachedUsername(evidence.username, this.clock());
-    } catch {
-      // An unreadable cache proves nothing; fall through to unresolved.
-    }
-    if (generation !== this.generation) return;
-
-    if (threadsUserId === null) {
-      // A cache miss is "cannot prove", not "proved nobody" - the entry may
-      // still be written by the identity pipeline a moment from now.
-      this.retryOrGiveUp();
-      return;
-    }
-    this.machine.confirm(threadsUserId, evidence.username);
+    this.machine.confirm(result.evidence.threadsUserId, result.evidence.username);
   }
 
   /** Re-asks while hydration retries remain (silently), and only then admits it cannot prove an owner. */

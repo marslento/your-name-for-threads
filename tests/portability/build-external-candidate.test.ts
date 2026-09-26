@@ -46,6 +46,23 @@ function createUuid(): string {
 }
 
 describe("buildExternalImportCandidate", () => {
+  it("keeps a weak match unchanged when the user declines identity confirmation", () => {
+    const local = contact({ id: "local-1", username: "alice", nickname: "Private local name", note: "Private note" });
+    const localState = localSnapshot([local]);
+    const incoming = backup([contact({ id: "incoming-1", username: "alice", threadsUserId: "123" })]);
+    const result = buildExternalImportCandidate({
+      latestLocal: localState, incoming,
+      preflight: analyzeExternalImport(localState, incoming),
+      strategy: "review_each",
+      decisions: new Map([["external:incoming-1:weak", { kind: "keep_local", itemId: "external:incoming-1:weak" }]]),
+      operationNow: "2026-09-14T00:00:00.000Z", createUuid,
+    });
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect([...result.candidate.contacts.values()]).toEqual([local]);
+  });
+
   it("gives a new contact a fresh local UUID and operationNow timestamps", () => {
     const local = localSnapshot();
     const incomingBackup = backup([contact({ id: "incoming-1", createdAt: "2020-01-01T00:00:00.000Z" })]);

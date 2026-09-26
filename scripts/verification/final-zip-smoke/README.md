@@ -6,7 +6,7 @@ Nothing reaches the real Threads. `www.threads.com` and a second host are mapped
 
 ## Run it
 
-Windows only as written (it stops its browser with `taskkill`). It needs Node 22 or later (which has a built-in `WebSocket`), `openssl` on the PATH (for a one-day certificate that never leaves the temporary directory), `unzip` or `tar`, and Microsoft Edge.
+Windows only as written (it stops its browser with `taskkill`). It needs Node 22 or later (which has a built-in `WebSocket`), `openssl` on the PATH (for a one-day certificate that never leaves the temporary directory), `unzip` for the required integrity check, and Microsoft Edge. Extraction can fall back to `tar` if `unzip` cannot extract the archive.
 
 ```bash
 pnpm build
@@ -20,6 +20,8 @@ For the first manual submission, audit and test the locally built candidate ZIP,
 Keep dated output with the candidate commit and SHA-256 under the ignored `.local/` directory. Publish only a reviewed summary; do not commit raw probe output.
 
 The output is one JSON document: the ZIP (name, size, SHA-256, files, versions), every check with its result, what the pages and the worker complained about, and how many requests they made. The script exits 0 only if every check passed.
+
+Every ZIP preflight check must pass before certificate generation, the local server or the browser can start. A failed integrity check, extraction, package audit, file-content check, version or permission check stops the run, writes the failure report and removes the temporary directory. Unreadable ZIPs and malformed manifests follow the same failure path.
 
 ## What it checks
 

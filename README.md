@@ -1,10 +1,12 @@
 # Your Name for Threads
 
+English | [繁體中文](README.zh-TW.md)
+
 A local-first, open-source private nickname and notes directory for Threads.
 
 Add personal nicknames to Threads profile pages, the feed, replies and quoted posts. Keep private notes in the extension's Dashboard, where you can search, edit and back up your directory. Each Threads account has its own directory in this browser.
 
-Version 1.0.0 is being prepared for its first store submission. Store listings are not available yet, and [manual browser acceptance is still in progress](docs/verification/current-status.md).
+Version 1.0.0 is available on Chrome Web Store and Microsoft Edge Add-ons. See the [release verification status](docs/verification/current-status.md) for recorded evidence and remaining checks.
 
 ## Privacy at a glance
 
@@ -17,6 +19,13 @@ The details are in [PRIVACY.md](PRIVACY.md), and the table they come from is the
 ## Browsers
 
 Latest stable Chrome and Edge. Other Chromium-based browsers are not officially supported.
+
+## Install
+
+- [Install from Chrome Web Store](https://chromewebstore.google.com/detail/your-name-for-threads/jmpaegbcheebaflefpfappfbiimgknoa)
+- [Install from Microsoft Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/your-name-for-threads/ojnkchiogffjbniepbngfokiapfahmpb)
+
+After installing, pin Your Name for Threads to the toolbar and open it to complete the introduction. Sign in to Threads, visit someone's profile and choose **Add nickname**. From that Threads tab, open the extension and choose **Open Directory** to manage your data.
 
 ## Install from source
 
@@ -45,6 +54,7 @@ For development commands and verification, see [CONTRIBUTING](CONTRIBUTING.md) a
 
 - Export a JSON backup before uninstalling the extension or deleting its browser profile. There is no cloud copy to restore from.
 - Backups are unencrypted and contain private notes, nicknames and identifiers. Keep them somewhere private.
+- If an account's data is damaged, keep the recovery file the Recovery page exports. A single account's recovery file can be restored into that account's empty directory, or back over the damaged one, only if every record in it passes the checks. A downloaded file is not a promise that it can be restored, and a file of every account's data cannot be restored.
 - Account directories are separate features, not an encrypted boundary between people sharing a browser profile. Use separate profiles or operating-system accounts for separate people.
 - A nickname displayed on a Threads page is part of that page and can be read by its scripts. Notes stay in the extension's Dashboard. See the [security boundaries](docs/security/threat-model-v1.md).
 

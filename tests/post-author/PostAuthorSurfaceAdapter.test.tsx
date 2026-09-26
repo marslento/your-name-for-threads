@@ -351,6 +351,27 @@ describe("PostAuthorSurfaceAdapter", () => {
     expect(document.querySelector("[data-tpd-nickname]")).toBeNull();
   });
 
+  it.each([
+    ["is turned off", (adapter: PostAuthorSurfaceAdapter) => adapter.setSettings({ ...DEFAULT_EXTENSION_SETTINGS, enabled: false }, document)],
+    ["is cleaned up for an owner change or loss", (adapter: PostAuthorSurfaceAdapter) => adapter.cleanup({ page: page() })],
+  ])("leaves every post as Threads drew it when it %s: no label, no separator (Codex Security scan 0905)", async (_when, takeDown) => {
+    document.body.innerHTML = `${feedPost("alice")}${feedPost("bob")}`;
+    const asDrawn = document.body.innerHTML;
+    const store = new FakeContactStore();
+    store.seed(contact({ username: "alice" }), contact({ id: "bob-id", username: "bob" }));
+    const adapter = new PostAuthorSurfaceAdapter({
+      contactStore: store,
+      settings: DEFAULT_EXTENSION_SETTINGS,
+      getCurrentGeneration: () => 0,
+    });
+    await reconcile(adapter);
+    expect(document.querySelectorAll("[data-tpd-nickname]")).toHaveLength(2);
+
+    takeDown(adapter);
+
+    expect(document.body.innerHTML).toBe(asDrawn);
+  });
+
   describe("setSettings (global enable gate)", () => {
     it("immediately sweeps every rendered label when the extension is turned off", async () => {
       document.body.innerHTML = `${feedPost("alice")}${feedPost("bob")}`;

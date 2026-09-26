@@ -18,6 +18,9 @@ export interface NicknameRenderResult {
 
 const MAX_TIME_ANCESTOR_DEPTH = 5;
 
+/** Each label's own nodes, the label and the separator text inserted with it, so removal leaves no stray " · ". */
+const insertedWith = new WeakMap<Element, readonly ChildNode[]>();
+
 interface NicknameInsertionPoint {
   readonly row: HTMLElement;
   readonly reference: HTMLElement;
@@ -139,18 +142,28 @@ export function renderNicknameLabel(input: RenderNicknameInput): NicknameRenderR
 
   const label = doc.createElement("span");
   label.setAttribute(NICKNAME_ATTRIBUTE, "");
-  label.setAttribute("data-tpd-contact-id", contact.id);
   label.setAttribute("dir", "auto");
   label.setAttribute("title", contact.nickname);
   label.textContent = `[${contact.nickname}]`;
   applyNicknameLabelStyles(label);
 
-  const nodes: Node[] = [doc.createTextNode(separator.before), label];
+  const nodes: ChildNode[] = [doc.createTextNode(separator.before), label];
   if (needsTrailingSeparator) nodes.push(doc.createTextNode(separator.after));
+  insertedWith.set(label, nodes);
 
   for (const node of nodes) {
     row.insertBefore(node, reference);
   }
 
   return { rendered: true, element: label };
+}
+
+/**
+ * Takes every label under `root` off the page, with the separators it was inserted with. A label this script did
+ * not draw (one left by an earlier copy of it) is found by its mark and goes alone.
+ */
+export function removeNicknameLabels(root: ParentNode): void {
+  for (const label of root.querySelectorAll(`[${NICKNAME_ATTRIBUTE}]`)) {
+    for (const node of insertedWith.get(label) ?? [label]) node.remove();
+  }
 }

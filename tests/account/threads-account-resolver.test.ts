@@ -19,9 +19,9 @@ const signedIn = bootstrap([
 const signedOut = bootstrap([["BarcelonaSharedData", { viewer: null }]]);
 /**
  * A page whose viewer define has not arrived at all - the only state the
- * DOM anchor fallback (and the hydration retries) may answer. Deliberately
- * NOT `signedOut`: that one is positive proof of no viewer, and must never
- * reach the fallback (review round 6, High #1).
+ * hydration retries re-read. Deliberately NOT `signedOut`: that one is
+ * positive proof of no viewer and ends the retries at once (review round 6,
+ * High #1).
  */
 const bootstrapMissing = "<div>still hydrating</div>";
 
@@ -32,7 +32,6 @@ function makeResolver(
   document.body.innerHTML = html;
   const reported: AccountResolutionState[] = [];
   const resolver = new ThreadsAccountResolver(document, {
-    resolveCachedUsername: async () => null,
     report: (state) => reported.push(state),
     hydrationRetries: 0,
     ...overrides,
@@ -106,91 +105,14 @@ describe("ThreadsAccountResolver (Phase 3.5 Tasks 11-13, 16)", () => {
     resolver.stop();
   });
 
-  describe("DOM anchor fallback resolves through identityCache only (Task 12)", () => {
-    const anchorOnly = `${bootstrapMissing}<nav><a href="/@${VIEWER_USERNAME}">me</a></nav>`;
+  it("never confirms from the navigation's profile link - nothing in the page stands in for the bootstrap (Codex Security scan 092502)", async () => {
+    const { resolver, reported } = makeResolver(`${bootstrapMissing}<nav><a href="/@${VIEWER_USERNAME}">me</a></nav>`);
 
-    it("confirms when the anchor username resolves to a numeric ID via an unexpired cache entry", async () => {
-      const { resolver } = makeResolver(anchorOnly, {
-        resolveCachedUsername: async (username) => (username === VIEWER_USERNAME ? VIEWER_ID : null),
-      });
+    resolver.start();
+    await vi.waitFor(() => expect(reported).toEqual([{ state: "unresolved" }]));
 
-      resolver.start();
-      await vi.waitFor(() => expect(resolver.getState().state).toBe("confirmed"));
-
-      expect(resolver.getState()).toMatchObject({ ownerThreadsUserId: VIEWER_ID, ownerUsername: VIEWER_USERNAME });
-      resolver.stop();
-    });
-
-    it("stays unresolved when the cache entry is expired or missing - a username alone never confirms an owner", async () => {
-      // `getCachedIdentity` returns null for an expired entry, which is
-      // exactly what this models.
-      const { resolver } = makeResolver(anchorOnly, { resolveCachedUsername: async () => null });
-
-      resolver.start();
-      await vi.waitFor(() => expect(resolver.getState().state).toBe("unresolved"));
-
-      expect(resolver.getState()).toEqual({ state: "unresolved" });
-      resolver.stop();
-    });
-
-    it("stays unresolved when the cache read throws", async () => {
-      const { resolver } = makeResolver(anchorOnly, {
-        resolveCachedUsername: async () => {
-          throw new Error("storage unavailable");
-        },
-      });
-
-      resolver.start();
-      await vi.waitFor(() => expect(resolver.getState().state).toBe("unresolved"));
-
-      resolver.stop();
-    });
-
-    it("never falls back to the anchor after an explicit logout, even with a valid cache entry (review round 6, High #1)", async () => {
-      // The nav bar of the account that just signed out can outlive the
-      // session it belonged to, and its username may still be cached. The
-      // bootstrap says there is no viewer; nothing weaker may overrule that.
-      const resolveCachedUsername = vi.fn(async () => VIEWER_ID);
-      const { resolver } = makeResolver(`${signedOut}<nav><a href="/@${VIEWER_USERNAME}">me</a></nav>`, {
-        resolveCachedUsername,
-      });
-
-      resolver.start();
-      await vi.waitFor(() => expect(resolver.getState().state).toBe("unresolved"));
-
-      expect(resolver.getState()).toEqual({ state: "unresolved" });
-      expect(resolveCachedUsername).not.toHaveBeenCalled();
-      resolver.stop();
-    });
-
-    it("never falls back to the anchor when two viewer defines disagree", async () => {
-      const resolveCachedUsername = vi.fn(async () => VIEWER_ID);
-      const conflicting = bootstrap([
-        ["BarcelonaSharedData", { viewer: { id: VIEWER_ID, username: VIEWER_USERNAME } }],
-        ["BarcelonaSharedData", { viewer: { id: "999000111", username: "bob" } }],
-      ]);
-      const { resolver } = makeResolver(`${conflicting}<nav><a href="/@${VIEWER_USERNAME}">me</a></nav>`, {
-        resolveCachedUsername,
-      });
-
-      resolver.start();
-      await vi.waitFor(() => expect(resolver.getState().state).toBe("unresolved"));
-
-      expect(resolveCachedUsername).not.toHaveBeenCalled();
-      resolver.stop();
-    });
-
-    it("prefers strong evidence over the anchor, never consulting the cache at all", async () => {
-      const resolveCachedUsername = vi.fn(async () => "999000111");
-      const { resolver } = makeResolver(`${signedIn}<nav><a href="/@bob">bob</a></nav>`, { resolveCachedUsername });
-
-      resolver.start();
-      await vi.waitFor(() => expect(resolver.getState().state).toBe("confirmed"));
-
-      expect(resolver.getState()).toMatchObject({ ownerThreadsUserId: VIEWER_ID });
-      expect(resolveCachedUsername).not.toHaveBeenCalled();
-      resolver.stop();
-    });
+    expect(resolver.getState()).toEqual({ state: "unresolved" });
+    resolver.stop();
   });
 
   it("re-reads on refresh(), so a same-numeric-ID username change never mints a second owner", async () => {
@@ -235,10 +157,9 @@ describe("ThreadsAccountResolver (Phase 3.5 Tasks 11-13, 16)", () => {
     resolver.stop();
   });
 
-  it("retries while the app hydrates, then confirms once the anchor appears", async () => {
+  it("retries while the page loads, then confirms once the bootstrap appears", async () => {
     vi.useFakeTimers();
     const { resolver, reported } = makeResolver(bootstrapMissing, {
-      resolveCachedUsername: async () => VIEWER_ID,
       hydrationRetries: 3,
       hydrationRetryDelayMs: 1_000,
     });
@@ -250,7 +171,7 @@ describe("ThreadsAccountResolver (Phase 3.5 Tasks 11-13, 16)", () => {
     // lost its account (review round 6, High #2).
     expect(reported).toEqual([]);
 
-    document.body.innerHTML = `${bootstrapMissing}<nav><a href="/@${VIEWER_USERNAME}">me</a></nav>`;
+    document.body.innerHTML = signedIn;
     await vi.advanceTimersByTimeAsync(1_000);
 
     expect(resolver.getState()).toMatchObject({ ownerThreadsUserId: VIEWER_ID });
@@ -301,40 +222,17 @@ describe("ThreadsAccountResolver (Phase 3.5 Tasks 11-13, 16)", () => {
     resolver.stop();
   });
 
-  it("ignores a late cache answer that lost to a newer refresh", async () => {
-    let release: (value: string | null) => void = () => {};
-    const { resolver } = makeResolver(`${bootstrapMissing}<nav><a href="/@${VIEWER_USERNAME}">me</a></nav>`, {
-      resolveCachedUsername: () => new Promise<string | null>((resolve) => { release = resolve; }),
-    });
-
-    resolver.start();
-    await Promise.resolve();
-
-    // A newer read wins while the first cache lookup is still in flight.
-    document.body.innerHTML = signedIn;
-    await resolver.refresh();
-    expect(resolver.getState()).toMatchObject({ ownerThreadsUserId: VIEWER_ID });
-
-    release("999000111");
-    await Promise.resolve();
-    await Promise.resolve();
-
-    expect(resolver.getState()).toMatchObject({ ownerThreadsUserId: VIEWER_ID });
-    resolver.stop();
-  });
-
   describe("its retry timer with the browser's own receiver rules (DL18)", () => {
     it("retries and confirms with the default timers, without an Illegal invocation", async () => {
       stubReceiverStrictTimers();
       const { resolver, reported } = makeResolver(bootstrapMissing, {
-        resolveCachedUsername: async () => VIEWER_ID,
         hydrationRetries: 3,
         hydrationRetryDelayMs: 5,
       });
 
       resolver.start();
       await new Promise((resolve) => setTimeout(resolve, 0));
-      document.body.innerHTML = `${bootstrapMissing}<nav><a href="/@${VIEWER_USERNAME}">me</a></nav>`;
+      document.body.innerHTML = signedIn;
       await new Promise((resolve) => setTimeout(resolve, 40));
 
       expect(resolver.getState()).toMatchObject({ state: "confirmed", ownerThreadsUserId: VIEWER_ID });

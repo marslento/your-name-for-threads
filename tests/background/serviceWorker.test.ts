@@ -243,6 +243,23 @@ describe("background service worker: the source page's own messages", () => {
     expect(fake.browser.created).toEqual([]);
   });
 
+  it("a page that leaves before its first report lands cannot open a Dashboard with that report (Codex Security scan 092502)", async () => {
+    const fake = installFakeChrome();
+    await import("../../src/background/serviceWorker");
+    fake.dispatchMessage({ type: SOURCE_UNLOADING_MESSAGE_TYPE }, fromTab(42, "doc-1"), () => {});
+    await settle();
+    const late = { type: REPORT_ACCOUNT_CONTEXT_MESSAGE_TYPE, state: "confirmed", ownerThreadsUserId: ALICE_ID, ownerUsername: "alice" };
+    fake.dispatchMessage(late, fromTab(42, "doc-1"), () => {});
+    await settle();
+
+    const sendResponse = vi.fn();
+    fake.dispatchMessage({ type: OPEN_DASHBOARD_MESSAGE_TYPE, sourceTabId: 42 }, {} as chrome.runtime.MessageSender, sendResponse);
+    await settle();
+
+    expect(sendResponse).toHaveBeenCalledWith({ ok: false, error: "source_tab_not_confirmed" });
+    expect(fake.browser.created).toEqual([]);
+  });
+
   it("ignores that announcement from a frame, from a non-tab sender, and about another document", async () => {
     const fake = installFakeChrome();
     seedAliceWithDashboard(fake);
@@ -450,9 +467,8 @@ describe("background + resolver: a reload ends the Dashboard for good", () => {
   }
 
   /** The production path: the new document's own resolver, reporting through the same runtime message the worker listens to. */
-  function startResolverAsTab42Document(fake: Fake, documentId: string, resolveCachedUsername: (username: string) => Promise<string | null> = async () => null) {
+  function startResolverAsTab42Document(fake: Fake, documentId: string) {
     return new ThreadsAccountResolver(document, {
-      resolveCachedUsername,
       report: (state) => fake.dispatchMessage({ type: REPORT_ACCOUNT_CONTEXT_MESSAGE_TYPE, ...state }, fromTab(42, documentId), () => {}),
     });
   }
@@ -496,9 +512,8 @@ describe("background + resolver: a reload ends the Dashboard for good", () => {
     fake.dispatchTabUpdated(42, { status: "loading", tabUrl: "https://www.threads.com/login" });
     await settle();
     document.body.innerHTML = `${bootstrapWith(null)}<nav><a href="/@alice">alice</a></nav>`;
-    // Alice's username is still in identityCache - she was signed in a second ago - so the pre-fix fallback had
-    // everything it needed to re-confirm her from that dead nav bar.
-    const resolver = startResolverAsTab42Document(fake, "doc-2", async () => ALICE_ID);
+    // The dead nav bar still names Alice, and nothing but the bootstrap - which says nobody - can confirm anyone.
+    const resolver = startResolverAsTab42Document(fake, "doc-2");
     resolver.start();
     await settle();
     resolver.stop();

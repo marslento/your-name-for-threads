@@ -2,7 +2,7 @@
 
 What Your Name for Threads promises about being usable without a mouse, without sight of the screen, and with a wider text size, how a machine checks each promise, and what a person still has to try in a real browser before a release.
 
-This is a **practical audit, not a WCAG conformance claim**, and nothing published should say otherwise. The automated checks run on jsdom, which has no layout, no real focus ring, no screen reader and no zoom. The manual checks are the part that can only be done in a browser, and **they have not been run yet**: the results table at the end is empty on purpose, and `tests/repo/accessibility-checklist.test.ts` fails if a row claims a result without a date.
+This is a **practical audit, not a WCAG conformance claim**, and nothing published should say otherwise. The automated checks run on jsdom, which has no layout, no real focus ring, no screen reader and no zoom. Record manual browser results for the exact candidate being tested. The results table below is a reusable template; `tests/repo/accessibility-checklist.test.ts` fails if a row claims a result without a date.
 
 ## The contract
 
@@ -126,7 +126,7 @@ The documented values match the shipped stylesheet. Contrast tests verify the te
 - **How it looks.** jsdom has no layout, so a visible focus ring, a clipped control or a wrapped label is only ever judged from the code, never seen.
 - **Real assistive technology.** The names and descriptions are worked out by the routine Testing Library uses, which follows the specification, not by NVDA, JAWS or VoiceOver, which sometimes read differently.
 - **Real tabbing.** Nothing here presses Tab across a page; the order is the order of the markup, and the manual keyboard pass is where it is checked.
-- **The Profile dialogs in a real page.** They are checked as components, including with the button and the dialog in two separate shadow roots as on a Threads profile, but they have not been driven inside Threads.
+- **The Profile dialogs in a real page.** Component tests include the button and dialog in separate shadow roots, but browser acceptance must also exercise them inside Threads.
 
 ## Known limits and decisions
 

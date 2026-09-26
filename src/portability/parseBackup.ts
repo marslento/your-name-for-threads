@@ -1,3 +1,4 @@
+import { MAX_DIRECTORY_RECORDS } from "../domain/directory";
 import { BACKUP_FORMAT, CURRENT_BACKUP_VERSION, type BackupSnapshotV2 } from "./backupTypes";
 import { BackupSnapshotV2Schema, BackupVersionProbeSchema } from "./backupSchema";
 import { normalizeBackup } from "./normalizeBackup";
@@ -57,8 +58,26 @@ export function parseBackupText(text: string): ParseBackupResult {
   // migrate it into. Falls through to the generic "not a valid backup"
   // schema-validation failure below, same as any other malformed file.
 
-  const parsed = BackupSnapshotV2Schema.safeParse(json);
-  if (!parsed.success) {
+  // Counted before the schema walks the lists: a file under the byte limit still fits millions of tiny entries, and
+  // zod keeps an issue for every bad one (200,000 kept about 58 MB, Codex Security scan 0905, finding 1).
+  const { contacts, tombstones } = json as Record<string, unknown>;
+  const length = (list: unknown) => (Array.isArray(list) ? list.length : 0);
+  if (length(contacts) + length(tombstones) > MAX_DIRECTORY_RECORDS) {
+    return {
+      ok: false,
+      error: new PortabilityError("invalid_schema", "This backup failed schema validation."),
+    };
+  }
+
+  // zod merges a list's issues into its parent with one `push(...issues)`, which throws a RangeError once a list holds
+  // enough bad fields (from about 14,000 entries in Node, under the record limit): a failed schema all the same.
+  let parsed;
+  try {
+    parsed = BackupSnapshotV2Schema.safeParse(json);
+  } catch {
+    parsed = undefined;
+  }
+  if (!parsed?.success) {
     return {
       ok: false,
       error: new PortabilityError("invalid_schema", "This backup failed schema validation."),

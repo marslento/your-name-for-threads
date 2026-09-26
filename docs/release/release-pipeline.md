@@ -15,9 +15,17 @@ This project uses a manual first submission to establish the products and their 
 3. **`chrome` and `edge`.** Each takes the ZIP the first job stored, checks its checksum against the one that job recorded, and uploads that file and submits it for review. Neither builds anything. Neither can be started by a branch, a pull request, a fork or a manual run.
 4. **`github-release`.** Once both stores have accepted the submission, the tag gets a GitHub release, made from the same ZIP and its checksum file with the changelog section as its notes. Before it attaches anything it checks the ZIP against the checksum the packaging job recorded and against the checksum file, and it stops if either disagrees. It is a stable release: not a draft, not a pre-release, and only for a tag that exists. It holds no secret.
 
-Stable only: there is no beta, canary, trusted-tester or staged path, and a pre-release tag starts nothing. The stores review the submission themselves; passing this pipeline is not the stores' approval.
+Stable only: pre-release tags start nothing, and the Chrome script does not request STAGED_PUBLISH or a trusted-tester channel. DEFAULT_PUBLISH publishes after approval and uses the Chrome dashboard's saved rollout percentage. Before approving the release, verify that percentage in the dashboard; set it to 100% if the update should reach all users. See the [Chrome Web Store publish API](https://developer.chrome.com/docs/webstore/api/reference/rest/v2/publishers.items/publish). The stores review the submission themselves; passing this pipeline is not the stores' approval.
 
 The release checklist separates three stages. Before tagging, validate the local candidate and configure the approval environment. After the package job produces the artifact, validate those exact bytes and confirm the store jobs are waiting before approving them. Add public store URLs to the site after the stores approve. Neither public listing URLs nor evidence from a workflow artifact are prerequisites for creating that artifact. The first listings still use the store dashboards as described above; no API call substitutes for that setup.
+
+## Rehearse packaging in CI
+
+The `CI` workflow tests pull requests and pushes to `main`, and can also be started with **Actions > CI > Run workflow** after its manual trigger is present on the default branch. Select the branch to check; no version tag is needed.
+
+After the frozen install, tests, build and package audit, CI packages that same build twice, compares the ZIP bytes, extracts the ZIP with `unzip`, and audits the extracted files. The `candidate-<commit>` artifact contains the ZIP, `SHA256SUMS` and release notes from the dated changelog section matching `package.json`. A missing or undated section fails the rehearsal. The run summary records the tested commit, version and checksum; artifacts remain available for 30 days. For a pull request, the tested commit is GitHub's merge commit.
+
+This path has read-only repository permissions, no store credentials and no production environment. It does not submit to either store or create a tag or GitHub release. It uses the package audit without `--release`, so open submission gates remain visible and do not prevent a packaging rehearsal. A green candidate run is not production approval: the tag workflow still requires `main`, closed release gates and the `production-release` approval, and creates its own artifact for final browser checks.
 
 ## First submission: manual
 

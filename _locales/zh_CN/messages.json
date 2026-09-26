@@ -97,6 +97,9 @@
   "profile_saveError": {
     "message": "保存失败，请重试"
   },
+  "profile_directoryFull": {
+    "message": "通讯录已满（$1 位联系人，含已删除的联系人），这个昵称没有保存。"
+  },
   "profile_deleteError": {
     "message": "删除失败，请重试"
   },
@@ -328,6 +331,9 @@
   "dashboard_import_exportError": {
     "message": "导出失败，请稍后重试。"
   },
+  "dashboard_import_exportRestoreLimited": {
+    "message": "已下载完整数据，但此文件超过目前的还原限制：最多 $1 条（含已删除记录），且不得超过 $2 MiB。目前无法直接导入此文件；请勿只依赖它就清空或覆盖原有数据。"
+  },
   "dashboard_import_importCardTitle": {
     "message": "导入备份"
   },
@@ -460,6 +466,9 @@
   "dashboard_import_importAsNewAction": {
     "message": "导入为新联系人"
   },
+  "dashboard_import_usernameAlreadySaved": {
+    "message": "你的名录已保存这个账号名称，无法再导入为新联系人。选择保留我的数据，即可跳过这个项目。"
+  },
   "dashboard_import_keepDeletedAction": {
     "message": "保持删除"
   },
@@ -534,6 +543,12 @@
   },
   "dashboard_import_commitFailedDescription": {
     "message": "请稍后重试。"
+  },
+  "dashboard_import_directoryFullTitle": {
+    "message": "通讯录会超过上限"
+  },
+  "dashboard_import_directoryFullDescription": {
+    "message": "通讯录最多只能有 $1 位联系人（含已删除的联系人），本次没有导入任何数据。"
   },
   "dashboard_import_cancelledTitle": {
     "message": "导入已取消"
@@ -776,7 +791,7 @@
     "message": "记得备份"
   },
   "dashboard_about_backupReminder": {
-    "message": "记得定期导出备份，避免浏览器数据被清除后丢失。"
+    "message": "请定期导出备份，并先确认有无还原限制提示，再依赖它还原数据。"
   },
   "dashboard_about_sharedHeading": {
     "message": "共用电脑时"
@@ -818,24 +833,192 @@
     "message": "恢复数据可能包含私人昵称、备注及内部标识信息，并且因为所有已保存的数据都受影响，也包含所有账号的数据。请勿直接公开贴到 GitHub Issue。"
   },
   "recovery_exportSuccess": {
-    "message": "已保存恢复数据。"
+    "message": "已导出恢复数据。请确认文件已下载；文件需通过检查才可恢复。"
   },
   "recovery_exportError": {
     "message": "无法导出恢复数据，请重试。"
   },
   "recovery_noRepair": {
-    "message": "本扩展不提供自动修复，也无法导入恢复文件。此文件供你或开发者查看。"
+    "message": "本扩展不提供自动修复：在你选择下方的操作并确认之前，不会更改任何数据。"
   },
   "recovery_clearDescription": {
-    "message": "清除会永久删除此账号已损坏的数据，其他账号与设置不受影响。若想保留副本，请先导出恢复数据。"
+    "message": "清除会永久删除此账号已损坏的数据，其他账号与设置不受影响。清除不是恢复的步骤：无需先清除即可从恢复文件恢复。若想保留副本，请先导出恢复数据；下载的文件需通过检查才可恢复。"
   },
   "recovery_clearConfirmTitle": {
     "message": "要清除此账号的数据吗？"
   },
   "recovery_clearConfirmDescription": {
-    "message": "这会删除此账号已损坏的私人通讯录，且无法撤销。若想保留副本，请先导出恢复数据。"
+    "message": "这会删除此账号已损坏的私人通讯录，且无法撤销。若想保留副本，请先导出恢复数据；下载的文件需通过检查才可恢复。"
   },
   "recovery_globalNoClear": {
     "message": "因为所有账号的数据都受影响，所以不提供清除功能。请改为导出恢复数据并反馈问题。"
+  },
+  "dashboard_import_invalidRecoveryFile": {
+    "message": "这是恢复文件，不是备份。请改用下方的“从恢复文件恢复”。"
+  },
+  "recovery_restore_title": {
+    "message": "从恢复文件恢复"
+  },
+  "recovery_restore_description": {
+    "message": "选择本扩展为此账号保存的恢复文件。会先检查文件，确认前不会更改任何数据。只能恢复到此账号的空通讯录，或修复文件原本所属、仍待修复的通讯录。"
+  },
+  "recovery_restore_chooseFile": {
+    "message": "选择恢复文件"
+  },
+  "recovery_restore_reading": {
+    "message": "正在检查文件……"
+  },
+  "recovery_restore_operationEmpty": {
+    "message": "此文件可以恢复到此账号的空通讯录。"
+  },
+  "recovery_restore_operationDamaged": {
+    "message": "此文件与此账号受损的通讯录相符，可以用它修复。"
+  },
+  "recovery_restore_previewKeeps": {
+    "message": "将保留联系人与删除记录，并重建查找索引及待处理冲突。"
+  },
+  "recovery_restore_identityNote": {
+    "message": "保留联系人当前保存的 ID；这次恢复未验证 Threads 身份。"
+  },
+  "recovery_restore_labelExportedAt": {
+    "message": "导出时间"
+  },
+  "recovery_restore_labelContacts": {
+    "message": "联系人"
+  },
+  "recovery_restore_labelTombstones": {
+    "message": "删除记录"
+  },
+  "recovery_restore_labelRebuiltIndex": {
+    "message": "重建后的查找索引"
+  },
+  "recovery_restore_labelRebuiltConflicts": {
+    "message": "重建后的待处理冲突"
+  },
+  "recovery_restore_labelOriginalIndex": {
+    "message": "文件中的查找索引"
+  },
+  "recovery_restore_labelOriginalConflicts": {
+    "message": "文件中的待处理冲突"
+  },
+  "recovery_restore_unreadable": {
+    "message": "无法读取，将重建"
+  },
+  "recovery_restore_mismatchSummary": {
+    "message": "有 $1 条查找索引与联系人保存的 Threads ID 不一致"
+  },
+  "recovery_restore_mismatchItem": {
+    "message": "@$1：保存的 ID $2，索引中的 ID $3"
+  },
+  "recovery_restore_mismatchNoStoredId": {
+    "message": "无"
+  },
+  "recovery_restore_mismatchMore": {
+    "message": "仅显示前 $1 条，共 $2 条。"
+  },
+  "recovery_restore_action": {
+    "message": "恢复"
+  },
+  "recovery_restore_confirmTitle": {
+    "message": "要从这个恢复文件恢复吗？"
+  },
+  "recovery_restore_confirmDescription": {
+    "message": "文件中的联系人与删除记录会一次写入此账号，并重建查找索引及待处理冲突。保留联系人当前保存的 ID；这次恢复未验证 Threads 身份。"
+  },
+  "recovery_restore_retry": {
+    "message": "重新检查"
+  },
+  "recovery_restore_issueCount": {
+    "message": "发现 $1 个问题。前几个如下："
+  },
+  "recovery_restore_issue_invalidField": {
+    "message": "不是有效的值"
+  },
+  "recovery_restore_issue_keyMismatch": {
+    "message": "存放的键与 ID 不一致"
+  },
+  "recovery_restore_issue_duplicateUsername": {
+    "message": "与其他联系人的用户名重复"
+  },
+  "recovery_restore_issue_invalidLineage": {
+    "message": "删除记录与联系人不一致"
+  },
+  "recovery_restore_error_invalidJson": {
+    "message": "此文件不是有效的 JSON。未更改任何数据。"
+  },
+  "recovery_restore_error_unsupportedFormat": {
+    "message": "此文件不是恢复文件。备份请改用“备份与导入”页的“导入备份”。未更改任何数据。"
+  },
+  "recovery_restore_error_unsupportedVersion": {
+    "message": "无法读取此恢复文件的版本。未更改任何数据。"
+  },
+  "recovery_restore_error_unsupportedScope": {
+    "message": "此恢复文件包含所有账号的数据。本版只能恢复单个账号的恢复文件。未更改任何数据。"
+  },
+  "recovery_restore_error_fileTooLarge": {
+    "message": "此文件超过 10 MiB，超出恢复可读取的上限。未更改任何数据。"
+  },
+  "recovery_restore_error_tooManyRecords": {
+    "message": "此文件的联系人与删除记录合计超过 20,000 条，超出恢复的上限。未更改任何数据。"
+  },
+  "recovery_restore_error_invalidStructure": {
+    "message": "此恢复文件不完整或格式不符，因此无法信任其中任何内容。未更改任何数据。"
+  },
+  "recovery_restore_error_invalidRecords": {
+    "message": "文件中有记录无效，因此整个文件都未采用。未更改任何数据，也没有截断或跳过任何记录。"
+  },
+  "recovery_restore_error_ownerMismatch": {
+    "message": "此恢复文件属于另一个 Threads 账号，只能在该账号登录时恢复。未更改任何数据。"
+  },
+  "recovery_restore_error_unsupportedStorage": {
+    "message": "扩展的已保存数据整体受损或尚未初始化时，无法恢复。未更改任何数据。"
+  },
+  "recovery_restore_error_targetNotEmpty": {
+    "message": "此账号已有数据。本版不支持合并或覆盖，现有数据未更改。请保留恢复文件。"
+  },
+  "recovery_restore_error_sourceTargetMismatch": {
+    "message": "文件与当前保留的数据不同。请重新导出当前的恢复数据后再分析。"
+  },
+  "recovery_restore_error_directoryIdOccupied": {
+    "message": "此文件的通讯录 ID 已被此浏览器中的其他数据使用，因此未恢复。未更改任何数据。"
+  },
+  "recovery_restore_error_concurrentChange": {
+    "message": "此账号的数据已与检查时不同，这次恢复到此为止。请重新选择文件，检查当前保存的数据。"
+  },
+  "recovery_restore_error_authorityRevoked": {
+    "message": "登录的账号已更改，这次恢复不会在此继续。如要继续，请重新登录并再次选择文件。"
+  },
+  "recovery_restore_error_lockUnavailable": {
+    "message": "扩展无法确认没有其他标签页同时修改此数据，因此未恢复。请再试一次。"
+  },
+  "recovery_restore_error_storageReadFailed": {
+    "message": "无法读取已保存的数据，因此未恢复。请再试一次。"
+  },
+  "recovery_restore_error_storageWriteFailed": {
+    "message": "无法写入恢复结果。请重新检查，勿先清除数据。"
+  },
+  "recovery_restore_error_verificationFailed": {
+    "message": "尚无法确认恢复结果。请重新检查，勿先清除数据。"
+  },
+  "recovery_restore_success": {
+    "message": "已恢复通讯录：$1 位联系人、$2 条删除记录。你现在可以导出一般备份。"
+  },
+  "recovery_restore_alreadyRestored": {
+    "message": "此恢复文件此前已完成恢复：$1 位联系人、$2 条删除记录。你现在可以导出一般备份。"
+  },
+  "recovery_restore_goToBackup": {
+    "message": "前往备份与导入"
+  },
+  "recovery_restore_dismiss": {
+    "message": "关闭"
+  },
+  "recovery_restore_globalUnsupported": {
+    "message": "所有账号的数据都受影响时，无法从恢复文件恢复：本版只能恢复单个账号的恢复文件。"
+  },
+  "recovery_restore_exportHint": {
+    "message": "原始恢复文件需通过检查才可恢复，下载成功不保证可还原。"
+  },
+  "recovery_restore_committing": {
+    "message": "正在从恢复文件恢复……"
   }
 }

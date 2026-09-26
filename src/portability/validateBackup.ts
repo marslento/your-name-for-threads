@@ -3,6 +3,7 @@ import type { BackupSnapshotV2 } from "./backupTypes";
 
 export type BackupValidationIssue =
   | { code: "duplicate_contact_id"; contactId: string }
+  | { code: "duplicate_username"; contactId: string; username: string }
   | { code: "duplicate_tombstone_id"; contactId: string }
   | { code: "active_and_tombstone_same_id"; contactId: string }
   | { code: "invalid_tombstone"; contactId: string; message: string }
@@ -23,11 +24,17 @@ export function validateBackupInvariants(snapshot: BackupSnapshotV2): BackupVali
   const issues: BackupValidationIssue[] = [];
 
   const activeIds = new Set<string>();
+  const activeUsernames = new Map<string, string>();
   for (const contact of snapshot.contacts) {
     if (activeIds.has(contact.id)) {
       issues.push({ code: "duplicate_contact_id", contactId: contact.id });
     }
     activeIds.add(contact.id);
+    const usernameOwner = activeUsernames.get(contact.username);
+    if (usernameOwner !== undefined && usernameOwner !== contact.id) {
+      issues.push({ code: "duplicate_username", contactId: contact.id, username: contact.username });
+    }
+    activeUsernames.set(contact.username, contact.id);
   }
 
   const tombstoneIds = new Set<string>();

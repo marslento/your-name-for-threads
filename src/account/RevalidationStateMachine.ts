@@ -7,8 +7,8 @@ import type { CurrentAccountResolver } from "./CurrentAccountResolver";
  * source - `ThreadsAccountResolver`, reading the server-rendered
  * current-viewer bootstrap define (Tasks 11-13) - drives it through two inputs:
  *
- * - `confirm(id, username)` - strong evidence (or a resolved DOM anchor)
- *   proves an owner, same or different from whatever was confirmed before.
+ * - `confirm(id, username)` - strong evidence proves an owner, same or
+ *   different from whatever was confirmed before.
  * - `invalidate()` - an explicit negative signal (logout, an
  *   incompatible/switcher-only context) or a resolver that could not prove
  *   anyone, with no grace period at all.

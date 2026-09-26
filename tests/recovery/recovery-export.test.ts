@@ -131,10 +131,12 @@ describe("createRecoveryDump: it is not a Backup", () => {
     }
   });
 
-  it("is read back by nothing: no source file but the exporter knows the format", () => {
-    // There is no importer, no reader and no repair in v1.0. A new file that mentions the format has to be added
-    // here on purpose, after asking whether it has just made a Recovery dump importable.
-    expect(filesMatching(/your-name-for-threads-recovery/)).toEqual(["src/recovery/exportRecoveryDump.ts"]);
+  it("is read back only by the recovery reader: no other source file knows the format", () => {
+    // 1.1.0 added one reader, `recoveryImport.ts`, which holds a single-account file to its own checks and restores it
+    // only into an empty Directory or the damaged one it came from; the Backup importer still refuses it (above). A new
+    // file that mentions the format has to be added here on purpose, after asking whether it has just made a Recovery
+    // dump importable some other way.
+    expect(filesMatching(/your-name-for-threads-recovery|RECOVERY_FORMAT/)).toEqual(["src/recovery/exportRecoveryDump.ts", "src/recovery/recoveryImport.ts"]);
   });
 
   it("does not use the backup's filename", () => {

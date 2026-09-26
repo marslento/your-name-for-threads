@@ -2,7 +2,7 @@ import { defineConfig } from '@playwright/test';
 
 export default defineConfig({
   testDir: './e2e',
-  testMatch: ['extension.spec.ts', 'dashboard-lifecycle.spec.ts'],
+  testMatch: ['extension.spec.ts', 'dashboard-lifecycle.spec.ts', 'recovery-restore.spec.ts'],
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
   retries: 0,

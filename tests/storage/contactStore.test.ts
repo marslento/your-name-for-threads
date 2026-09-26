@@ -127,6 +127,25 @@ afterEach(() => {
 });
 
 describe("ContactStore", () => {
+  it("does not resolve an ambiguous username introduced by a storage change", async () => {
+    const fake = installStorage(v4Storage({
+      directories: { [DIR_ID]: directoryWith({ [alice.id]: alice }, { "username:alice": alice.id }) },
+      accountBindings: { [OWNER]: DIR_ID },
+    }));
+    const store = new ContactStore();
+    await store.start(OWNER);
+    expect(store.getByUsername("alice")?.id).toBe(alice.id);
+
+    const duplicate = { ...bob, username: "alice" };
+    await fake.area.set({ directories: { [DIR_ID]: directoryWith(
+      { [alice.id]: alice, [duplicate.id]: duplicate }, { "username:alice": duplicate.id },
+    ) } });
+
+    expect(store.getByUsername("alice")).toBeNull();
+    expect(store.resolve({ username: "alice" })).toBeNull();
+    store.stop();
+  });
+
   it.each([false, true])("drops cached private nicknames when the owner binding is removed (directories included: %s)", async (includeDirectories) => {
     const record = directoryWith({ [alice.id]: alice }, { "threads:123": alice.id, "username:alice": alice.id });
     const fake = installStorage(v4Storage({ directories: { [DIR_ID]: record }, accountBindings: { [OWNER]: DIR_ID } }));

@@ -11,14 +11,13 @@ import type {
   SurfaceReconcileContext,
 } from "../../runtime/types";
 import type { ThreadsSurfaceAdapter } from "../ThreadsSurfaceAdapter";
-import { renderNicknameLabel } from "../../ui/display/NicknameLabelRenderer";
+import { removeNicknameLabels, renderNicknameLabel } from "../../ui/display/NicknameLabelRenderer";
 import { deriveAuthorOccurrence } from "./deriveAuthorOccurrence";
 import { resolveContactForOccurrence } from "./resolveContactForOccurrence";
 import { resolveSeparatorPlan } from "./separatorStrategy";
 import { retryOccurrenceDerivation } from "./retryOccurrenceDerivation";
 import { scanAuthorCandidatesInBatches } from "./scanAuthorCandidatesInBatches";
 import type { AuthorOccurrence, AuthorOccurrenceType } from "./types";
-import { NICKNAME_ATTRIBUTE } from "../../ui/display/NicknameLabelRenderer";
 
 // Threads' Activity/notifications tab is excluded entirely rather than
 // relying on a per-row structural signal, since a notification actor row
@@ -78,13 +77,7 @@ export class PostAuthorSurfaceAdapter implements ThreadsSurfaceAdapter {
     if (wasEnabled !== next.enabled) this.settingsRevision += 1;
     if (!wasEnabled || next.enabled) return;
 
-    this.unresolved.clear();
-    this.observedThreadsUserIds.clear();
-    this.activeGeneration = null;
-    this.didFullScan = false;
-    for (const label of document.querySelectorAll(`[${NICKNAME_ATTRIBUTE}]`)) {
-      label.remove();
-    }
+    this.reset(document);
   }
 
   async reconcile(context: SurfaceReconcileContext): Promise<void> {
@@ -120,11 +113,21 @@ export class PostAuthorSurfaceAdapter implements ThreadsSurfaceAdapter {
     );
   }
 
-  cleanup(_context: SurfaceCleanupContext): void {
+  /**
+   * An owner change or loss comes through here (ThreadsRuntime), so the labels go too: the previous owner's
+   * nicknames must not stay on the page, and a label left behind would also stop the next owner's from being drawn
+   * (Codex Security scan 0905).
+   */
+  cleanup(context: SurfaceCleanupContext): void {
+    this.reset(context.page.document);
+  }
+
+  private reset(document: Document): void {
     this.unresolved.clear();
     this.observedThreadsUserIds.clear();
     this.activeGeneration = null;
     this.didFullScan = false;
+    removeNicknameLabels(document);
   }
 
   identityDiscovered(username: string, threadsUserId: string): void {

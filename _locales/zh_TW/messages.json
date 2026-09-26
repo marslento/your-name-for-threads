@@ -97,6 +97,9 @@
   "profile_saveError": {
     "message": "儲存失敗，請再試一次"
   },
+  "profile_directoryFull": {
+    "message": "通訊錄已滿（$1 位聯絡人，含已刪除的聯絡人），這個暱稱沒有儲存。"
+  },
   "profile_deleteError": {
     "message": "刪除失敗，請再試一次"
   },
@@ -328,6 +331,9 @@
   "dashboard_import_exportError": {
     "message": "匯出失敗，請稍後再試一次。"
   },
+  "dashboard_import_exportRestoreLimited": {
+    "message": "已下載完整資料，但此檔案超過目前的還原限制：最多 $1 筆（含已刪除紀錄），且不得超過 $2 MiB。目前無法直接匯入此檔案；請勿只依賴它就清空或覆蓋原有資料。"
+  },
   "dashboard_import_importCardTitle": {
     "message": "匯入備份"
   },
@@ -460,6 +466,9 @@
   "dashboard_import_importAsNewAction": {
     "message": "匯入為新的聯絡人"
   },
+  "dashboard_import_usernameAlreadySaved": {
+    "message": "你的名錄已儲存這個帳號名稱，無法再匯入為新的聯絡人。選擇保留我的資料，即可略過這個項目。"
+  },
   "dashboard_import_keepDeletedAction": {
     "message": "保持刪除"
   },
@@ -534,6 +543,12 @@
   },
   "dashboard_import_commitFailedDescription": {
     "message": "請稍後再試一次。"
+  },
+  "dashboard_import_directoryFullTitle": {
+    "message": "通訊錄會超過上限"
+  },
+  "dashboard_import_directoryFullDescription": {
+    "message": "通訊錄最多只能有 $1 位聯絡人（含已刪除的聯絡人），這次沒有匯入任何資料。"
   },
   "dashboard_import_cancelledTitle": {
     "message": "匯入已取消"
@@ -776,7 +791,7 @@
     "message": "記得備份"
   },
   "dashboard_about_backupReminder": {
-    "message": "記得定期匯出備份，避免瀏覽器資料清除後遺失。"
+    "message": "請定期匯出備份，並先確認有無還原限制提示，再依賴它還原資料。"
   },
   "dashboard_about_sharedHeading": {
     "message": "共用電腦時"
@@ -818,24 +833,192 @@
     "message": "復原資料可能包含私人暱稱、備註及內部識別資訊，且因為所有已儲存的資料都受影響，也包含所有帳號的資料。請勿直接公開貼到 GitHub Issue。"
   },
   "recovery_exportSuccess": {
-    "message": "已儲存復原資料。"
+    "message": "已匯出復原資料。請確認檔案已下載；檔案需通過檢查才可復原。"
   },
   "recovery_exportError": {
     "message": "無法匯出復原資料，請再試一次。"
   },
   "recovery_noRepair": {
-    "message": "本擴充功能不提供自動修復，也無法匯入復原檔案。此檔案供你或開發者查看。"
+    "message": "本擴充功能不提供自動修復：在你選擇下方的操作並確認之前，不會變更任何資料。"
   },
   "recovery_clearDescription": {
-    "message": "清除會永久刪除此帳號已損壞的資料，其他帳號與設定不受影響。若想保留副本，請先匯出復原資料。"
+    "message": "清除會永久刪除此帳號已損壞的資料，其他帳號與設定不受影響。清除不是復原的步驟：不需先清除即可從復原檔案復原。若想保留副本，請先匯出復原資料；下載的檔案需通過檢查才可復原。"
   },
   "recovery_clearConfirmTitle": {
     "message": "要清除此帳號的資料嗎？"
   },
   "recovery_clearConfirmDescription": {
-    "message": "這會刪除此帳號已損壞的私人通訊錄，且無法復原。若想保留副本，請先匯出復原資料。"
+    "message": "這會刪除此帳號已損壞的私人通訊錄，且無法復原。若想保留副本，請先匯出復原資料；下載的檔案需通過檢查才可復原。"
   },
   "recovery_globalNoClear": {
     "message": "因為所有帳號的資料都受影響，所以不提供清除功能。請改為匯出復原資料並回報問題。"
+  },
+  "dashboard_import_invalidRecoveryFile": {
+    "message": "這是復原檔案，不是備份。請改用下方的「從復原檔案復原」。"
+  },
+  "recovery_restore_title": {
+    "message": "從復原檔案復原"
+  },
+  "recovery_restore_description": {
+    "message": "選擇本擴充功能為此帳號儲存的復原檔案。會先檢查檔案，確認前不會變更任何資料。只能復原到此帳號的空通訊錄，或修復檔案原本所屬、仍待修復的通訊錄。"
+  },
+  "recovery_restore_chooseFile": {
+    "message": "選擇復原檔案"
+  },
+  "recovery_restore_reading": {
+    "message": "正在檢查檔案⋯⋯"
+  },
+  "recovery_restore_operationEmpty": {
+    "message": "此檔案可以復原到此帳號的空通訊錄。"
+  },
+  "recovery_restore_operationDamaged": {
+    "message": "此檔案與此帳號受損的通訊錄相符，可以用它修復。"
+  },
+  "recovery_restore_previewKeeps": {
+    "message": "將保留聯絡人與刪除紀錄，並重建查找索引及待處理衝突。"
+  },
+  "recovery_restore_identityNote": {
+    "message": "保留聯絡人目前儲存的 ID；這次復原未驗證 Threads 身分。"
+  },
+  "recovery_restore_labelExportedAt": {
+    "message": "匯出時間"
+  },
+  "recovery_restore_labelContacts": {
+    "message": "聯絡人"
+  },
+  "recovery_restore_labelTombstones": {
+    "message": "刪除紀錄"
+  },
+  "recovery_restore_labelRebuiltIndex": {
+    "message": "重建後的查找索引"
+  },
+  "recovery_restore_labelRebuiltConflicts": {
+    "message": "重建後的待處理衝突"
+  },
+  "recovery_restore_labelOriginalIndex": {
+    "message": "檔案中的查找索引"
+  },
+  "recovery_restore_labelOriginalConflicts": {
+    "message": "檔案中的待處理衝突"
+  },
+  "recovery_restore_unreadable": {
+    "message": "無法讀取，將重建"
+  },
+  "recovery_restore_mismatchSummary": {
+    "message": "有 $1 筆查找索引與聯絡人儲存的 Threads ID 不一致"
+  },
+  "recovery_restore_mismatchItem": {
+    "message": "@$1：儲存的 ID $2，索引中的 ID $3"
+  },
+  "recovery_restore_mismatchNoStoredId": {
+    "message": "無"
+  },
+  "recovery_restore_mismatchMore": {
+    "message": "僅顯示前 $1 筆，共 $2 筆。"
+  },
+  "recovery_restore_action": {
+    "message": "復原"
+  },
+  "recovery_restore_confirmTitle": {
+    "message": "要從這個復原檔案復原嗎？"
+  },
+  "recovery_restore_confirmDescription": {
+    "message": "檔案中的聯絡人與刪除紀錄會一次寫入此帳號，並重建查找索引及待處理衝突。保留聯絡人目前儲存的 ID；這次復原未驗證 Threads 身分。"
+  },
+  "recovery_restore_retry": {
+    "message": "重新檢查"
+  },
+  "recovery_restore_issueCount": {
+    "message": "發現 $1 個問題。前幾個如下："
+  },
+  "recovery_restore_issue_invalidField": {
+    "message": "不是有效的值"
+  },
+  "recovery_restore_issue_keyMismatch": {
+    "message": "存放的鍵與 ID 不一致"
+  },
+  "recovery_restore_issue_duplicateUsername": {
+    "message": "與其他聯絡人的使用者名稱重複"
+  },
+  "recovery_restore_issue_invalidLineage": {
+    "message": "刪除紀錄與聯絡人不一致"
+  },
+  "recovery_restore_error_invalidJson": {
+    "message": "此檔案不是有效的 JSON。未變更任何資料。"
+  },
+  "recovery_restore_error_unsupportedFormat": {
+    "message": "此檔案不是復原檔案。備份請改用「備份與匯入」頁的「匯入備份」。未變更任何資料。"
+  },
+  "recovery_restore_error_unsupportedVersion": {
+    "message": "無法讀取此復原檔案的版本。未變更任何資料。"
+  },
+  "recovery_restore_error_unsupportedScope": {
+    "message": "此復原檔案包含所有帳號的資料。本版只能復原單一帳號的復原檔案。未變更任何資料。"
+  },
+  "recovery_restore_error_fileTooLarge": {
+    "message": "此檔案超過 10 MiB，超出復原可讀取的上限。未變更任何資料。"
+  },
+  "recovery_restore_error_tooManyRecords": {
+    "message": "此檔案的聯絡人與刪除紀錄合計超過 20,000 筆，超出復原的上限。未變更任何資料。"
+  },
+  "recovery_restore_error_invalidStructure": {
+    "message": "此復原檔案不完整或格式不符，因此無法信任其中任何內容。未變更任何資料。"
+  },
+  "recovery_restore_error_invalidRecords": {
+    "message": "檔案中有紀錄無效，因此整份檔案都未採用。未變更任何資料，也沒有裁切或略過任何紀錄。"
+  },
+  "recovery_restore_error_ownerMismatch": {
+    "message": "此復原檔案屬於另一個 Threads 帳號，只能在該帳號登入時復原。未變更任何資料。"
+  },
+  "recovery_restore_error_unsupportedStorage": {
+    "message": "擴充功能的已儲存資料整體受損或尚未初始化時，無法復原。未變更任何資料。"
+  },
+  "recovery_restore_error_targetNotEmpty": {
+    "message": "此帳號已有資料。本版不支援合併或覆寫，現有資料未變更。請保留復原檔案。"
+  },
+  "recovery_restore_error_sourceTargetMismatch": {
+    "message": "檔案與目前保留的資料不同。請重新匯出目前的復原資料後再分析。"
+  },
+  "recovery_restore_error_directoryIdOccupied": {
+    "message": "此檔案的通訊錄 ID 已被此瀏覽器中的其他資料使用，因此未復原。未變更任何資料。"
+  },
+  "recovery_restore_error_concurrentChange": {
+    "message": "此帳號的資料已與檢查時不同，這次復原到此為止。請重新選擇檔案，檢查目前儲存的資料。"
+  },
+  "recovery_restore_error_authorityRevoked": {
+    "message": "登入的帳號已變更，這次復原不會在此繼續。如要繼續，請重新登入並再次選擇檔案。"
+  },
+  "recovery_restore_error_lockUnavailable": {
+    "message": "擴充功能無法確認沒有其他分頁同時修改此資料，因此未復原。請再試一次。"
+  },
+  "recovery_restore_error_storageReadFailed": {
+    "message": "無法讀取已儲存的資料，因此未復原。請再試一次。"
+  },
+  "recovery_restore_error_storageWriteFailed": {
+    "message": "無法寫入復原結果。請重新檢查，勿先清除資料。"
+  },
+  "recovery_restore_error_verificationFailed": {
+    "message": "尚無法確認復原結果。請重新檢查，勿先清除資料。"
+  },
+  "recovery_restore_success": {
+    "message": "已復原通訊錄：$1 位聯絡人、$2 筆刪除紀錄。你現在可以匯出一般備份。"
+  },
+  "recovery_restore_alreadyRestored": {
+    "message": "此復原檔案先前已完成復原：$1 位聯絡人、$2 筆刪除紀錄。你現在可以匯出一般備份。"
+  },
+  "recovery_restore_goToBackup": {
+    "message": "前往備份與匯入"
+  },
+  "recovery_restore_dismiss": {
+    "message": "關閉"
+  },
+  "recovery_restore_globalUnsupported": {
+    "message": "所有帳號的資料都受影響時，無法從復原檔案復原：本版只能復原單一帳號的復原檔案。"
+  },
+  "recovery_restore_exportHint": {
+    "message": "原始復原檔需通過檢查才可復原，下載成功不保證可還原。"
+  },
+  "recovery_restore_committing": {
+    "message": "正在從復原檔案復原⋯⋯"
   }
 }

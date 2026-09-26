@@ -51,7 +51,8 @@ export interface ThreadsTabContext {
   /**
    * Documents of this tab that were replaced or left. A report still in flight from one of them proves nothing
    * about the page the tab shows now, and must neither confirm an account nor overwrite a newer document's record.
-   * Bounded: a tab that reloads all day must not grow this without limit.
+   * Kept for the tab's lifetime, including worker restarts. Evicting an old ID would make a delayed report
+   * from that document look new again. Tab removal clears this history with the rest of the context.
    */
   retiredDocumentIds?: string[];
   /** See the module comment. Absent only for a context a test built directly with `setTabContext`, which reads as older than any real report (0). */
@@ -59,7 +60,6 @@ export interface ThreadsTabContext {
 }
 
 const SESSION_KEY = "tpd:tabContexts";
-const MAX_RETIRED_DOCUMENTS = 8;
 
 let queue: Promise<unknown> = Promise.resolve();
 
@@ -84,7 +84,7 @@ async function writeAll(contexts: Record<number, ThreadsTabContext>): Promise<vo
 function withRetired(retired: readonly string[] | undefined, documentId: string | undefined): string[] {
   const kept = retired ?? [];
   if (documentId === undefined || kept.includes(documentId)) return [...kept];
-  return [...kept, documentId].slice(-MAX_RETIRED_DOCUMENTS);
+  return [...kept, documentId];
 }
 
 /** Only ever for a context a caller built itself (tests, or the report path below); production code goes through `recordTabReport`. */
@@ -140,7 +140,8 @@ export function recordTabReport(
 
 /**
  * The tab's document `documentId` was replaced or left: it stops proving anything, and nothing it still has in
- * flight is believed. Only a tab that already has a record is touched, so a page that never spoke gets none.
+ * flight is believed. A tab with no record yet gets one holding only that id: the page can leave before its first
+ * report lands, and that report must then be dropped like any other late one (Codex Security scan 092502).
  *
  * Returns the tab's new `reportSeq` only when `documentId` really was the current one - the caller then has
  * something to end. If a NEWER document has already reported, this only appends the old id to
@@ -153,7 +154,12 @@ export function retireTabDocument(tabId: number, documentId: string | undefined)
   return enqueue(async () => {
     const all = await readAll();
     const existing = all[tabId];
-    if (!existing) return undefined;
+    if (!existing) {
+      if (documentId === undefined) return undefined;
+      all[tabId] = { tabId, state: "unresolved", retiredDocumentIds: [documentId] };
+      await writeAll(all);
+      return undefined;
+    }
     const retired = withRetired(existing.retiredDocumentIds, documentId);
     const isCurrent = existing.documentId === documentId;
     if (!isCurrent) {

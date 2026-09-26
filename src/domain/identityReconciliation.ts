@@ -17,8 +17,16 @@ export function reconcileIdentityDerivedState(input: {
   identityConflicts: Record<string, IdentityConflict>;
 } {
   const identityIndex: Record<string, string> = {};
+  const seenUsernames = new Set<string>();
   for (const contact of input.contacts.values()) {
-    identityIndex[`username:${contact.username}`] = contact.id;
+    const key = `username:${contact.username}`;
+    if (seenUsernames.has(contact.username)) {
+      // A repeated username has no safe canonical contact, even on a third occurrence.
+      delete identityIndex[key];
+    } else {
+      identityIndex[key] = contact.id;
+      seenUsernames.add(contact.username);
+    }
   }
 
   const byThreadsUserId = new Map<string, ThreadContact[]>();
@@ -30,7 +38,7 @@ export function reconcileIdentityDerivedState(input: {
   }
 
   const existingConflicts = [...input.existingConflicts.values()];
-  const identityConflicts: Record<string, IdentityConflict> = {};
+  const identityConflicts: Record<string, IdentityConflict> = Object.create(null);
 
   for (const [threadsUserId, contacts] of byThreadsUserId) {
     if (contacts.length === 1) {

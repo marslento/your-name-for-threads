@@ -48,7 +48,7 @@ export function ImportReviewPage() {
         ))}
       </div>
 
-      <ImportReviewList items={items} session={session} filter={filter} onSelect={setSelected} />
+      <ImportReviewList key={filter} items={items} session={session} filter={filter} onSelect={setSelected} />
 
       <Button type="button" disabled={remaining > 0} onClick={() => navigate("..")}>
         {t("dashboard_import_reviewContinueAction")}

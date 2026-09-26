@@ -1,6 +1,8 @@
 import type { ThreadContact } from "../domain/contact";
 import type { ContactTombstone } from "../domain/tombstone";
 import type { DirectorySnapshot } from "../domain/directorySnapshot";
+import { MAX_DIRECTORY_RECORDS } from "../domain/directory";
+import { MAX_BACKUP_FILE_BYTES } from "./parseBackup";
 import { BackupSnapshotV2Schema } from "./backupSchema";
 import { BACKUP_FORMAT, CURRENT_BACKUP_VERSION, type BackupExportedBy, type BackupSnapshotV2 } from "./backupTypes";
 import { normalizeBackup } from "./normalizeBackup";
@@ -73,7 +75,7 @@ export type ExportFailureReason =
   | { kind: "invariant"; issues: BackupValidationIssue[] };
 
 export type ExportResult =
-  | { ok: true; backup: BackupSnapshotV2; json: string }
+  | { ok: true; backup: BackupSnapshotV2; json: string; exceedsImportLimits?: true }
   | { ok: false; reason: ExportFailureReason };
 
 /**
@@ -82,6 +84,8 @@ export type ExportResult =
  * runs on import - otherwise a corrupt local record (e.g. a non-canonical
  * username, or a nickname that predates a validation tightening) could
  * produce a backup that "exports successfully" but can never be re-imported.
+ * Valid legacy data above the import limits is still exported in full;
+ * callers must display the restore warning when `exceedsImportLimits` is set.
  */
 export function exportDirectory(directory: DirectorySnapshot, exportedBy: BackupExportedBy, exportedAt: string): ExportResult {
   const backup = normalizeBackup(createBackupSnapshot(directory, exportedBy, exportedAt));
@@ -96,7 +100,11 @@ export function exportDirectory(directory: DirectorySnapshot, exportedBy: Backup
     return { ok: false, reason: { kind: "invariant", issues: invariants.issues } };
   }
 
-  return { ok: true, backup, json: serializeBackup(backup) };
+  const json = serializeBackup(backup);
+  // Preserve all legacy data, but distinguish a downloaded copy from a file the importer can restore.
+  const exceedsImportLimits = backup.contacts.length + backup.tombstones.length > MAX_DIRECTORY_RECORDS
+    || new Blob([json]).size > MAX_BACKUP_FILE_BYTES;
+  return { ok: true, backup, json, ...(exceedsImportLimits ? { exceedsImportLimits: true as const } : {}) };
 }
 
 /**

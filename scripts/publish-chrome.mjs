@@ -12,7 +12,8 @@
  * It is safe to run again. It reads what the store already has first: a version already pending review, or already published,
  * is left alone and is a success; a different version pending review, a version that is not newer than the store's, or an item
  * that has been taken down stops it with a message, because none of those is something a script should decide. Publishing is
- * always the default kind, to everyone once the store approves it: there is no staged or trusted-tester path.
+ * always DEFAULT_PUBLISH, which publishes upon approval using the dashboard's saved rollout percentage.
+ * The script does not request STAGED_PUBLISH or a trusted-tester channel.
  *
  * `--dry-run` checks the ZIP and that every credential is present and sends nothing at all.
  *
@@ -86,7 +87,7 @@ export async function run(argv, { env = process.env, fetchImpl = fetch, log = co
       log("dry run: nothing is sent.");
       log(`credentials present: ${CREDENTIALS.filter((name) => !missing.includes(name)).join(", ") || "none"}`);
       log(`credentials missing: ${missing.join(", ") || "none"}`);
-      log("it would: get an access token, read what the store already has, upload the package unless the store holds this version, and submit it for review to everyone.");
+      log("it would: get an access token, read what the store already has, upload the package unless the store holds this version, and submit it for publication upon approval using the dashboard's saved rollout percentage.");
       return missing.length === 0 ? 0 : 1;
     }
     if (missing.length > 0) throw new Error(`these credentials are not set: ${missing.join(", ")}`);

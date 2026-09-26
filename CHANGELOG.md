@@ -4,7 +4,30 @@ Notable changes to Your Name for Threads are recorded here. The format follows [
 
 ## [Unreleased]
 
-Version 1.0.0 is prepared for the first store submission. Publication to the Chrome Web Store, Microsoft Edge Add-ons and GitHub Releases is still pending.
+## [1.1.0] - 2026-09-27
+
+### Added
+
+- Restore a single-account recovery file from the Recovery page or Backup & Import, with validation and a preview before confirmation. Restore into an empty directory or repair the matching damaged directory without clearing it first.
+- Rebuild lookup entries and pending conflicts while preserving contacts and deleted records. Stored Threads IDs are kept; the restore does not verify identities. Other accounts' files, global recovery files, invalid records and healthy non-empty targets are refused.
+
+### Fixed
+
+- A contact's stored numeric Threads ID is no longer replaced when a matching username is seen with another ID. The old behaviour left a second lookup entry behind, which put that account's data into Recovery.
+- Keep recovery results and the retry action visible after leaving the Recovery page. Retry disables conflicting controls and refreshes the normal backup export after success.
+
+- Reject contradictory signed-in account data instead of accepting a valid viewer alongside a logged-out or malformed one.
+- Keep full exports available for older oversized directories, with a visible warning when a file exceeds the current 20,000-record or 10 MiB import limits, including before clearing or replacing data.
+
+### Changed
+
+- Clarified the privacy policy on 2026-09-25: page-visible nicknames, unauthenticated account evidence, deletion of notes through contact controls, and limits on restoring exported files.
+- The privacy policy, the data handling matrix and the threat model describe the recovery file restore. The Recovery and clear wording now says that clearing is not a step of restoring, and that a downloaded recovery file can be restored only if it passes the checks.
+- Two diagnostic codes, RECOVERY_IMPORT_INVALID and RECOVERY_RESTORE_FAILED, record a refused recovery file and a restore that failed in storage, as fixed codes only.
+
+## [1.0.0] - 2026-09-23
+
+First release on [Chrome Web Store](https://chromewebstore.google.com/detail/your-name-for-threads/jmpaegbcheebaflefpfappfbiimgknoa) and [Microsoft Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/your-name-for-threads/ojnkchiogffjbniepbngfokiapfahmpb).
 
 ### Added
 
@@ -22,7 +45,7 @@ Version 1.0.0 is prepared for the first store submission. Publication to the Chr
 - The extension's icons.
 - Bug-report and feature-request forms for GitHub, a security policy, a privacy policy, contributing notes and an MIT license.
 - A data handling matrix (`docs/privacy/data-handling-matrix.md`) that says what is stored, where, and for how long, and tests that keep it honest.
-- A GitHub Pages site with a home page, a privacy page and a support page, ready to publish from the `site/` folder but not published yet. The privacy page is `PRIVACY.md` rendered, so the two cannot disagree, and the site loads no scripts, fonts or images from anywhere.
+- A GitHub Pages site with a home page, a privacy page and a support page, configured to deploy from the `site/` folder. The privacy page is rendered from `PRIVACY.md`, and the site loads no scripts, fonts or images from anywhere.
 
 ### Changed
 

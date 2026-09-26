@@ -78,6 +78,7 @@ describe("storage and retention", () => {
       "src/content/surfaces/post-author/scanAuthorCandidatesInBatches.ts": [1, "a local set for one scan"],
       "src/content/surfaces/profile/ProfileSurfaceAdapter.tsx": [2, "the shown profile's identity lookups, and a local node set for one check"],
       "src/content/theme/detectThreadsTheme.ts": [2, "local sets for one theme reading"],
+      "src/content/ui/display/NicknameLabelRenderer.ts": [1, "each drawn label's own separator text nodes, weakly keyed by the label, so an entry goes with its label"],
       "src/page/identityObserver.ts": [7, "seen username and ID pairs (strings), and weak maps and sets keyed by window or response object"],
     };
 

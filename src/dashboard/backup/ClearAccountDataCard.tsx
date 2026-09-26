@@ -22,6 +22,8 @@ export interface ClearAccountDataCardProps {
   directoryRepository: DirectoryRepository
   onCleared: () => void
   clock?: () => string
+  /** Held off while something beside it is changing the same Directory (a recovery restore). */
+  disabled?: boolean
 }
 
 /**
@@ -48,20 +50,30 @@ export function ClearAccountDataCard ({
   ownerUsername,
   directoryRepository,
   onCleared,
-  clock = () => new Date().toISOString()
+  clock = () => new Date().toISOString(),
+  disabled = false
 }: ClearAccountDataCardProps) {
   const [confirmOpen, setConfirmOpen] = React.useState(false)
   const [clearing, setClearing] = React.useState(false)
+  const [restoreWarning, setRestoreWarning] = React.useState<string | null>(null)
 
   async function handleExportFirst () {
-    const result = await runBackupExport(
-      ownerThreadsUserId,
-      ownerUsername,
-      directoryRepository,
-      clock
-    )
-    if (!result.ok) toast.error(t('dashboard_import_exportError'))
-    else toast.success(t('dashboard_import_exportSuccess'))
+    setRestoreWarning(null)
+    try {
+      const result = await runBackupExport(
+        ownerThreadsUserId,
+        ownerUsername,
+        directoryRepository,
+        clock
+      )
+      if (!result.ok) toast.error(t('dashboard_import_exportError'))
+      else {
+        setRestoreWarning(result.restoreWarning ?? null)
+        if (!result.restoreWarning) toast.success(t('dashboard_import_exportSuccess'))
+      }
+    } catch {
+      toast.error(t('dashboard_import_exportError'))
+    }
   }
 
   async function handleClear () {
@@ -106,6 +118,7 @@ export function ClearAccountDataCard ({
         <Button
           type='button'
           variant='destructive'
+          disabled={disabled}
           onClick={() => setConfirmOpen(true)}
         >
           {t('dashboard_import_clearAccountAction')}
@@ -124,9 +137,9 @@ export function ClearAccountDataCard ({
               )}
             </AlertDialogTitle>
             <AlertDialogDescription>
-              <div className='py-4'>
+              <span className='block py-4'>
                 {t('dashboard_import_clearAccountConfirmDescription')}
-              </div>
+              </span>
               <Button
                 type='button'
                 variant='outline'
@@ -136,6 +149,7 @@ export function ClearAccountDataCard ({
                 {t('dashboard_import_exportFirstAction')}
               </Button>
             </AlertDialogDescription>
+            {restoreWarning && <p role='alert' className='text-sm text-destructive'>{restoreWarning}</p>}
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel

@@ -24,7 +24,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function readCollection<T>(storage: Record<string, unknown>, key: string): Record<string, T> {
   if (!Object.hasOwn(storage, key)) {
-    return {};
+    return Object.create(null);
   }
 
   const collection = storage[key];
@@ -32,7 +32,8 @@ function readCollection<T>(storage: Record<string, unknown>, key: string): Recor
     throw new Error(`Invalid storage collection: ${key}`);
   }
 
-  return collection as Record<string, T>;
+  // Stored keys are data, including legacy keys such as __proto__; never inherit dictionary entries.
+  return Object.assign(Object.create(null), collection) as Record<string, T>;
 }
 
 function readBoolean(value: unknown, fallback: boolean): boolean {
@@ -79,8 +80,8 @@ function readV1(raw: Record<string, unknown>): ExtensionStorageV1 {
 // --- V1 -> V2 transformation --------------------------------------------
 
 export function migrateV1ToV2(v1: ExtensionStorageV1): ExtensionStorageV2 {
-  const contacts: Record<string, ThreadContact> = {};
-  const tombstones: Record<string, ContactTombstone> = {};
+  const contacts: Record<string, ThreadContact> = Object.create(null);
+  const tombstones: Record<string, ContactTombstone> = Object.create(null);
   const identityIndex: Record<string, string> = { ...v1.identityIndex };
 
   for (const [id, legacy] of Object.entries(v1.contacts)) {
@@ -113,7 +114,7 @@ export function migrateV1ToV2(v1: ExtensionStorageV1): ExtensionStorageV2 {
     };
   }
 
-  const identityConflicts: Record<string, IdentityConflict> = {};
+  const identityConflicts: Record<string, IdentityConflict> = Object.create(null);
   for (const [id, legacyConflict] of Object.entries(v1.identityConflicts)) {
     if (legacyConflict.status !== "pending") continue;
 
@@ -263,9 +264,9 @@ const CONTACT_OPTIONAL_STRINGS = ["threadsUserId", "note"] as const;
  */
 function readDirectoryCollection<T>(directory: Record<string, unknown>, name: string, key: string): Record<string, T> {
   const value = directory[name];
-  if (value === undefined) return {};
+  if (value === undefined) return Object.create(null);
   if (!isRecord(value)) throw new Error(`Invalid storage collection: directories.${key}.${name}`);
-  return value as Record<string, T>;
+  return Object.assign(Object.create(null), value) as Record<string, T>;
 }
 
 /** Only what the type requires: the strings the rest of the product reads without checking. Extra fields are left alone. */
@@ -286,9 +287,12 @@ function readDirectoryRecord(value: unknown, key: string): DirectoryRecord {
   }
 
   const contacts = readDirectoryCollection<ThreadContact>(value, "contacts", key);
+  const activeUsernames = new Set<string>();
   for (const [contactId, contact] of Object.entries(contacts)) {
     assertValidContact(contact, key);
     if (contact.id !== contactId) throw new Error(`Invalid storage collection: directories.${key}.contacts`);
+    if (activeUsernames.has(contact.username)) throw new Error(`Invalid storage collection: directories.${key}.contacts`);
+    activeUsernames.add(contact.username);
   }
   const tombstones = readDirectoryCollection<ContactTombstone>(value, "tombstones", key);
   for (const tombstone of Object.values(tombstones)) {
@@ -317,7 +321,7 @@ function readDirectoryRecord(value: unknown, key: string): DirectoryRecord {
 
 function readDirectories(raw: Record<string, unknown>): Record<string, DirectoryRecord> {
   const directories = readCollection<unknown>(raw, "directories");
-  const result: Record<string, DirectoryRecord> = {};
+  const result: Record<string, DirectoryRecord> = Object.create(null);
   for (const [key, value] of Object.entries(directories)) {
     result[key] = readDirectoryRecord(value, key);
   }
@@ -490,7 +494,8 @@ function readCurrentLoaded(stored: unknown): LoadedStorage {
   }
 }
 
-function isAlreadyCurrent(raw: unknown): raw is { schemaVersion: 4 } {
+/** Exported for the recovery restore, which acts only on storage that is already current and never migrates it. */
+export function isAlreadyCurrent(raw: unknown): raw is { schemaVersion: 4 } {
   return (
     isRecord(raw) &&
     Object.hasOwn(raw, "schemaVersion") &&

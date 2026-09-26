@@ -8,6 +8,10 @@ function item(kind: ImportPreflightItem["kind"]): ImportPreflightItem {
 }
 
 describe("validateReviewDecision", () => {
+  it("allows a weak match to be skipped without confirming identity", () => {
+    expect(validateReviewDecision({ kind: "keep_local", itemId: "item-1" }, item("external_weak_duplicate"))).toEqual({ ok: true });
+  });
+
   it("accepts a matching decision/item pair", () => {
     expect(
       validateReviewDecision({ kind: "keep_local", itemId: "item-1" }, item("review_private_data")),

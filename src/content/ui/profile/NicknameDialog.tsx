@@ -27,7 +27,7 @@ export interface NicknameDialogProps {
   readonly onOpenChange: (open: boolean) => void
   readonly onSave: (nickname: string) => void | Promise<unknown>
   readonly onSaveSuccess: () => void
-  readonly onSaveError: () => void
+  readonly onSaveError: (error: unknown) => void
   readonly onRequestDelete?: () => void
 }
 
@@ -94,13 +94,13 @@ function NicknameDialogSession ({
     setSaving(true)
     try {
       await onSave(normalized)
-    } catch {
+    } catch (error) {
       if (!activeRef.current || operationRef.current !== operation) {
         return
       }
       savingRef.current = false
       setSaving(false)
-      notify(onSaveError)
+      notify(() => onSaveError(error))
       return
     }
 

@@ -97,7 +97,8 @@ test('nickname reaches feed and Directory; backup downloads and imports without 
   await download.saveAs(backupPath);
   const backup = JSON.parse(await readFile(backupPath, 'utf8'));
   expect(backup).toMatchObject({ format: 'threads-private-directory-backup', exportedBy: { threadsUserId: VIEWER.id }, contacts: [expect.objectContaining({ nickname: NICKNAME })] });
-  await dashboard.locator('input[type=file]').setInputFiles(backupPath);
+  // Backup & Import also has the recovery file chooser, so the backup's is found by its label.
+  await dashboard.getByLabel('Choose JSON Backup File', { exact: true }).setInputFiles(backupPath);
   await expect(dashboard.getByRole('heading', { name: 'Import Preview', exact: true })).toBeVisible();
   await expect(dashboard.getByText('This backup changes nothing in your Directory.', { exact: true })).toBeVisible();
   await dashboard.getByRole('button', { name: 'Apply Backup', exact: true }).click();
