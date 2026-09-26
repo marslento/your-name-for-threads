@@ -1,12 +1,12 @@
 name: CI
 
-# Every pull request and every push to main is installed from the frozen lockfile, tested, built and audited (Phase 4
-# Task 28, review checklist 31). This workflow only reads the repository: it has no secrets and publishes nothing, and a
-# pull request from a fork can only ever read. Releasing is a separate workflow behind an approval gate (Tasks 37-41).
+# Tests, builds and audits the extension, then rehearses packaging as a downloadable candidate.
+# This workflow has no store credentials or repository write permission. Production releases use release.yml.
 on:
   pull_request:
   push:
     branches: [main]
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -41,3 +41,29 @@ jobs:
 
       - name: Audit the package
         run: pnpm release:audit
+
+      - name: Create the candidate ZIP and audit its contents
+        run: |
+          set -euo pipefail
+          version=$(node -p "require('./package.json').version")
+          zip="your-name-for-threads-${version}.zip"
+          mkdir candidate
+          node scripts/make-release-zip.mjs dist "candidate/${zip}"
+          node scripts/make-release-zip.mjs dist candidate/second.zip
+          cmp "candidate/${zip}" candidate/second.zip
+          rm candidate/second.zip
+          (cd candidate && sha256sum "$zip" > SHA256SUMS)
+          node scripts/changelog-excerpt.mjs "$version" CHANGELOG.md candidate/release-notes.md
+          unzip -t "candidate/${zip}"
+          unzip -q "candidate/${zip}" -d extracted-candidate
+          node scripts/release-audit.mjs extracted-candidate
+          printf 'Candidate %s from commit %s\n\n' "$version" "$GITHUB_SHA" >> "$GITHUB_STEP_SUMMARY"
+          cat candidate/SHA256SUMS >> "$GITHUB_STEP_SUMMARY"
+          printf '\nPackaging rehearsal only. Production approval and release gates remain separate.\n' >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: candidate-${{ github.sha }}
+          path: candidate/
+          if-no-files-found: error
+          retention-days: 30

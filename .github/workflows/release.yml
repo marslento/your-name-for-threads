@@ -83,6 +83,8 @@ jobs:
           unzip -t "release/your-name-for-threads-${{ steps.zip.outputs.version }}.zip"
           unzip -q "release/your-name-for-threads-${{ steps.zip.outputs.version }}.zip" -d extracted
           node scripts/release-audit.mjs extracted --release --tag "$GITHUB_REF_NAME"
+          printf 'Release %s from commit %s\n\n' "${{ steps.zip.outputs.version }}" "$GITHUB_SHA" >> "$GITHUB_STEP_SUMMARY"
+          cat release/SHA256SUMS >> "$GITHUB_STEP_SUMMARY"
 
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:

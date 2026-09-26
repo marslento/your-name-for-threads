@@ -150,6 +150,8 @@ describe("what it does, in order", () => {
 
   it("audits the ZIP as a person would receive it: tested and extracted by unzip, and not by our own reader", () => {
     expect(text()).toMatch(/unzip -t "release\/your-name-for-threads-\$\{\{ steps\.zip\.outputs\.version \}\}\.zip"/);
+    expect(job("package")).toContain('cat release/SHA256SUMS >> "$GITHUB_STEP_SUMMARY"');
+    expect(job("package")).toContain('"${{ steps.zip.outputs.version }}" "$GITHUB_SHA" >> "$GITHUB_STEP_SUMMARY"');
     expect(text()).toMatch(/unzip -q "release\/your-name-for-threads-\$\{\{ steps\.zip\.outputs\.version \}\}\.zip" -d extracted/);
   });
 
