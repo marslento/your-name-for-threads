@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it } from "vitest";
 
 import type { ThreadContact } from "../../src/domain/contact";
-import type { DirectoryRecord } from "../../src/domain/directory";
+import { DirectoryFullError, type DirectoryRecord } from "../../src/domain/directory";
 import { executeImport } from "../../src/dashboard/backup/executeImport";
 import { analyzeSelfMerge } from "../../src/portability/analyzeImport";
 import type { BackupSnapshotV2 } from "../../src/portability/backupTypes";
@@ -217,7 +217,10 @@ describe("executeImport", () => {
     expect(repository.setCount()).toBe(0);
   });
 
-  it("reports commit_failed instead of a false success when the repository write throws", async () => {
+  it.each([
+    ["commit_failed", new Error("storage full")],
+    ["directory_full", new DirectoryFullError()],
+  ] as const)("reports %s instead of a false success when the repository write throws", async (status, thrown) => {
     const localSnapshot = { directoryId: DIR_ID, contacts: new Map(), tombstones: new Map() };
     const incomingBackup = backup([contact({ id: "a" })]);
     const preflight = analyzeSelfMerge(localSnapshot, incomingBackup);
@@ -230,7 +233,7 @@ describe("executeImport", () => {
         return directoryWith();
       },
       async commitOwnerDirectory() {
-        throw new Error("storage full");
+        throw thrown;
       },
     };
 
@@ -253,7 +256,7 @@ describe("executeImport", () => {
       createUuid: () => "id",
     });
 
-    expect(outcome.status).toBe("commit_failed");
+    expect(outcome.status).toBe(status);
   });
 });
 

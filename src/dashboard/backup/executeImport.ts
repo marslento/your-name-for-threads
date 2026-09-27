@@ -1,6 +1,6 @@
 import type { ThreadContact } from "../../domain/contact";
 import type { ContactTombstone } from "../../domain/tombstone";
-import type { DirectoryRecord } from "../../domain/directory";
+import { DirectoryFullError, type DirectoryRecord } from "../../domain/directory";
 import type { DirectorySnapshot } from "../../domain/directorySnapshot";
 import { reconcileIdentityDerivedState } from "../../domain/identityReconciliation";
 import { buildSessionCandidate, type CandidateBuildIssue } from "../../portability/buildCandidateSnapshot";
@@ -22,6 +22,7 @@ export type ExecuteImportOutcome =
   | { status: "build_failed"; issues: CandidateBuildIssue[] }
   | { status: "invalid_candidate"; issues: CandidateValidationIssue[] }
   | { status: "cancelled" }
+  | { status: "directory_full" }
   | { status: "commit_failed" };
 
 function toSnapshot(directoryId: string, contacts: Record<string, ThreadContact>, tombstones: Record<string, ContactTombstone>): DirectorySnapshot {
@@ -158,6 +159,7 @@ export async function executeImport(input: {
   } catch (error) {
     // AbortSignal's exception may come from a different DOM realm.
     if (typeof error === "object" && error !== null && "name" in error && error.name === "AbortError") return { status: "cancelled" };
+    if (error instanceof DirectoryFullError) return { status: "directory_full" };
     return { status: "commit_failed" };
   }
 }

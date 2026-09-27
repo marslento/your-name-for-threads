@@ -98,7 +98,9 @@ export function resolveIdentityConflict(
       ...(duplicate.threadsUserId === undefined ? {} : { threadsUserId: duplicate.threadsUserId }),
     };
     assertValidTombstone(tombstone);
-    storage.tombstones[tombstone.contactId] = tombstone;
+    Object.defineProperty(storage.tombstones, tombstone.contactId, {
+      value: tombstone, enumerable: true, configurable: true, writable: true,
+    });
 
     for (const [key, value] of Object.entries(storage.identityIndex)) {
       if (value === duplicate.id) delete storage.identityIndex[key];

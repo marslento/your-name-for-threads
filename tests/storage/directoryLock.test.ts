@@ -1,6 +1,6 @@
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { installDirectoryLockArbiter, withDirectoryLock } from "../../src/storage/directoryLock";
+import { DirectoryLockUnavailableError, installDirectoryLockArbiter, withDirectoryLock } from "../../src/storage/directoryLock";
 import { createFakePortRuntime } from "../fixtures/storage/fakePortRuntime";
 
 function installFakeChromeRuntime() {
@@ -13,6 +13,7 @@ function installFakeChromeRuntime() {
 }
 
 afterEach(() => {
+  vi.restoreAllMocks();
   Reflect.deleteProperty(globalThis, "chrome");
 });
 
@@ -116,5 +117,54 @@ describe("withDirectoryLock / installDirectoryLockArbiter (Phase 3.5 review roun
     Object.defineProperty(globalThis, "chrome", { configurable: true, value: { storage: {} } });
 
     await expect(withDirectoryLock(async () => "ok")).resolves.toBe("ok");
+  });
+});
+
+describe("withDirectoryLock(fn, { required: true }) (Recovery Restore 1.1.0, spec T4): no unlocked fallback", () => {
+  it("refuses, without running fn, when chrome.runtime.connect is unavailable", async () => {
+    Object.defineProperty(globalThis, "chrome", { configurable: true, value: { storage: {} } });
+    const fn = vi.fn(async () => "ran");
+
+    await expect(withDirectoryLock(fn, { required: true })).rejects.toBeInstanceOf(DirectoryLockUnavailableError);
+    expect(fn).not.toHaveBeenCalled();
+  });
+
+  it("refuses, without running fn, when connecting throws", async () => {
+    const runtime = installFakeChromeRuntime();
+    vi.spyOn(runtime, "connect").mockImplementation(() => {
+      throw new Error("Extension context invalidated.");
+    });
+    const fn = vi.fn(async () => "ran");
+
+    await expect(withDirectoryLock(fn, { required: true })).rejects.toBeInstanceOf(DirectoryLockUnavailableError);
+    expect(fn).not.toHaveBeenCalled();
+  });
+
+  it("refuses, without running fn, when the port closes before the lock is granted", async () => {
+    const runtime = installFakeChromeRuntime();
+    runtime.onConnect.addListener((port) => port.disconnect()); // e.g. the background went away mid-connect
+    const fn = vi.fn(async () => "ran");
+
+    await expect(withDirectoryLock(fn, { required: true })).rejects.toBeInstanceOf(DirectoryLockUnavailableError);
+    expect(fn).not.toHaveBeenCalled();
+  });
+
+  it("runs fn once the lock is granted, and releases it for the next caller", async () => {
+    installFakeChromeRuntime();
+    installDirectoryLockArbiter();
+
+    await expect(withDirectoryLock(async () => "first", { required: true })).resolves.toBe("first");
+    await expect(withDirectoryLock(async () => "second")).resolves.toBe("second");
+  });
+
+  it("leaves the default mode's fallbacks exactly as they were", async () => {
+    const runtime = installFakeChromeRuntime();
+    runtime.onConnect.addListener((port) => port.disconnect());
+
+    await expect(withDirectoryLock(async () => "ran")).rejects.toThrow("Directory lock port disconnected before being granted.");
+    vi.spyOn(runtime, "connect").mockImplementation(() => {
+      throw new Error("Extension context invalidated.");
+    });
+    await expect(withDirectoryLock(async () => "ran")).resolves.toBe("ran");
   });
 });

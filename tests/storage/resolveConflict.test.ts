@@ -36,7 +36,7 @@ afterEach(() => {
 });
 
 describe("BrowserStorageContactsRepository.resolveConflict", () => {
-  it("merges the conflict and persists the result in one write", async () => {
+  it.each(["duplicate", "__proto__"])("merges duplicate %s and persists its tombstone in one write", async (duplicateId) => {
     const canonical = {
       id: "canonical",
       threadsUserId: "123",
@@ -47,7 +47,7 @@ describe("BrowserStorageContactsRepository.resolveConflict", () => {
       identityUpdatedAt: "2026-01-01T00:00:00.000Z",
     };
     const duplicate = {
-      id: "duplicate",
+      id: duplicateId,
       username: "new",
       nickname: "New",
       createdAt: "2026-01-01T00:00:00.000Z",
@@ -55,13 +55,13 @@ describe("BrowserStorageContactsRepository.resolveConflict", () => {
       identityUpdatedAt: "2026-01-01T00:00:00.000Z",
     };
     const area = installStorage({
-      contacts: { canonical, duplicate },
-      identityIndex: { "username:old": "canonical", "threads:123": "canonical", "username:new": "duplicate" },
+      contacts: { canonical, [duplicateId]: duplicate },
+      identityIndex: { "username:old": "canonical", "threads:123": "canonical", "username:new": duplicateId },
       identityConflicts: {
         "conflict-1": {
           id: "conflict-1",
           threadsUserId: "123",
-          contactIds: ["canonical", "duplicate"],
+          contactIds: ["canonical", duplicateId],
           detectedAt: "2026-01-02T00:00:00.000Z",
         },
       },
@@ -74,7 +74,7 @@ describe("BrowserStorageContactsRepository.resolveConflict", () => {
       note: "",
       expectedSources: [
         { contactId: "canonical", updatedAt: canonical.updatedAt, identityUpdatedAt: canonical.identityUpdatedAt },
-        { contactId: "duplicate", updatedAt: duplicate.updatedAt, identityUpdatedAt: duplicate.identityUpdatedAt },
+        { contactId: duplicateId, updatedAt: duplicate.updatedAt, identityUpdatedAt: duplicate.identityUpdatedAt },
       ],
       now: "2026-01-03T00:00:00.000Z",
     });
@@ -82,7 +82,8 @@ describe("BrowserStorageContactsRepository.resolveConflict", () => {
     expect(result.type).toBe("resolved");
     const directory = directoryOf(area);
     expect(directory.contacts).toEqual({ canonical: { ...canonical, nickname: "Merged", updatedAt: "2026-01-03T00:00:00.000Z" } });
-    expect(directory.tombstones.duplicate).toMatchObject({ reason: "merged", mergedIntoContactId: "canonical" });
+    expect(Object.hasOwn(directory.tombstones, duplicateId)).toBe(true);
+    expect(directory.tombstones[duplicateId]).toMatchObject({ reason: "merged", mergedIntoContactId: "canonical" });
     expect(directory.identityConflicts).toEqual({});
     expect(area.writeCount()).toBe(1);
   });

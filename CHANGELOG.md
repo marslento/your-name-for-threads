@@ -4,9 +4,30 @@ Notable changes to Your Name for Threads are recorded here. The format follows [
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-09-27
+
+### Added
+
+- Restore a single-account recovery file from the Recovery page or Backup & Import, with validation and a preview before confirmation. Restore into an empty directory or repair the matching damaged directory without clearing it first.
+- Rebuild lookup entries and pending conflicts while preserving contacts and deleted records. Stored Threads IDs are kept; the restore does not verify identities. Other accounts' files, global recovery files, invalid records and healthy non-empty targets are refused.
+
+### Fixed
+
+- A contact's stored numeric Threads ID is no longer replaced when a matching username is seen with another ID. The old behaviour left a second lookup entry behind, which put that account's data into Recovery.
+- Keep recovery results and the retry action visible after leaving the Recovery page. Retry disables conflicting controls and refreshes the normal backup export after success.
+
+- Reject contradictory signed-in account data instead of accepting a valid viewer alongside a logged-out or malformed one.
+- Keep full exports available for older oversized directories, with a visible warning when a file exceeds the current 20,000-record or 10 MiB import limits, including before clearing or replacing data.
+
+### Changed
+
+- Clarified the privacy policy on 2026-09-25: page-visible nicknames, unauthenticated account evidence, deletion of notes through contact controls, and limits on restoring exported files.
+- The privacy policy, the data handling matrix and the threat model describe the recovery file restore. The Recovery and clear wording now says that clearing is not a step of restoring, and that a downloaded recovery file can be restored only if it passes the checks.
+- Two diagnostic codes, RECOVERY_IMPORT_INVALID and RECOVERY_RESTORE_FAILED, record a refused recovery file and a restore that failed in storage, as fixed codes only.
+
 ## [1.0.0] - 2026-09-23
 
-First release on [Chrome Web Store](https://chromewebstore.google.com/detail/your-name-for-threads/jmpaegbcheebaflefpfappfbiimgknoa) and [Microsoft Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/your-name-for-threads/ojnkchiogffjbniepbngfokiapfahmpb). The owner confirmed publication and supplied the version's store update date on 2026-09-24. GitHub Release publication is tracked separately.
+First release on [Chrome Web Store](https://chromewebstore.google.com/detail/your-name-for-threads/jmpaegbcheebaflefpfappfbiimgknoa) and [Microsoft Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/your-name-for-threads/ojnkchiogffjbniepbngfokiapfahmpb).
 
 ### Added
 

@@ -14,7 +14,7 @@ globalThis.IS_REACT_ACT_ENVIRONMENT = true;
  * an account whose Directory is damaged gets no private Threads UI, its data is not even opened, and what
  * the page reveals about who is who is not filed into it; a healthy account beside it is untouched; global
  * damage stops everyone. The healthy runs are the control that proves the same page, storage and resolver
- * do mount the UI and file the identity when nothing is wrong.
+ * do mount the UI and cache the public identity without changing a Directory when nothing is wrong.
  */
 const PROFILE_HOST = "[data-tpd-profile-host]";
 
@@ -74,7 +74,7 @@ async function open(raw: Record<string, unknown>, owner: string, { expectUi }: {
     await settle(60, expectUi ? () => document.querySelector(PROFILE_HOST) !== null : undefined);
     const mounted = document.querySelector(PROFILE_HOST) !== null;
     discover("carol", "300");
-    await settle(expectUi ? 15 : 40, () => expectUi && filed.mock.calls.length > 0);
+    await settle(expectUi ? 15 : 40, () => expectUi && Object.hasOwn(area.snapshot().identityCache ?? {}, "carol"));
     listeningWhileRunning = resolver.listeners.size;
     return {
       mounted,
@@ -82,6 +82,7 @@ async function open(raw: Record<string, unknown>, owner: string, { expectUi }: {
       filedInto: filed.mock.calls.map(([input]) => input.ownerThreadsUserId),
       directoriesAfter: area.snapshot().directories,
       bindingsAfter: area.snapshot().accountBindings,
+      cacheAfter: area.snapshot().identityCache,
       listeningWhileRunning,
       stop: () => {
         stop();
@@ -104,13 +105,17 @@ describe("the content bootstrap with nothing wrong (the control)", () => {
   it.each([
     ["Alice", ALICE],
     ["Bob", BOB],
-  ])("mounts %s's private UI, opens only their own Directory, and files what the page reveals into it", async (_name, owner) => {
-    const result = await open(twoAccounts(), owner, { expectUi: true });
+  ])("mounts %s's private UI and caches page observations without changing their Directory", async (_name, owner) => {
+    const raw = twoAccounts();
+    const result = await open(raw, owner, { expectUi: true });
     try {
       expect(result.mounted).toBe(true);
       expect(result.opened.length).toBeGreaterThan(0);
       expect(new Set(result.opened)).toEqual(new Set([owner]));
-      expect(new Set(result.filedInto)).toEqual(new Set([owner]));
+      expect(result.filedInto).toEqual([]);
+      expect(result.cacheAfter).toMatchObject({ carol: { threadsUserId: "300" } });
+      expect(result.directoriesAfter).toEqual(raw.directories);
+      expect(result.bindingsAfter).toEqual(raw.accountBindings);
       expect(result.listeningWhileRunning).toBeGreaterThan(0);
     } finally {
       expect(result.stop(), "nothing is left listening to the resolver after the page is torn down").toBe(0);
@@ -121,9 +126,8 @@ describe("the content bootstrap with nothing wrong (the control)", () => {
 describe("the content bootstrap when Alice's Directory is damaged", () => {
   const damaged = () => withDirectory(ALICE_DIR, DAMAGED_ALICE);
 
-  // Two independent layers keep Alice's identity out of her Directory - the owner the identity coordinator asks
-  // for, and the write authority - so either alone can be removed without this test noticing. Removing both is
-  // caught, and that is the property that matters.
+  // Recovery blocks private reads and UI. Page observations cannot write to a Directory,
+  // regardless of its health or whether the account is confirmed.
   it("gives Alice no private UI, never opens or files into her Directory, and leaves it and her binding as they were", async () => {
     const raw = damaged();
     const result = await open(raw, ALICE, { expectUi: false });
@@ -139,12 +143,16 @@ describe("the content bootstrap when Alice's Directory is damaged", () => {
     }
   });
 
-  it("leaves Bob exactly as he was: the UI mounts, and only his Directory is opened and filed into", async () => {
-    const result = await open(damaged(), BOB, { expectUi: true });
+  it("leaves Bob exactly as he was: the UI mounts, only his Directory is opened, and observations only update the cache", async () => {
+    const raw = damaged();
+    const result = await open(raw, BOB, { expectUi: true });
     try {
       expect(result.mounted).toBe(true);
       expect(new Set(result.opened)).toEqual(new Set([BOB]));
-      expect(new Set(result.filedInto)).toEqual(new Set([BOB]));
+      expect(result.filedInto).toEqual([]);
+      expect(result.cacheAfter).toMatchObject({ carol: { threadsUserId: "300" } });
+      expect(result.directoriesAfter).toEqual(raw.directories);
+      expect(result.bindingsAfter).toEqual(raw.accountBindings);
     } finally {
       result.stop();
     }

@@ -1,11 +1,15 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type Dispatch, type ReactNode, type SetStateAction } from "react";
 import { createHashRouter, Navigate, Outlet, RouterProvider } from "react-router-dom";
 
 import type { CurrentAccountResolver } from "../account/CurrentAccountResolver";
 import { DashboardSessionAccountResolver } from "../account/DashboardSessionAccountResolver";
+import { reportDiagnostic } from "../diagnostics/reportDiagnostic";
 import { t } from "../i18n/t";
+import { KEEPS_PREVIEW, RecoveryRestoreContext, RecoveryRestoreStatus, type RecoveryRestoreActions, type RestoreOperation } from "../recovery/RecoveryImportCard";
 import { RecoveryPage } from "../recovery/RecoveryPage";
 import { runRecoveryExport } from "../recovery/exportRecoveryDump";
+import { parseRecoveryFile, type RecoveryImportErrorCode, type RecoveryResult } from "../recovery/recoveryImport";
+import { commitRecoveryRestore, previewRecoveryRestore, type RecoveryRestoreOutcome } from "../recovery/recoveryRestore";
 import { useRecoveryState } from "../recovery/useRecoveryState";
 import { BrowserStorageContactsRepository } from "../storage/BrowserStorageContactsRepository";
 import { BrowserDirectoryRepository } from "../storage/BrowserDirectoryRepository";
@@ -32,6 +36,65 @@ function createServices(ownerThreadsUserId: string, authority: AccountWriteAutho
     store: new DashboardStore(),
     repository: new BrowserStorageContactsRepository((owner) => authority.capture(owner)),
     directoryRepository: new BrowserDirectoryRepository((owner) => authority.capture(owner)),
+  };
+}
+
+/** Faults in storage or the lock. A refused file for another account, an ineligible target or a cancellation is not one. */
+const RESTORE_FAILURES: ReadonlySet<RecoveryImportErrorCode> = new Set(["lock_unavailable", "storage_read_failed", "storage_write_failed", "verification_failed"]);
+
+/**
+ * Restore from a recovery file (Recovery Restore 1.1.0) for one confirmed owner. The authority is captured before the
+ * file is read and travels with the preview, so a restore can never outlive the proof it started with, and the file
+ * is only ever checked against this owner. Diagnostics carry a fixed code and nothing else.
+ *
+ * A commit is the account's operation, not the card's (spec T7, A14, A15): the card may be gone before the result is
+ * back, because the write itself ends Recovery and the Recovery page with it. So the commit keeps its own state in the
+ * App through `setOperation` - running, then done or failed, with the preview kept when checking it again is the next
+ * step - and only replaces the state it set itself. A commit whose authority was withdrawn meanwhile shows nothing,
+ * and takes down its "running" state if nothing newer replaced it.
+ */
+export function recoveryRestoreActions(
+  ownerThreadsUserId: string,
+  authority: AccountWriteAuthority,
+  setOperation: Dispatch<SetStateAction<RestoreOperation | null>>,
+): RecoveryRestoreActions {
+  return {
+    async prepare(file) {
+      let signal: AbortSignal;
+      try {
+        signal = authority.capture(ownerThreadsUserId);
+      } catch {
+        return { ok: false, code: "authority_revoked" };
+      }
+      const parsed = await parseRecoveryFile(file, ownerThreadsUserId);
+      if (!parsed.ok) {
+        if (parsed.code !== "owner_mismatch") reportDiagnostic("RECOVERY_IMPORT_INVALID", "import");
+        return parsed;
+      }
+      const preview = await previewRecoveryRestore({ source: parsed.value, now: new Date().toISOString(), signal });
+      if (!preview.ok && RESTORE_FAILURES.has(preview.code)) reportDiagnostic("RECOVERY_RESTORE_FAILED", "import");
+      return preview;
+    },
+    async commit(preview) {
+      const signal = preview.authoritySignal;
+      const running: RestoreOperation = { stage: "committing" };
+      setOperation(running);
+      let result: RecoveryResult<RecoveryRestoreOutcome>;
+      try {
+        result = await commitRecoveryRestore(preview);
+      } catch {
+        // Nothing says whether a write happened: the same as a read-back that failed.
+        result = { ok: false, code: "verification_failed" };
+      }
+      if (!result.ok && RESTORE_FAILURES.has(result.code)) reportDiagnostic("RECOVERY_RESTORE_FAILED", "import");
+      const settled: RestoreOperation | null = signal.aborted
+        ? null
+        : result.ok
+          ? { stage: "done", outcome: result.value }
+          : { stage: "failed", code: result.code, retry: KEEPS_PREVIEW.has(result.code) ? preview : null };
+      setOperation((current) => (current === running ? settled : current));
+      return result;
+    },
   };
 }
 
@@ -92,7 +155,7 @@ function ImportSessionLayout({ services, ownerUsername }: { services: DashboardS
   );
 }
 
-function createDashboardRouter(services: DashboardServices, ownerUsername: string) {
+function createDashboardRouter(services: DashboardServices, ownerUsername: string, recoveryRestore: RecoveryRestoreActions) {
   return createHashRouter([
     {
       element: <DashboardLayout ownerUsername={ownerUsername} />,
@@ -110,6 +173,7 @@ function createDashboardRouter(services: DashboardServices, ownerUsername: strin
                   ownerThreadsUserId={services.ownerThreadsUserId}
                   ownerUsername={ownerUsername}
                   directoryRepository={services.directoryRepository}
+                  recoveryRestore={recoveryRestore}
                 />
               ),
             },
@@ -177,26 +241,58 @@ export function App({ accountResolver: injectedResolver }: AppProps = {}) {
     return () => services.store.stop();
   }, [services, mayLoad]);
 
-  const router = useMemo(
-    () => (services && owner ? createDashboardRouter(services, owner.ownerUsername) : null),
-    [services, owner?.ownerUsername],
+  // A restore in progress, and its outcome, kept here so they outlive the page that started them: a restore from the
+  // Recovery page ends Recovery and unmounts that page, possibly before its result has been read back. The preview a
+  // failed restore keeps for "Check Again" lives only here, in this page's memory. Only a commit whose authority still
+  // stands sets it (see `recoveryRestoreActions`), and it is dropped while rendering the moment the owner changes, so
+  // not even one frame shows it for another account, or again after signing back in.
+  const ownerThreadsUserId = owner?.ownerThreadsUserId ?? null;
+  const [restoreOperation, setRestoreOperation] = useState<RestoreOperation | null>(null);
+  const [restoreFor, setRestoreFor] = useState(ownerThreadsUserId);
+  if (restoreFor !== ownerThreadsUserId) {
+    setRestoreFor(ownerThreadsUserId);
+    setRestoreOperation(null);
+  }
+  const recoveryRestore = useMemo(
+    () => (ownerThreadsUserId === null ? null : recoveryRestoreActions(ownerThreadsUserId, writeAuthority, setRestoreOperation)),
+    [ownerThreadsUserId, writeAuthority],
   );
 
-  if (!router || !owner) {
+  const router = useMemo(
+    () => (services && owner && recoveryRestore ? createDashboardRouter(services, owner.ownerUsername, recoveryRestore) : null),
+    [services, owner?.ownerUsername, recoveryRestore],
+  );
+
+  if (!router || !owner || !recoveryRestore) {
     return <AccountUnresolvedScreen />;
   }
   if (recovery.status === "checking") {
     return <RecoveryCheckingScreen />;
   }
+  // The Recovery page and the Dashboard share the result's status region, so it is not remounted - and its words
+  // are still announced - when a restore ends Recovery and one replaces the other.
+  let page: ReactNode;
   if (recovery.status === "ready" && recovery.state.kind !== "none") {
-    return (
+    page = (
       <RecoveryPage
         state={recovery.state}
         ownerThreadsUserId={owner.ownerThreadsUserId}
+        restore={recoveryRestore}
         clearDamagedDirectory={(ownerId) => clearDamagedOwnerDirectory(ownerId, writeAuthority.capture(ownerId))}
         exportRecovery={(ownerId) => runRecoveryExport(ownerId, undefined, writeAuthority.capture(ownerId))}
       />
     );
+  } else {
+    page = <RouterProvider key={owner.ownerThreadsUserId} router={router} />;
   }
-  return <RouterProvider key={owner.ownerThreadsUserId} router={router} />;
+  return (
+    <>
+      <RecoveryRestoreContext.Provider value={restoreOperation}>{page}</RecoveryRestoreContext.Provider>
+      <RecoveryRestoreStatus
+        operation={restoreOperation}
+        onRetry={(preview) => void recoveryRestore.commit(preview)}
+        onDismiss={() => setRestoreOperation(null)}
+      />
+    </>
+  );
 }

@@ -369,8 +369,8 @@ describe("the Pages workflow", () => {
   it("uses only the three actions it has been reviewed for, each at a verified commit, and uploads exactly site/", () => {
     const actions = [...text().matchAll(/^\s*-?\s*uses:\s*(\S+)/gm)].map((match) => match[1]);
 
-    expect(actions).toEqual(["actions/checkout@11d5960a326750d5838078e36cf38b85af677262", "actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa", "actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e"]);
-    expect(text()).toMatch(/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa\n\s+with:\n\s+path:\s*site\s*$/m);
+    expect(actions).toEqual(["actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1", "actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9", "actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346"]);
+    expect(text()).toMatch(/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9\n\s+with:\n\s+path:\s*site\s*$/m);
   });
 
   it("deploys to the github-pages environment, one deployment at a time, and cannot run forever", () => {

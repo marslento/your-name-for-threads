@@ -1,11 +1,37 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  countVisibleCharacters,
   isValidThreadsUserId,
+  MAX_NICKNAME_LENGTH,
+  MAX_NOTE_LENGTH,
   normalizeNickname,
+  normalizeNote,
   normalizeThreadsUserId,
   normalizeUsername,
 } from "../../src/domain/validation";
+import { segmentsPulled } from "../fixtures/segmentsPulled";
+
+describe("countVisibleCharacters", () => {
+  it("counts what a person sees as one character as one", () => {
+    const accented = `e${String.fromCodePoint(0x301)}`;
+
+    expect(countVisibleCharacters(`👨‍👩‍👧‍👦${accented}阿`)).toBe(3);
+  });
+
+  it("stops one past the limit it is given, however long the text (Codex Security scan 0905, finding 2)", () => {
+    expect(countVisibleCharacters("a".repeat(25), 25)).toBe(25);
+    expect(countVisibleCharacters("a".repeat(1_000_000), 25)).toBe(26);
+    expect(countVisibleCharacters("👍🏽".repeat(1_000), 25)).toBe(26);
+  });
+
+  it.each([
+    ["nickname", () => normalizeNickname("a".repeat(100_000)), MAX_NICKNAME_LENGTH],
+    ["note", () => normalizeNote("a".repeat(100_000)), MAX_NOTE_LENGTH],
+  ])("reads an oversized %s only to one past its limit before refusing it", (_field, check, limit) => {
+    expect(segmentsPulled(() => expect(check).toThrow())).toBe(limit + 1);
+  });
+});
 
 describe("normalizeNickname", () => {
   it("rejects a nickname that is empty after trimming", () => {

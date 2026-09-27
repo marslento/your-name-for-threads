@@ -39,6 +39,7 @@ pnpm test:e2e:report
 | 首次導覽 | 三步流程、開啟模擬 Threads、完成旗標在重新載入後仍有效 |
 | 暱稱與備份 | Profile 表單儲存、feed 顯示、綁定正確帳號、Directory 顯示、Settings／About 頁面、下載 JSON、相同備份匯入完成、Done 返回、資料保持相同 |
 | Recovery | 當前帳號資料損壞後隱藏名錄與私密內容；匯出保留原始資料且限於該帳號；取消清除不改資料；確認清除後回到名錄，另一帳號資料完整保留 |
+| 從復原檔復原（`recovery-restore.spec.ts`） | 以模擬的查找索引損壞進入 Recovery、匯出復原檔；在 Recovery 頁直接復原，分析與取消確認時零寫入，確認後離開 Recovery 並顯示結果，復原後的一般備份仍可往返；清除後在備份與匯入頁用同一檔案復原，已有資料時拒絕且不提供清除捷徑 |
 | 網站範圍 | 瀏覽器讀到的 manifest 將兩支內容腳本限制在 Threads；其他網站沒有擴充 UI |
 | Dashboard 來源生命週期（`dashboard-lifecycle.spec.ts`） | 重新載入（含新頁被網路擋住時）、離開 Threads、關閉來源、登出與換帳號、兩個來源同帳號、連按與同時開啟、站內導覽後仍可儲存、被導向他站的 Dashboard 分頁不被誤關、使用者自行關閉、開啟途中來源消失。重新載入尚未完成時，Popup 不可用舊頁證據開啟 Dashboard。等待中操作取消與訊息排序另由單元測試覆蓋；worker 重啟仍需實機驗證，Threads 強制重新整理提示辨識尚未支援。 |
 

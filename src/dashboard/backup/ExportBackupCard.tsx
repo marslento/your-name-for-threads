@@ -12,13 +12,17 @@ export interface ExportBackupCardProps {
   ownerUsername: string;
   repository: DirectoryRepository;
   clock?: () => string;
+  /** Held off while something beside it is changing the same Directory (a recovery restore). */
+  disabled?: boolean;
 }
 
-export function ExportBackupCard({ ownerThreadsUserId, ownerUsername, repository, clock = () => new Date().toISOString() }: ExportBackupCardProps) {
+export function ExportBackupCard({ ownerThreadsUserId, ownerUsername, repository, clock = () => new Date().toISOString(), disabled = false }: ExportBackupCardProps) {
   const [exporting, setExporting] = React.useState(false);
+  const [restoreWarning, setRestoreWarning] = React.useState<string | null>(null);
 
   async function handleExport() {
     setExporting(true);
+    setRestoreWarning(null);
     try {
       const result = await runBackupExport(ownerThreadsUserId, ownerUsername, repository, clock);
       if (!result.ok) {
@@ -26,7 +30,8 @@ export function ExportBackupCard({ ownerThreadsUserId, ownerUsername, repository
         toast.error(t("dashboard_import_exportError"));
         return;
       }
-      toast.success(t("dashboard_import_exportSuccess"));
+      setRestoreWarning(result.restoreWarning ?? null);
+      if (!result.restoreWarning) toast.success(t("dashboard_import_exportSuccess"));
     } catch {
       reportDiagnostic("BACKUP_EXPORT_FAILED", "backup");
       toast.error(t("dashboard_import_exportError"));
@@ -39,8 +44,9 @@ export function ExportBackupCard({ ownerThreadsUserId, ownerUsername, repository
     <div className="flex flex-col gap-3 rounded-md border p-4">
       <h2 className="text-base font-medium">{t("dashboard_import_exportCardTitle")}</h2>
       <p className="text-sm text-muted-foreground">{t("dashboard_import_exportCardDescription")}</p>
+      {restoreWarning && <p role="alert" className="text-sm text-destructive">{restoreWarning}</p>}
       <div>
-        <Button type="button" onClick={() => void handleExport()} disabled={exporting}>
+        <Button type="button" onClick={() => void handleExport()} disabled={exporting || disabled}>
           {t("dashboard_import_exportAction")}
         </Button>
       </div>

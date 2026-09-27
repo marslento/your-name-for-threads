@@ -38,7 +38,7 @@ export function reconcileIdentityDerivedState(input: {
   }
 
   const existingConflicts = [...input.existingConflicts.values()];
-  const identityConflicts: Record<string, IdentityConflict> = {};
+  const identityConflicts: Record<string, IdentityConflict> = Object.create(null);
 
   for (const [threadsUserId, contacts] of byThreadsUserId) {
     if (contacts.length === 1) {

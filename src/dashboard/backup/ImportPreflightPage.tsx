@@ -13,6 +13,7 @@ import {
 } from '../../components/ui/alert-dialog'
 import { Button } from '../../components/ui/button'
 import { reportDiagnostic } from '../../diagnostics/reportDiagnostic'
+import { MAX_DIRECTORY_RECORDS } from '../../domain/directory'
 import { reconcileIdentityDerivedState } from '../../domain/identityReconciliation'
 import { t } from '../../i18n/t'
 import { buildSessionCandidate } from '../../portability/buildCandidateSnapshot'
@@ -245,6 +246,13 @@ const MODE_DESCRIPTION_KEYS: Record<ImportMode, string> = {
   external_import: 'dashboard_import_operationExternalDescription'
 }
 
+/** Title and description for an import that did not write; `$1` in a description is the Directory limit. */
+const COMMIT_ERROR_MESSAGES = {
+  cancelled: ['dashboard_import_cancelledTitle', 'dashboard_import_cancelledDescription'],
+  failed: ['dashboard_import_commitFailedTitle', 'dashboard_import_commitFailedDescription'],
+  full: ['dashboard_import_directoryFullTitle', 'dashboard_import_directoryFullDescription']
+} as const
+
 /**
  * Only rendered when the backup's relationship to the current Directory
  * actually leaves a choice - same lineage (Phase 3.6 §5/§6). Everything else
@@ -353,8 +361,19 @@ export function ImportPreflightPage ({
   } = useImportSessionContext()
   const navigate = useNavigate()
   const [concurrencyConflict, setConcurrencyConflict] = React.useState(false)
-  const [commitError, setCommitError] = React.useState<'cancelled' | 'failed' | null>(null)
+  const [commitError, setCommitError] = React.useState<keyof typeof COMMIT_ERROR_MESSAGES | null>(null)
   const [restoreConfirmOpen, setRestoreConfirmOpen] = React.useState(false)
+  const [exportNotice, setExportNotice] = React.useState<string | null>(null)
+
+  async function handleExportFirst () {
+    setExportNotice(null)
+    try {
+      const result = await runBackupExport(ownerThreadsUserId, ownerUsername, directoryRepository, clock)
+      setExportNotice(result.ok ? result.restoreWarning ?? null : t('dashboard_import_exportError'))
+    } catch {
+      setExportNotice(t('dashboard_import_exportError'))
+    }
+  }
 
   const { preflight, mode, lineage } = session
   const modes = availableImportModes(lineage)
@@ -462,7 +481,11 @@ export function ImportPreflightPage ({
       setConcurrencyConflict(true)
       return
     }
-    // A cancel is the user's own choice; only a write that failed is a fault.
+    // A cancel is the user's own choice and a full Directory the user's own data; only a write that failed is a fault.
+    if (outcome.status === 'directory_full') {
+      setCommitError('full')
+      return
+    }
     if (outcome.status !== 'cancelled') reportDiagnostic('IMPORT_COMMIT_FAILED', 'import')
     setCommitError(outcome.status === 'cancelled' ? 'cancelled' : 'failed')
   }
@@ -562,10 +585,10 @@ export function ImportPreflightPage ({
           className='rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm'
         >
           <p className='font-medium text-destructive'>
-            {t(commitError === 'cancelled' ? 'dashboard_import_cancelledTitle' : 'dashboard_import_commitFailedTitle')}
+            {t(COMMIT_ERROR_MESSAGES[commitError][0])}
           </p>
           <p className='text-muted-foreground'>
-            {t(commitError === 'cancelled' ? 'dashboard_import_cancelledDescription' : 'dashboard_import_commitFailedDescription')}
+            {t(COMMIT_ERROR_MESSAGES[commitError][1], MAX_DIRECTORY_RECORDS.toLocaleString())}
           </p>
         </div>
       ) : null}
@@ -596,13 +619,12 @@ export function ImportPreflightPage ({
                 : 'dashboard_import_noUndoNotice'
             )}
           </p>
+          {exportNotice && <p role='alert' className='text-sm text-destructive'>{exportNotice}</p>}
           <div className='flex flex-wrap gap-2'>
             <Button
               type='button'
               variant='outline'
-              onClick={() => {
-                void runBackupExport(ownerThreadsUserId, ownerUsername, directoryRepository, clock)
-              }}
+              onClick={() => void handleExportFirst()}
             >
               {t('dashboard_import_exportFirstAction')}
             </Button>

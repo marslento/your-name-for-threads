@@ -19,11 +19,14 @@ import { GITHUB_BUG_REPORT_URL } from "../shared/links";
 import { useSystemTheme } from "../shared/useSystemTheme";
 import { clearDamagedOwnerDirectory, type ClearDamagedDirectoryResult } from "../storage/directoryAccess";
 import { runRecoveryExport } from "./exportRecoveryDump";
+import { RecoveryImportCard, useRestoreCommitting, type RecoveryRestoreActions } from "./RecoveryImportCard";
 import type { RecoveryState } from "./recoveryTypes";
 
 export interface RecoveryPageProps {
   state: Exclude<RecoveryState, { kind: "none" }>;
   ownerThreadsUserId: string;
+  /** Restore from this account's recovery file (Recovery Restore 1.1.0), bound to the Dashboard's authority for it. */
+  restore: RecoveryRestoreActions;
   /** Called once the account's damaged data has been cleared, so the Dashboard can check again and carry on. */
   onCleared?: () => void;
   /** Injectable for tests. */
@@ -33,21 +36,28 @@ export interface RecoveryPageProps {
 
 /**
  * The Recovery page (Phase 4 Task 19, design summary sections 15-19). Shown in place of the Dashboard when
- * this account's private data, or all of it, cannot be read safely. It offers exactly four things: keep
- * a raw copy of the damaged data, copy diagnostics, report the problem, and - for one damaged account only
- * - clear that account's data. There is deliberately no repair, no index rebuild and no importer: the
- * extension never guesses at what damaged data meant, and nothing here changes it except an explicit,
- * confirmed clear.
+ * this account's private data, or all of it, cannot be read safely. It offers: keep a raw copy of the damaged
+ * data, copy diagnostics, report the problem, and - for one damaged account only - restore from that
+ * account's recovery file (Recovery Restore 1.1.0) or clear that account's data. There is still no automatic
+ * repair: nothing changes the data except a restore or a clear that the person has confirmed, and a restore
+ * accepts only a file that holds exactly the records still kept for this account. Clearing is never a step of
+ * restoring.
  *
- * Nothing on this page reads private data to show it: it names a scope and a code, never a username, a
- * nickname, a note or an ID. The Dashboard unmounts this page when the account's proof is lost.
+ * Nothing on this page reads private data to show it before a file is chosen: it names a scope and a code,
+ * never a username, a nickname, a note or an ID. The Dashboard unmounts this page when the account's proof is
+ * lost, and when a restore or a clear ends Recovery; the App keeps a restore's outcome for that moment.
  */
-export function RecoveryPage({ state, ownerThreadsUserId, onCleared, exportRecovery = runRecoveryExport, clearDamagedDirectory = clearDamagedOwnerDirectory }: RecoveryPageProps) {
+export function RecoveryPage({ state, ownerThreadsUserId, restore, onCleared, exportRecovery = runRecoveryExport, clearDamagedDirectory = clearDamagedOwnerDirectory }: RecoveryPageProps) {
   const theme = useSystemTheme();
   const [exporting, setExporting] = useState(false);
   const [copying, setCopying] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [clearing, setClearing] = useState(false);
+  // While a recovery file is read here, or any restore for this account is being committed (Check Again included),
+  // neither an export nor a clear may start beside it.
+  const [reading, setReading] = useState(false);
+  const accountCommitting = useRestoreCommitting();
+  const restoring = reading || accountCommitting;
   const isGlobal = state.kind === "global";
 
   async function exportData() {
@@ -106,8 +116,9 @@ export function RecoveryPage({ state, ownerThreadsUserId, onCleared, exportRecov
         </h2>
         <p className="text-sm leading-6 text-muted-foreground">{t(isGlobal ? "recovery_exportWarningGlobal" : "recovery_exportWarningDirectory")}</p>
         <p className="text-sm leading-6 text-muted-foreground">{t("recovery_noRepair")}</p>
+        {isGlobal ? null : <p className="text-sm leading-6 text-muted-foreground">{t("recovery_restore_exportHint")}</p>}
         <div className="flex flex-wrap gap-2">
-          <Button type="button" disabled={exporting} onClick={() => void exportData()}>
+          <Button type="button" disabled={exporting || restoring} onClick={() => void exportData()}>
             {t("recovery_exportAction")}
           </Button>
           <Button type="button" variant="outline" disabled={copying} onClick={() => void copyDiagnostics()}>
@@ -122,6 +133,12 @@ export function RecoveryPage({ state, ownerThreadsUserId, onCleared, exportRecov
         </div>
       </section>
 
+      {isGlobal ? (
+        <p className="text-sm leading-6 text-muted-foreground">{t("recovery_restore_globalUnsupported")}</p>
+      ) : (
+        <RecoveryImportCard {...restore} onBusyChange={setReading} />
+      )}
+
       <section aria-labelledby="recovery-danger" className="flex flex-col gap-3 rounded-md border border-destructive/50 p-4">
         <h2 id="recovery-danger" className="text-base font-medium text-destructive">
           {t("dashboard_import_dangerZoneTitle")}
@@ -132,7 +149,7 @@ export function RecoveryPage({ state, ownerThreadsUserId, onCleared, exportRecov
           <>
             <p className="text-sm text-muted-foreground">{t("recovery_clearDescription")}</p>
             <div>
-              <Button type="button" variant="destructive" onClick={() => setConfirmOpen(true)}>
+              <Button type="button" variant="destructive" disabled={restoring} onClick={() => setConfirmOpen(true)}>
                 {t("dashboard_import_clearAccountAction")}
               </Button>
             </div>

@@ -4,6 +4,8 @@ import type { DirectorySnapshot } from "../../src/domain/directorySnapshot";
 import { exportDirectory } from "../../src/portability/exportBackup";
 import { parseBackupText } from "../../src/portability/parseBackup";
 import { serializeBackup } from "../../src/portability/exportBackup";
+import { MAX_DIRECTORY_RECORDS } from "../../src/domain/directory";
+import { MAX_BACKUP_FILE_BYTES } from "../../src/portability/parseBackup";
 
 function baseContact() {
   return {
@@ -72,11 +74,44 @@ describe("exportDirectory fails closed on schema-level corruption (not just inva
     expect(exportDirectory(snapshot, OWNER, "2026-09-14T10:55:23.000Z").ok).toBe(false);
   });
 
-  it("every export that succeeds can always be re-parsed by parseBackupText (round-trip guarantee)", () => {
+  it("an ordinary export can be re-imported without a restore warning", () => {
     const result = exportDirectory(snapshotWithContact({}), OWNER, "2026-09-14T10:55:23.000Z");
     expect(result.ok).toBe(true);
     if (!result.ok) return;
+    expect(result.exceedsImportLimits).toBeFalsy();
     const parsed = parseBackupText(serializeBackup(result.backup));
     expect(parsed.ok).toBe(true);
+  });
+});
+
+describe("exports preserve data beyond the current import limits", () => {
+  it("exports every legacy record but flags that the importer cannot restore this file", () => {
+    const snapshot = snapshotWithContact({});
+    snapshot.contacts = new Map(Array.from({ length: MAX_DIRECTORY_RECORDS + 1 }, (_, index) => {
+      const id = `contact-${index}`;
+      return [id, { ...baseContact(), id, username: `user${index}` }];
+    }));
+    const result = exportDirectory(snapshot, OWNER, "2026-09-14T10:55:23.000Z");
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error("Export should preserve legacy data");
+    expect(result.exceedsImportLimits).toBe(true);
+    expect(new Blob([result.json]).size).toBeLessThan(MAX_BACKUP_FILE_BYTES);
+    expect(JSON.parse(result.json).contacts).toHaveLength(MAX_DIRECTORY_RECORDS + 1);
+    expect(parseBackupText(result.json)).toMatchObject({ ok: false });
+  });
+
+  it("flags UTF-8 file size even when the record count is within the limit", () => {
+    const snapshot = snapshotWithContact({});
+    snapshot.contacts = new Map(Array.from({ length: 13_000 }, (_, index) => {
+      const id = `contact-${index}`;
+      return [id, { ...baseContact(), id, username: `user${index}`, note: "備".repeat(200) }];
+    }));
+    const result = exportDirectory(snapshot, OWNER, "2026-09-14T10:55:23.000Z");
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error("Export should preserve all notes");
+    expect(result.json.length).toBeLessThan(MAX_BACKUP_FILE_BYTES);
+    expect(new Blob([result.json]).size).toBeGreaterThan(MAX_BACKUP_FILE_BYTES);
+    expect(result.exceedsImportLimits).toBe(true);
+    expect(JSON.parse(result.json).contacts[0].note).toBe("備".repeat(200));
   });
 });

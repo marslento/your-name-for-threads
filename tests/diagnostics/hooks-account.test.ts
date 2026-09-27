@@ -22,7 +22,6 @@ const signedIn = `<script type="application/json" data-sjs>${JSON.stringify({
 function resolverOn(html: string, overrides: Partial<ConstructorParameters<typeof ThreadsAccountResolver>[1]> = {}) {
   document.body.innerHTML = html;
   return new ThreadsAccountResolver(document, {
-    resolveCachedUsername: async () => null,
     report: () => undefined,
     hydrationRetries: 0,
     ...overrides,

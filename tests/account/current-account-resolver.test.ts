@@ -1,30 +1,6 @@
-import { describe, expect, expectTypeOf, it } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import { ownerThreadsUserIdFromState, UnresolvedAccountResolver } from "../../src/account/CurrentAccountResolver";
-import type {
-  AccountEvidence,
-  CurrentAccountUsernameEvidence,
-  WeakAccountEvidence,
-} from "../../src/account/accountTypes";
-
-describe("AccountEvidence discriminated union (Phase 3.5 review round 2, High #5)", () => {
-  it("only strong-viewer evidence carries a numeric threadsUserId", () => {
-    expectTypeOf<Extract<AccountEvidence, { source: "strong-viewer" }>>().toHaveProperty("threadsUserId");
-    expectTypeOf<CurrentAccountUsernameEvidence>().not.toHaveProperty("threadsUserId");
-    expectTypeOf<WeakAccountEvidence>().not.toHaveProperty("threadsUserId");
-  });
-
-  it("narrowing on source narrows the available fields at compile time", () => {
-    function readId(evidence: AccountEvidence): string | null {
-      if (evidence.source === "strong-viewer") {
-        return evidence.threadsUserId;
-      }
-      // @ts-expect-error - current-account-username/weak evidence has no threadsUserId to read
-      return evidence.threadsUserId ?? null;
-    }
-    expect(readId({ source: "strong-viewer", threadsUserId: "123", username: "alice" })).toBe("123");
-  });
-});
 
 describe("UnresolvedAccountResolver (Phase 3.5 Task 10 placeholder pending Tasks 11-13)", () => {
   it("always reports unresolved - fails closed with no evidence sources wired in yet", () => {

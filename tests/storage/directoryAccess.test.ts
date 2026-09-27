@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
+import { DirectoryFullError, MAX_DIRECTORY_RECORDS, type DirectoryRecord } from "../../src/domain/directory";
 import {
   __resetDirectoryAccessQueueForTests,
   clearOwnerDirectory,
@@ -291,6 +292,58 @@ describe("mutateOwnerDirectory", () => {
       const snapshot = area.snapshot() as { directories: Record<string, unknown> };
       expect(snapshot.directories).toHaveProperty("dir-a");
     });
+  });
+});
+
+describe("mutateOwnerDirectory: the Directory limit (owner's decision after Codex Security scan 0905)", () => {
+  const AT = "2026-01-01T00:00:00.000Z";
+  /** One contact, `c1`, and deleted records for the rest: they count as much as contacts do. */
+  const storageOf = (records: number) => ({
+    schemaVersion: 4,
+    directories: {
+      "dir-a": {
+        directoryId: "dir-a",
+        contacts: { c1: stub("c1") },
+        tombstones: Object.fromEntries(Array.from({ length: records - 1 }, (_, i) => [`t${i}`, { contactId: `t${i}`, username: `gone${i}`, createdAt: AT, deletedAt: AT, reason: "user_deleted" }])),
+        identityIndex: {},
+        identityConflicts: {},
+      },
+    },
+    accountBindings: { "123": "dir-a" },
+  });
+  const write = (change: (current: DirectoryRecord) => Partial<DirectoryRecord>) =>
+    mutateOwnerDirectory({
+      ownerThreadsUserId: "123",
+      createDirectoryId: () => "unused",
+      mutate: (current) => ({ write: true, record: { ...current, ...change(current) }, result: undefined }),
+    });
+  const addContact = (current: DirectoryRecord) => ({ contacts: { ...current.contacts, c2: stub("c2") as never } });
+
+  it("refuses a write that would take it past the limit, and writes nothing", async () => {
+    const area = installFakeChrome(storageOf(MAX_DIRECTORY_RECORDS), migrationCoordinatorSendMessage());
+    const before = area.snapshot();
+
+    await expect(write(addContact)).rejects.toBeInstanceOf(DirectoryFullError);
+    expect(area.snapshot()).toEqual(before);
+  });
+
+  it("(control) takes the write that brings it up to the limit", async () => {
+    const area = installFakeChrome(storageOf(MAX_DIRECTORY_RECORDS - 1), migrationCoordinatorSendMessage());
+
+    await write(addContact);
+
+    expect((area.snapshot() as never as { directories: Record<string, DirectoryRecord> }).directories["dir-a"].contacts).toHaveProperty("c2");
+  });
+
+  it("still lets a Directory already past the limit be edited and emptied", async () => {
+    const area = installFakeChrome(storageOf(MAX_DIRECTORY_RECORDS + 5), migrationCoordinatorSendMessage());
+    const saved = () => (area.snapshot() as never as { directories: Record<string, DirectoryRecord> }).directories["dir-a"];
+
+    await write((current) => ({ contacts: { c1: { ...current.contacts.c1, nickname: "edited" } } }));
+    expect(saved().contacts.c1.nickname).toBe("edited");
+
+    await write(() => ({ contacts: {}, tombstones: {} }));
+    expect(saved().contacts).toEqual({});
   });
 });
 

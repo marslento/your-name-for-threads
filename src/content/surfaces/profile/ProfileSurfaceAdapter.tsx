@@ -3,6 +3,7 @@ import * as React from "react";
 import { reportSurfaceFailure } from "../../../diagnostics/surfaceDiagnostics";
 import { surfaceHealth } from "../../../shared/surfaceHealth";
 import type { ThreadContact } from "../../../domain/contact";
+import { DirectoryFullError } from "../../../domain/directory";
 import type { IdentityCacheEntry, ThreadsIdentity } from "../../../domain/identity";
 import { isIdentityCacheEntryExpired } from "../../../domain/identityCache";
 import type { ContactsRepository } from "../../../storage/ContactsRepository";
@@ -132,7 +133,9 @@ function ProfileSurfaceView({
               nicknameSession.mode === "create" ? "created" : "updated",
             )
           }
-          onSaveError={() => showProfileToast("save-error")}
+          onSaveError={(error) =>
+            showProfileToast(error instanceof DirectoryFullError ? "directory-full" : "save-error")
+          }
           {...(nicknameSession.mode === "edit"
             ? {
                 onRequestDelete: () => {

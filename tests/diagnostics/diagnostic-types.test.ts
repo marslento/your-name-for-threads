@@ -29,6 +29,8 @@ describe("diagnostic taxonomy", () => {
       "BACKUP_IMPORT_INVALID",
       "IMPORT_COMMIT_FAILED",
       "DASHBOARD_SESSION_INVALID",
+      "RECOVERY_IMPORT_INVALID",
+      "RECOVERY_RESTORE_FAILED",
     ]);
   });
 

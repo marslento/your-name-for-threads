@@ -1,5 +1,8 @@
 import { backupFilename, exportDirectory, triggerBackupDownload } from "../../portability/exportBackup";
 import type { DirectoryRepository } from "../../storage/DirectoryRepository";
+import { MAX_DIRECTORY_RECORDS } from "../../domain/directory";
+import { MAX_BACKUP_FILE_BYTES } from "../../portability/parseBackup";
+import { t } from "../../i18n/t";
 
 /**
  * Shared by the Export card and the pre-import/pre-clear "export current
@@ -13,7 +16,7 @@ export async function runBackupExport(
   ownerUsername: string,
   repository: DirectoryRepository,
   clock: () => string,
-): Promise<{ ok: true } | { ok: false }> {
+): Promise<{ ok: true; restoreWarning?: string } | { ok: false }> {
   const directory = await repository.getDirectoryForOwner(ownerThreadsUserId);
   if (!directory) return { ok: false };
 
@@ -29,5 +32,10 @@ export async function runBackupExport(
   if (!result.ok) return { ok: false };
 
   triggerBackupDownload(backupFilename(result.backup.exportedAt), result.json);
+  if (result.exceedsImportLimits) {
+    return { ok: true, restoreWarning: t("dashboard_import_exportRestoreLimited", [
+      MAX_DIRECTORY_RECORDS.toLocaleString(), String(MAX_BACKUP_FILE_BYTES / (1024 * 1024)),
+    ]) };
+  }
   return { ok: true };
 }

@@ -7,7 +7,9 @@ import type { AccountResolutionState } from "../../src/account/accountTypes";
 import type { CurrentAccountResolver } from "../../src/account/CurrentAccountResolver";
 import { reportDiagnostic } from "../../src/diagnostics/reportDiagnostic";
 import { t } from "../../src/i18n/t";
-import type { DirectoryRecord } from "../../src/domain/directory";
+import { DirectoryFullError, MAX_DIRECTORY_RECORDS, type DirectoryRecord } from "../../src/domain/directory";
+import { BrowserDirectoryRepository } from "../../src/storage/BrowserDirectoryRepository";
+import * as backupExport from "../../src/dashboard/backup/runBackupExport";
 import type { ExtensionStorageV4 } from "../../src/storage/schema";
 
 // Diagnostics are exercised in tests/diagnostics; here they are only observed.
@@ -241,6 +243,19 @@ afterEach(() => {
 });
 
 describe("Backup & Import flow", () => {
+  it("keeps a limited-export warning visible before a restore can replace local data", async () => {
+    const warning = "Full data downloaded; this file cannot currently be restored.";
+    vi.spyOn(backupExport, "runBackupExport").mockResolvedValueOnce({ ok: true, restoreWarning: warning });
+    const storage = installStorage(pristineDirectory("local-dir"));
+    window.location.hash = "#/backup-sync";
+    await renderApp(<App accountResolver={resolvedOwner()} />);
+    await chooseBackupFile(backupFile(validBackup({ directoryId: "incoming-dir" })));
+    fireEvent.click(await screen.findByRole("button", { name: t("dashboard_import_exportFirstAction") }));
+    expect(await screen.findByText(warning)).toBeTruthy();
+    expect(screen.queryByRole("heading", { name: t("dashboard_import_resultTitle") })).toBeNull();
+    expect(storage.snapshot().directoryId).toBe("local-dir");
+  });
+
   it("shows the generic invalid-backup message for malformed JSON without navigating away", async () => {
     installStorage(pristineDirectory());
     window.location.hash = "#/backup-sync";
@@ -1435,6 +1450,18 @@ describe("Import cancellation and navigation guard (Phase 3.6 §28-§31)", () =>
     fireEvent.click(screen.getByRole("button", { name: t("dashboard_import_applyAction") }));
 
     await screen.findByRole("heading", { name: t("dashboard_import_resultTitle") });
+    expect(reportDiagnostic).not.toHaveBeenCalled();
+  });
+
+  it("says the Directory would be too big, not to try again later, and records no fault (Codex Security scan 0905)", async () => {
+    await startImport();
+    vi.spyOn(BrowserDirectoryRepository.prototype, "commitOwnerDirectory").mockRejectedValue(new DirectoryFullError());
+
+    fireEvent.click(screen.getByRole("button", { name: t("dashboard_import_applyAction") }));
+
+    expect(await screen.findByText(t("dashboard_import_directoryFullTitle"))).toBeTruthy();
+    expect(screen.getByText(t("dashboard_import_directoryFullDescription", MAX_DIRECTORY_RECORDS.toLocaleString()))).toBeTruthy();
+    expect(screen.queryByText(t("dashboard_import_commitFailedDescription"))).toBeNull();
     expect(reportDiagnostic).not.toHaveBeenCalled();
   });
 });

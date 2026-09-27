@@ -140,7 +140,8 @@ export function recordTabReport(
 
 /**
  * The tab's document `documentId` was replaced or left: it stops proving anything, and nothing it still has in
- * flight is believed. Only a tab that already has a record is touched, so a page that never spoke gets none.
+ * flight is believed. A tab with no record yet gets one holding only that id: the page can leave before its first
+ * report lands, and that report must then be dropped like any other late one (Codex Security scan 092502).
  *
  * Returns the tab's new `reportSeq` only when `documentId` really was the current one - the caller then has
  * something to end. If a NEWER document has already reported, this only appends the old id to
@@ -153,7 +154,12 @@ export function retireTabDocument(tabId: number, documentId: string | undefined)
   return enqueue(async () => {
     const all = await readAll();
     const existing = all[tabId];
-    if (!existing) return undefined;
+    if (!existing) {
+      if (documentId === undefined) return undefined;
+      all[tabId] = { tabId, state: "unresolved", retiredDocumentIds: [documentId] };
+      await writeAll(all);
+      return undefined;
+    }
     const retired = withRetired(existing.retiredDocumentIds, documentId);
     const isCurrent = existing.documentId === documentId;
     if (!isCurrent) {

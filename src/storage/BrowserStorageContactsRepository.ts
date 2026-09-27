@@ -297,6 +297,11 @@ export class BrowserStorageContactsRepository implements ContactsRepository {
         if (!byUsername) {
           return noWrite({ type: "cached-only" as const });
         }
+        // A username match is not proof that a contact's stable ID changed: replacing it here left the old
+        // `threads:` index behind, which the loader rejects as a damaged Directory. Nothing is written.
+        if (byUsername.threadsUserId !== undefined && byUsername.threadsUserId !== threadsUserId) {
+          return noWrite({ type: "identity-mismatch" as const, contact: byUsername });
+        }
 
         const contact = { ...byUsername, threadsUserId, identityUpdatedAt: input.observedAt };
         return write(

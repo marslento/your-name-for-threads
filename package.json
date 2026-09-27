@@ -2,7 +2,7 @@
   "name": "your-name-for-threads",
   "private": true,
   "license": "MIT",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "type": "module",
   "packageManager": "pnpm@10.22.0",
   "scripts": {

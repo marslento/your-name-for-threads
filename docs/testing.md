@@ -20,7 +20,7 @@ pnpm test:e2e
 | UI and runtime | Dashboard, popup, content, surface and accessibility suites | User actions, state transitions, nickname placement, focus, messages and graceful degradation |
 | Recovery and diagnostics | `tests/recovery`, `tests/diagnostics` | Damaged data preservation, scoped clear/export, closed diagnostic data and concurrent buffer updates |
 | Build and repo contracts | `tests/build`, `tests/repo` | Real package contents, narrow permissions, privacy/site consistency, no remote code, credentials and approval-controlled publishing |
-| Browser regression | `e2e/extension.spec.ts`, `e2e/dashboard-lifecycle.spec.ts` | Built extension behavior in actual Chromium with controlled Threads stand-ins |
+| Browser regression | `e2e/extension.spec.ts`, `e2e/dashboard-lifecycle.spec.ts`, `e2e/recovery-restore.spec.ts` | Built extension behavior in actual Chromium with controlled Threads stand-ins |
 | Manual acceptance | [Manual protocol](manual-acceptance.md) | Actual Chrome/Edge, real Threads signals, toolbar, downloads, assistive technology, layout, zoom, theme and performance |
 
 Vitest collects `tests/**/*.test.{ts,tsx}`. It does not collect scripts placed in documentation. Playwright has explicit entry specs in `playwright.config.ts`. New independent review probes must be integrated into a formal suite or retained as a clearly labeled investigation, not silently counted as CI coverage.

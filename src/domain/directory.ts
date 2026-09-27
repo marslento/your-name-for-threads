@@ -17,3 +17,18 @@ export interface DirectoryRecord {
   identityIndex: Record<string, string>;
   identityConflicts: Record<string, IdentityConflict>;
 }
+
+/**
+ * The growth and import limit, contacts and deleted records together. Existing oversized Directories remain
+ * editable and fully exportable, with a warning that their files exceed the current restore limits.
+ * Deleted records are kept, so deleting a contact does not make room.
+ */
+export const MAX_DIRECTORY_RECORDS = 20_000;
+
+/** A write that would take a Directory past `MAX_DIRECTORY_RECORDS`. Nothing is written. */
+export class DirectoryFullError extends Error {
+  constructor() {
+    super(`A Directory holds at most ${MAX_DIRECTORY_RECORDS} records`);
+    this.name = "DirectoryFullError";
+  }
+}

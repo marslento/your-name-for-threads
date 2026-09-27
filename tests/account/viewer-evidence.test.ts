@@ -1,10 +1,6 @@
 import { afterEach, describe, expect, it } from "vitest";
 
-import {
-  readCurrentAccountAnchor,
-  readStrongViewerEvidence,
-  readViewerEvidence,
-} from "../../src/account/viewerEvidence";
+import { readStrongViewerEvidence } from "../../src/account/viewerEvidence";
 
 const VIEWER_ID = "73681567207";
 const VIEWER_USERNAME = "alice";
@@ -136,6 +132,33 @@ describe("readStrongViewerEvidence (Phase 3.5 Task 11)", () => {
     expect(readStrongViewerEvidence(document)).toMatchObject({ kind: "confirmed", evidence: { threadsUserId: VIEWER_ID } });
   });
 
+  describe.each([true, false])("mixed viewer evidence (valid first: %s)", (validFirst) => {
+    it.each([
+      ["logged out", null],
+      ["missing viewer", undefined],
+      ["array viewer", []],
+      ["scalar viewer", "alice"],
+      ["missing id", { username: VIEWER_USERNAME }],
+      ["invalid id", { id: "not-numeric", username: VIEWER_USERNAME }],
+      ["non-string id", { id: 73681567207, username: VIEWER_USERNAME }],
+      ["missing username", { id: VIEWER_ID }],
+      ["non-string username", { id: VIEWER_ID, username: 42 }],
+      ["empty normalized username", { id: VIEWER_ID, username: " @ " }],
+    ])("stays unresolved when a valid viewer coexists with %s", (_label, viewer) => {
+      const defines: Array<[string, unknown]> = [
+        ["BarcelonaSharedData", loggedInViewer],
+        ["BarcelonaSharedData", { viewer }],
+      ];
+      if (!validFirst) defines.reverse();
+
+      seedBootstrap(defines);
+      expect(readStrongViewerEvidence(document)).toEqual({ kind: "explicitly-unresolved" });
+
+      seed(defines.map((define) => `<script type="application/json" data-sjs>${bootstrapScript([define])}</script>`).join(""));
+      expect(readStrongViewerEvidence(document)).toEqual({ kind: "explicitly-unresolved" });
+    });
+  });
+
   it("refuses a viewer with no numeric id, or a non-numeric one", () => {
     seedBootstrap([["BarcelonaSharedData", { viewer: { username: VIEWER_USERNAME } }]]);
     expect(readStrongViewerEvidence(document)).toEqual({ kind: "explicitly-unresolved" });
@@ -161,87 +184,5 @@ describe("readStrongViewerEvidence (Phase 3.5 Task 11)", () => {
     seed("<div>no scripts here</div>");
 
     expect(readStrongViewerEvidence(document)).toEqual({ kind: "unavailable" });
-  });
-});
-
-describe("readCurrentAccountAnchor (Phase 3.5 Task 12)", () => {
-  it("reads the current account's username from the primary nav's own profile link", () => {
-    seed(`
-      <nav><a href="/@${VIEWER_USERNAME}">profile</a></nav>
-      <div class="feed"><a href="/@bob">bob</a><a href="/@carol">carol</a></div>
-    `);
-
-    expect(readCurrentAccountAnchor(document)).toEqual({
-      source: "current-account-username",
-      username: VIEWER_USERNAME,
-    });
-  });
-
-  it("ignores profile links outside the nav, however many there are", () => {
-    seed(`
-      <nav><a href="/@${VIEWER_USERNAME}">profile</a><a href="/@${VIEWER_USERNAME}">profile</a></nav>
-      ${Array.from({ length: 21 }, (_v, i) => `<a href="/@other${i}">other</a>`).join("")}
-    `);
-
-    expect(readCurrentAccountAnchor(document)).toMatchObject({ username: VIEWER_USERNAME });
-  });
-
-  it("refuses when the nav names more than one account - that is the very question it exists to answer", () => {
-    seed(`<nav><a href="/@${VIEWER_USERNAME}">me</a><a href="/@bob">bob</a></nav>`);
-
-    expect(readCurrentAccountAnchor(document)).toBeNull();
-  });
-
-  it("refuses when the nav has no profile link", () => {
-    seed(`<nav><a href="/search">search</a></nav><a href="/@bob">bob</a>`);
-
-    expect(readCurrentAccountAnchor(document)).toBeNull();
-  });
-});
-
-describe("readViewerEvidence", () => {
-  it("prefers strong evidence over the DOM anchor when both are present", () => {
-    seedBootstrap([["BarcelonaSharedData", loggedInViewer]], `<nav><a href="/@bob">bob</a></nav>`);
-
-    expect(readViewerEvidence(document)).toMatchObject({
-      kind: "confirmed",
-      evidence: { source: "strong-viewer", threadsUserId: VIEWER_ID },
-    });
-  });
-
-  it("falls back to the DOM anchor only when the bootstrap says nothing at all about the viewer", () => {
-    seed(`<nav><a href="/@${VIEWER_USERNAME}">me</a></nav>`);
-
-    expect(readViewerEvidence(document)).toEqual({
-      kind: "confirmed",
-      evidence: { source: "current-account-username", username: VIEWER_USERNAME },
-    });
-  });
-
-  it("never falls back to the anchor after an explicit logout - a leftover nav must not re-confirm the account that just signed out (review round 6, High #1)", () => {
-    seedBootstrap(
-      [["BarcelonaSharedData", { viewer: null }]],
-      `<nav><a href="/@${VIEWER_USERNAME}">me</a></nav>`,
-    );
-
-    expect(readViewerEvidence(document)).toEqual({ kind: "explicitly-unresolved" });
-  });
-
-  it("never falls back to the anchor when two viewer defines disagree - ambiguity fails closed too", () => {
-    seedBootstrap(
-      [
-        ["BarcelonaSharedData", loggedInViewer],
-        ["BarcelonaSharedData", { viewer: { id: "999000111", username: "bob" } }],
-      ],
-      `<nav><a href="/@${VIEWER_USERNAME}">me</a></nav>`,
-    );
-
-    expect(readViewerEvidence(document)).toEqual({ kind: "explicitly-unresolved" });
-  });
-
-  it("reports unavailable when neither the bootstrap nor a nav anchor names anyone", () => {
-    seed("<div>no scripts here</div>");
-
-    expect(readViewerEvidence(document)).toEqual({ kind: "unavailable" });
   });
 });

@@ -12,7 +12,9 @@ export type AttachStableIdentityResult =
       canonicalContact: ThreadContact;
       conflict: IdentityConflict;
     }
-  | { type: "cached-only" };
+  | { type: "cached-only" }
+  /** The username's contact already has a different stable ID. Not an IdentityConflict: that is two contacts sharing one ID. */
+  | { type: "identity-mismatch"; contact: ThreadContact };
 
 /**
  * Thrown by upsertNickname when the requested identity's numeric Threads ID

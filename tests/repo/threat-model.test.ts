@@ -7,6 +7,7 @@ import { EXPECTED_HOSTS, EXPECTED_PERMISSIONS } from "../../scripts/release-audi
 import { DASHBOARD_SESSIONS_STORAGE_KEY } from "../../src/account/DashboardSessionRegistry";
 import { DIAGNOSTIC_COMPONENTS, PRODUCT_DIAGNOSTIC_CODES } from "../../src/diagnostics/diagnosticTypes";
 import { MAX_DIAGNOSTIC_EVENTS } from "../../src/diagnostics/DiagnosticStore";
+import { MAX_DIRECTORY_RECORDS } from "../../src/domain/directory";
 import { MAX_BACKUP_FILE_BYTES } from "../../src/portability/parseBackup";
 import { findOverclaims } from "../fixtures/overclaims";
 import { ROOT, filesMatching, markdownTable } from "../fixtures/repoFiles";
@@ -109,6 +110,13 @@ describe("the facts it states, which are the code's", () => {
     expect(doc).toContain(`${MAX_BACKUP_FILE_BYTES / (1024 * 1024)} MiB`);
   });
 
+  it("gives the Directory and backup record limit as it is, where it says what is refused", () => {
+    const limit = MAX_DIRECTORY_RECORDS.toLocaleString("en-US");
+
+    expect(doc).toContain(`at most ${limit} records, contacts and deleted records together (\`MAX_DIRECTORY_RECORDS\`)`);
+    expect(doc).toContain(`stops growing at ${limit} records`);
+  });
+
   it("says there is no revalidation window, as the code has none (removed by the Dashboard source lifecycle design)", () => {
     expect(doc).toContain("there is no grace period");
     expect(existsSync(join(ROOT, "src", "account", "revalidationTiming.ts"))).toBe(false);
@@ -170,7 +178,7 @@ describe("T12 and the release workflow", () => {
     expect(browserTests).toContain("pnpm install --frozen-lockfile");
     expect(browserTests).toContain("pnpm test:e2e");
     expect([...browserTests.matchAll(/^\s*-?\s*uses:\s*(\S+)/gm)].map(match => match[1])).toEqual([
-      "actions/checkout@11d5960a326750d5838078e36cf38b85af677262", "pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1", "actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020", "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+      "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1", "pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413", "actions/setup-node@820762786026740c76f36085b0efc47a31fe5020", "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a",
     ]);
   });
 

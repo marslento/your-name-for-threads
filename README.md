@@ -54,6 +54,7 @@ For development commands and verification, see [CONTRIBUTING](CONTRIBUTING.md) a
 
 - Export a JSON backup before uninstalling the extension or deleting its browser profile. There is no cloud copy to restore from.
 - Backups are unencrypted and contain private notes, nicknames and identifiers. Keep them somewhere private.
+- If an account's data is damaged, keep the recovery file the Recovery page exports. A single account's recovery file can be restored into that account's empty directory, or back over the damaged one, only if every record in it passes the checks. A downloaded file is not a promise that it can be restored, and a file of every account's data cannot be restored.
 - Account directories are separate features, not an encrypted boundary between people sharing a browser profile. Use separate profiles or operating-system accounts for separate people.
 - A nickname displayed on a Threads page is part of that page and can be read by its scripts. Notes stay in the extension's Dashboard. See the [security boundaries](docs/security/threat-model-v1.md).
 

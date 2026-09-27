@@ -2,7 +2,7 @@
 
 What Your Name for Threads promises about the work it does on a Threads page and in the Dashboard, how a machine checks each promise, and what a person still has to look at in a real browser before a release.
 
-The automated checks measure **work**: what is scheduled, scanned, read and kept. They do not measure milliseconds, because jsdom cannot say whether a page feels fast. That is what the manual checks are for, and **they have not been run yet**: the results table at the end is empty on purpose, and `tests/repo/performance-contract.test.ts` fails if a row claims a result without a date.
+The automated checks measure **work**: what is scheduled, scanned, read and kept. They do not measure milliseconds, because jsdom cannot say whether a page feels fast. Record manual measurements for the exact candidate being tested. The results table below is a reusable template; `tests/repo/performance-contract.test.ts` fails if a row claims a result without a date.
 
 ## The contract
 

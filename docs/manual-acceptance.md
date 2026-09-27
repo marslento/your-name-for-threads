@@ -37,6 +37,17 @@ await chrome.storage.local.set({ directories: { ...all.directories, [directoryId
 
 Then reload the Dashboard and the Threads tabs. Which of the two accounts is damaged does not matter: the other one has to go on working.
 
+**Damage one account's lookup index only** (Recovery restore). The contacts stay valid, so the recovery file it leads to can be restored; this is the kind of damage the old username fallback left. Run in the Dashboard's Console:
+
+```js
+const all = await chrome.storage.local.get();
+const [owner, directoryId] = Object.entries(all.accountBindings)[0];
+const directory = all.directories[directoryId];
+const [contactId] = Object.keys(directory.contacts);
+console.log("damaging the lookup index of the account with Threads user ID", owner);
+await chrome.storage.local.set({ directories: { ...all.directories, [directoryId]: { ...directory, identityIndex: { ...directory.identityIndex, "threads:1": contactId } } } });
+```
+
 **Damage all of the extension's data** (the last Recovery row), in a throwaway profile only, because Clear is not offered for it and the only way back is to discard the profile:
 
 ```js
@@ -152,7 +163,7 @@ Uses the Profile recipe. Copy diagnostics is in About & Privacy.
 
 ### Recovery simulation
 
-Uses the two damage recipes. Do R1 to R4 with two accounts that each have a nickname.
+Uses the damage recipes. Do R1 to R4 and R6 to R10 with two accounts that each have a nickname.
 
 | ID | Check | Do | Expect |
 | --- | --- | --- | --- |
@@ -161,6 +172,11 @@ Uses the two damage recipes. Do R1 to R4 with two accounts that each have a nick
 | R3 | Clear this account only | Choose Clear this account's data and confirm. | Only that account is cleared, the page leaves Recovery, the other account keeps its data and the settings stay, and the cleared account can add nicknames again. |
 | R4 | By keyboard | On the Recovery page use Tab to reach Export and Clear, open the confirmation and close it with Escape. | Nothing needs the mouse, focus is visible, and focus goes back to the button. |
 | R5 | All of the data | In a throwaway profile only, damage all of the extension's data and reload the Dashboard. | The page says the extension cannot safely read its stored data, Export recovery data is offered, and Clear is not, with the reason given. |
+| R6 | Restore without clearing | Use the index recipe on one account, reload the Dashboard, choose Export recovery data, then under Restore from a recovery file choose that file. | A preview gives the counts, says one lookup entry names a different Threads ID, and says stored IDs are kept and Threads identities are not verified. Nothing changes until Restore is confirmed. Then the page leaves Recovery, the Dashboard shows the account's contacts, and a notice gives the counts. |
+| R7 | Restore after clearing | Repeat the index recipe and the export, choose Clear this account's data and confirm, then under Backup & Import choose Restore from a recovery file with the same file and confirm. | The contacts and deleted records come back, Export Backup is offered again, and a backup exported now imports with Import Backup. |
+| R8 | Refusals | Choose the R7 file again on the restored account, choose it on the other account, and choose a backup file in Restore from a recovery file. | Each is refused with its reason and nothing changes: the account already has data; the file belongs to another account; it is not a recovery file. No clear is offered as a way around. |
+| R9 | Account changes during a restore | Choose a recovery file, and before confirming sign out of Threads or switch accounts in the source tab. | The preview is gone. Signing back in does not bring it back, and nothing was restored. |
+| R10 | Restore by keyboard | Reach the file chooser, the preview's Restore and Cancel, and the confirmation with Tab; open and close the list of lookup entries with Enter; cancel the confirmation with Escape. | Nothing needs the mouse, focus is visible and goes back to Restore, the outcome is announced, and no permission is asked for. |
 
 ### Degraded surface
 

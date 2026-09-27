@@ -224,7 +224,7 @@ describe("a submission", () => {
     expect(upload.headers).toEqual({ Authorization: `Bearer ${BEARER}` });
   });
 
-  it("submits for everyone, the default kind, and never staged, to testers or with review skipped", async () => {
+  it("requests default publication without overriding rollout, using testers or skipping review", async () => {
     const fake = store();
 
     await submit(fake);

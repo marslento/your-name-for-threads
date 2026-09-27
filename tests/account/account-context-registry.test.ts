@@ -293,12 +293,16 @@ describe("AccountContextRegistry", () => {
       await expect(getTabContext(1)).resolves.toMatchObject({ state: "confirmed", ownerThreadsUserId: "456", documentId: "doc-2" });
     });
 
-    it("gives a tab that never spoke no record", async () => {
+    it("remembers a document that left before its first report landed, so that report confirms nobody (Codex Security scan 092502)", async () => {
       installFakeChromeSession();
 
-      await retireTabDocument(7, "doc-1");
+      await expect(retireTabDocument(7, "doc-1")).resolves.toBeUndefined();
+      await expect(recordTabReport(7, "doc-1", ALICE)).resolves.toBeUndefined();
+      await expect(getTabContext(7)).resolves.toEqual({ tabId: 7, state: "unresolved", retiredDocumentIds: ["doc-1"] });
 
-      await expect(getTabContext(7)).resolves.toBeUndefined();
+      // The page that replaced it still proves its account as usual.
+      await recordTabReport(7, "doc-2", BOB);
+      await expect(getTabContext(7)).resolves.toMatchObject({ state: "confirmed", ownerThreadsUserId: "456", retiredDocumentIds: ["doc-1"] });
     });
   });
 

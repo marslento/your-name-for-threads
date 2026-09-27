@@ -4,6 +4,7 @@ import { reportDiagnostic } from "../../diagnostics/reportDiagnostic";
 import { t } from "../../i18n/t";
 import type { BackupSnapshotV2 } from "../../portability/backupTypes";
 import { parseBackupFile } from "../../portability/parseBackup";
+import { isRecoveryFile } from "../../recovery/recoveryImport";
 
 export interface ImportBackupCardProps {
   onBackupReady: (backup: BackupSnapshotV2) => void;
@@ -31,12 +32,16 @@ export function ImportBackupCard({ onBackupReady }: ImportBackupCardProps) {
     if (!result.ok) {
       // The code only: a rejected file is the user's own private data, and the error can quote it.
       reportDiagnostic("BACKUP_IMPORT_INVALID", "import");
+      // A recovery file is never read here; it has its own checked restore, so say where it goes.
+      const recoveryFile = result.error.code === "invalid_format" && (await isRecoveryFile(file));
       setError({
         title: t("dashboard_import_invalidTitle"),
         description:
           result.error.code === "newer_version"
             ? t("dashboard_import_invalidNewerVersion")
-            : t("dashboard_import_invalidGeneric"),
+            : recoveryFile
+              ? t("dashboard_import_invalidRecoveryFile")
+              : t("dashboard_import_invalidGeneric"),
       });
       return;
     }

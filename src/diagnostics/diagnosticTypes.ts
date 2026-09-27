@@ -20,6 +20,10 @@ export const PRODUCT_DIAGNOSTIC_CODES = [
   "BACKUP_IMPORT_INVALID",
   "IMPORT_COMMIT_FAILED",
   "DASHBOARD_SESSION_INVALID",
+  // Recovery Restore 1.1.0 (spec section 10): a recovery file the reader refused, and a restore that failed in storage.
+  // A cancellation, another account's file, or a target that is not eligible is the person's situation, not a fault.
+  "RECOVERY_IMPORT_INVALID",
+  "RECOVERY_RESTORE_FAILED",
 ] as const;
 
 export const DIAGNOSTIC_COMPONENTS = [

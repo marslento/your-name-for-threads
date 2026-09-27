@@ -1,13 +1,16 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
+import { createRecoveryDump, serializeRecoveryDump } from "../../src/recovery/exportRecoveryDump";
+import { parseRecoveryText } from "../../src/recovery/recoveryImport";
+import { analyzeRecoveryTarget } from "../../src/recovery/recoveryTarget";
 import { validateStorageHealth } from "../../src/recovery/validateStorageHealth";
 import { __resetMigrationCoordinatorForTests } from "../../src/storage/migrations";
 import { findOverclaims } from "../fixtures/overclaims";
 import { ROOT } from "../fixtures/repoFiles";
 import { backgroundSendMessage } from "../fixtures/storage/diagnosticCoordinator";
 import { installFakeChrome } from "../fixtures/storage/fakeChromeStorage";
-import { ALICE_DIR, BOB_DIR, twoAccounts } from "../fixtures/storage/recoveryStorage";
+import { ALICE, ALICE_DIR, BOB_DIR, twoAccounts } from "../fixtures/storage/recoveryStorage";
 
 const read = (path: string) => readFileSync(join(ROOT, path), "utf8").replace(/\r\n/g, "\n");
 const doc = read("docs/manual-acceptance.md");
@@ -86,5 +89,18 @@ describe("the recipes a person pastes", () => {
     const { after } = await run(globalFailure ?? "");
 
     expect(validateStorageHealth(after).kind).toBe("global_error");
+  });
+
+  it("damage one account's lookup index only, leading to a recovery file that the restore accepts (R6 to R10)", async () => {
+    const indexFailure = snippets.find((snippet) => snippet.includes('"threads:1": contactId'));
+    const { before, after, logged } = await run(indexFailure ?? "");
+
+    expect(validateStorageHealth(after)).toMatchObject({ kind: "directory_error", directoryId: ALICE_DIR });
+    expect(after.directories[BOB_DIR]).toEqual(before.directories[BOB_DIR]);
+    expect((after.directories[ALICE_DIR] as { contacts: unknown }).contacts).toEqual((before.directories[ALICE_DIR] as { contacts: unknown }).contacts);
+    expect(logged).toEqual([["damaging the lookup index of the account with Threads user ID", ALICE]]);
+    const dump = createRecoveryDump({ raw: after, ownerThreadsUserId: ALICE, exportedAt: "2026-09-26T00:00:00.000Z" });
+    const read = parseRecoveryText(serializeRecoveryDump(dump!), ALICE);
+    expect(read.ok && analyzeRecoveryTarget(after, read.value)).toMatchObject({ ok: true, value: { operation: "rebuild_damaged" } });
   });
 });

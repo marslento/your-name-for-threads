@@ -9,6 +9,7 @@ import type { AccountResolutionState } from "../src/account/accountTypes";
 import { t } from "../src/i18n/t";
 import type { DirectoryRecord } from "../src/domain/directory";
 import type { ExtensionStorageV4 } from "../src/storage/schema";
+import { ContactStore } from "../src/storage/ContactStore";
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -414,7 +415,7 @@ describe("content bootstrap", () => {
     }
   });
 
-  it("keeps Profile, runtime, and the MAIN-world observer in the same fallback enabled state when the settings read fails", async () => {
+  it.each([false, true])("keeps Profile, runtime, and the MAIN-world observer disabled when settings fail to load (persisted enabled=%s)", async (enabled) => {
     window.history.replaceState(null, "", "/@alice");
     document.body.innerHTML = `
       <div class="x1a8lsjc">
@@ -426,7 +427,20 @@ describe("content bootstrap", () => {
         <div aria-label="Profile metadata">metadata</div>
       </div>
     `;
-    const stored = rawV4Storage();
+    const stored = rawV4Storage({
+      settings: { enabled },
+      contacts: {
+        "alice-id": {
+          id: "alice-id",
+          username: "alice",
+          nickname: "Private Alice nickname",
+          createdAt: "2026-01-01T00:00:00.000Z",
+          updatedAt: "2026-01-01T00:00:00.000Z",
+          identityUpdatedAt: "2026-01-01T00:00:00.000Z",
+        },
+      },
+      identityIndex: { "username:alice": "alice-id" },
+    });
     let getCalls = 0;
     Object.defineProperty(globalThis, "chrome", {
       configurable: true,
@@ -435,13 +449,10 @@ describe("content bootstrap", () => {
           local: {
             async get() {
               getCalls += 1;
-              // Call 1 is ContactStore's own internal loadAndMigrateStorage()
-              // read, triggered synchronously by runtime.start() before this
-              // content script's own settings read below fires as call 2 -
-              // only the second call fails here, isolating the settings
-              // fallback path without also tearing down the whole runtime.
-              if (getCalls === 1) return structuredClone(stored);
-              throw new Error("simulated storage read failure");
+              // Recovery checks first; the independent settings load is second.
+              // The later ContactStore read succeeds with private contacts.
+              if (getCalls === 2) throw new Error("simulated settings read failure");
+              return structuredClone(stored);
             },
             async set() {},
           },
@@ -453,15 +464,25 @@ describe("content bootstrap", () => {
       },
     });
     const postMessageSpy = vi.spyOn(window, "postMessage");
+    const observeSpy = vi.spyOn(MutationObserver.prototype, "observe");
+    const storeStartSpy = vi.spyOn(ContactStore.prototype, "start");
 
     const stop = startThreadsPrivateDirectory(window, document, resolvedOwner());
     try {
       await act(async () => new Promise((resolve) => setTimeout(resolve, 50)));
 
+      expect(storeStartSpy).toHaveBeenCalledWith(OWNER);
+      expect(storeStartSpy.mock.contexts[0]?.getByUsername("alice")?.nickname).toBe("Private Alice nickname");
+      expect(observeSpy.mock.calls.filter(
+        ([, options]) => !(options as MutationObserverInit | undefined)?.attributes,
+      )).toEqual([]);
+      expect(document.querySelector("[data-tpd-profile-host]")).toBeNull();
+      expect(document.querySelector("[data-tpd-nickname]")).toBeNull();
+      expect(document.body.textContent).not.toContain("Private Alice nickname");
       const enabledMessages = postMessageSpy.mock.calls
         .map(([message]) => message as { type?: string; enabled?: boolean })
         .filter((message) => message?.type === "TPD_ENABLED_CHANGED");
-      expect(enabledMessages.at(-1)).toEqual({ type: "TPD_ENABLED_CHANGED", enabled: true });
+      expect(enabledMessages).toEqual([{ type: "TPD_ENABLED_CHANGED", enabled: false }]);
     } finally {
       stop();
     }
@@ -665,7 +686,7 @@ describe("content bootstrap", () => {
     expect(document.querySelector("[data-tpd-profile-host]")).toBeNull();
   });
 
-  it("upgrades a username-only nickname to a stable ID without changing user-owned data", async () => {
+  it("uses a new cached ID for display without upgrading a saved username-only contact", async () => {
     const savedAt = "2026-09-11T01:00:00.000Z";
     const observedAt = "2026-09-11T02:00:00.000Z";
     vi.useFakeTimers({ toFake: ["Date"], now: new Date(savedAt) });
@@ -765,10 +786,7 @@ describe("content bootstrap", () => {
         }),
       );
     });
-    await waitFor(() => {
-      const [contact] = Object.values(storage.snapshot().contacts);
-      return contact?.threadsUserId === "123";
-    });
+    await waitFor(() => storage.snapshot().identityCache.abc?.threadsUserId === "123");
     await waitFor(
       () =>
         document.querySelector<HTMLElement>("[data-tpd-profile-host]") !==
@@ -777,31 +795,17 @@ describe("content bootstrap", () => {
     await act(async () => new Promise((resolve) => setTimeout(resolve, 40)));
     const stableIdHost = document.querySelector<HTMLElement>("[data-tpd-profile-host]");
     if (!stableIdHost) throw new Error("Expected the stable-ID Profile host");
-    expect(storage.pendingCount()).toBe(2);
-
-    const requestFrame = vi.spyOn(globalThis, "requestAnimationFrame");
+    expect(storage.pendingCount()).toBe(1); // Only the public cache changed.
     act(() => {
-      storage.flushNext();
+      storage.flush();
     });
-    await act(async () => new Promise((resolve) => setTimeout(resolve, 40)));
-    expect(requestFrame).not.toHaveBeenCalled();
-
-    act(() => {
-      storage.flushNext();
-    });
-    expect(requestFrame).toHaveBeenCalledTimes(1);
     await act(async () => new Promise((resolve) => setTimeout(resolve, 40)));
 
     const upgradedContacts = Object.values(storage.snapshot().contacts);
     expect(upgradedContacts).toHaveLength(1);
-    expect(upgradedContacts[0]).toEqual({
-      ...created,
-      threadsUserId: "123",
-      identityUpdatedAt: observedAt,
-    });
+    expect(upgradedContacts[0]).toEqual(created);
     expect(storage.snapshot().identityIndex).toEqual({
       "username:abc": created.id,
-      "threads:123": created.id,
     });
     expect(profile().getByText("阿明")).toBeTruthy();
     expect(document.querySelector("[data-tpd-profile-host]")).toBe(stableIdHost);
@@ -815,7 +819,7 @@ describe("content bootstrap", () => {
     await waitFor(() => document.querySelector("[data-tpd-profile-host]") === null);
   });
 
-  it("renames a stable-ID contact through a passive observation without changing user-owned data", async () => {
+  it("follows a cached rename for display without changing the saved identity", async () => {
     const observedAt = "2026-09-11T03:00:00.000Z";
     vi.useFakeTimers({ toFake: ["Date"], now: new Date(observedAt) });
     const successToast = vi.spyOn(toast, "success").mockReturnValue("success-toast");
@@ -882,27 +886,17 @@ describe("content bootstrap", () => {
         }),
       );
     });
-    await waitFor(() => storage.snapshot().contacts[originalId]?.username === "xyz");
+    await waitFor(() => storage.snapshot().identityCache.xyz?.threadsUserId === "123");
     act(() => {
       storage.flush();
     });
     await act(async () => new Promise((resolve) => setTimeout(resolve, 40)));
 
     const persisted = storage.snapshot();
-    expect(Object.values(persisted.contacts)).toEqual([
-      {
-        id: original.id,
-        threadsUserId: "123",
-        username: "xyz",
-        nickname: "阿明",
-        createdAt: "2026-09-01T00:00:00.000Z",
-        updatedAt: "2026-09-02T00:00:00.000Z",
-        identityUpdatedAt: observedAt,
-      },
-    ]);
+    expect(Object.values(persisted.contacts)).toEqual([original]);
     expect(persisted.identityIndex).toEqual({
       "threads:123": original.id,
-      "username:xyz": original.id,
+      "username:abc": original.id,
     });
     expect(persisted.identityConflicts).toEqual({});
     expect(document.querySelectorAll("[data-tpd-profile-host]")).toHaveLength(1);
@@ -923,7 +917,7 @@ describe("content bootstrap", () => {
     expect(storage.listenerCount()).toBe(0);
   });
 
-  it("preserves colliding contacts and renders the stable-ID nickname as pending", async () => {
+  it("preserves colliding contacts without creating a durable conflict from a page hint", async () => {
     const observedAt = "2026-09-11T04:00:00.000Z";
     vi.useFakeTimers({ toFake: ["Date"], now: new Date(observedAt) });
     const successToast = vi.spyOn(toast, "success").mockReturnValue("success-toast");
@@ -1006,14 +1000,11 @@ describe("content bootstrap", () => {
     });
     await waitFor(() => {
       const persisted = storage.snapshot();
-      return (
-        persisted.identityCache.abc?.threadsUserId === "123" &&
-        Object.keys(persisted.identityConflicts).length === 1
-      );
+      return persisted.identityCache.abc?.threadsUserId === "123";
     });
     await waitFor(() => {
       const text = profileContainer()?.textContent ?? "";
-      return text.includes("攝影師") && text.includes(t("profile_pendingConfirmation"));
+      return text.includes("攝影師");
     });
 
     const persisted = storage.snapshot();
@@ -1044,25 +1035,13 @@ describe("content bootstrap", () => {
       "threads:123": stableIdContactId,
     });
 
-    const conflictEntries = Object.entries(persisted.identityConflicts);
-    expect(conflictEntries).toHaveLength(1);
-    const [conflictKey, conflict] = conflictEntries[0];
-    expect(conflictKey).toBe(conflict.id);
-    expect(conflictKey).toMatch(
-      /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
-    );
-    expect(conflict).toEqual({
-      id: conflictKey,
-      threadsUserId: "123",
-      contactIds: [usernameContactId, stableIdContactId],
-      detectedAt: observedAt,
-    });
+    expect(persisted.identityConflicts).toEqual({});
 
     const container = profileContainer();
     if (!container) throw new Error("Expected the conflicted Profile surface");
     const profile = within(container);
     expect(profile.getByText("攝影師")).toBeTruthy();
-    expect(profile.getByText(t("profile_pendingConfirmation"))).toBeTruthy();
+    expect(profile.queryByText(t("profile_pendingConfirmation"))).toBeNull();
     expect(profile.queryByText("阿明")).toBeNull();
     expect(document.querySelectorAll("[data-tpd-profile-host]")).toHaveLength(1);
     expect(successToast).not.toHaveBeenCalled();
@@ -1266,30 +1245,23 @@ describe("content bootstrap", () => {
 });
 
 describe("account-switch in-page UI cleanup (Phase 3.5 Task 16-17)", () => {
-  it("keeps the bridge's public identity update after a real account-revoked attachment", async () => {
+  it.each([
+    { username: "alice", threadsUserId: "999", attack: "replace a saved ID" },
+    { username: "mallory", threadsUserId: "123", attack: "rename a saved contact" },
+    { username: "bob", threadsUserId: "123", attack: "create a false identity conflict" },
+  ])("a page observation cannot $attack, even with a confirmed owner", async ({ username, threadsUserId }) => {
+    const stamp = "2026-01-01T00:00:00.000Z";
     const storage = installStorage({
       ...initialStorage(), identityCache: {},
-      contacts: { c1: { id: "c1", username: "alice", nickname: "Before", createdAt: "2026-01-01T00:00:00.000Z", updatedAt: "2026-01-01T00:00:00.000Z", identityUpdatedAt: "2026-01-01T00:00:00.000Z" } },
-      identityIndex: { "username:alice": "c1" },
+      contacts: {
+        c1: { id: "c1", username: "alice", threadsUserId: "123", nickname: "Private Alice", note: "Private note", createdAt: stamp, updatedAt: stamp, identityUpdatedAt: stamp },
+        c2: { id: "c2", username: "bob", threadsUserId: "456", nickname: "Private Bob", createdAt: stamp, updatedAt: stamp, identityUpdatedAt: stamp },
+      },
+      identityIndex: { "username:alice": "c1", "threads:123": "c1", "username:bob": "c2", "threads:456": "c2" },
     });
     const resolver = new MutableAccountResolver({ state: "confirmed", ownerThreadsUserId: OWNER, ownerUsername: "owner" });
     const { PostAuthorSurfaceAdapter } = await import("../src/content/surfaces/post-author/PostAuthorSurfaceAdapter");
     const discovered = vi.spyOn(PostAuthorSurfaceAdapter.prototype, "identityDiscovered");
-    const { BrowserStorageContactsRepository } = await import("../src/storage/BrowserStorageContactsRepository");
-    const originalAttach = BrowserStorageContactsRepository.prototype.attachStableIdentity;
-    const originalGet = chrome.storage.local.get.bind(chrome.storage.local);
-    let release!: () => void;
-    const gate = new Promise<void>((resolve) => { release = resolve; });
-    let reading = false;
-    vi.spyOn(BrowserStorageContactsRepository.prototype, "attachStableIdentity").mockImplementation(function(owner, input) {
-      vi.spyOn(chrome.storage.local, "get").mockImplementationOnce(async () => {
-        const snapshot = await originalGet();
-        reading = true;
-        await gate;
-        return snapshot;
-      });
-      return originalAttach.call(this, owner, input);
-    });
     let stop!: () => void;
     act(() => { stop = startThreadsPrivateDirectory(window, document, resolver); });
     await waitFor(() => storage.listenerCount() > 0);
@@ -1297,15 +1269,13 @@ describe("account-switch in-page UI cleanup (Phase 3.5 Task 16-17)", () => {
     act(() => {
       window.dispatchEvent(new MessageEvent("message", {
         source: window, origin: window.location.origin,
-        data: { type: "TPD_IDENTITY_DISCOVERED", username: "alice", threadsUserId: "123" },
+        data: { type: "TPD_IDENTITY_DISCOVERED", username, threadsUserId },
       }));
     });
-    await waitFor(() => reading);
-    act(() => { resolver.setState({ state: "revalidating" }); release(); });
-    await waitFor(() => discovered.mock.calls.some(([username, id]) => username === "alice" && id === "123"));
+    await waitFor(() => discovered.mock.calls.some(([seenUsername, id]) => seenUsername === username && id === threadsUserId));
     expect(storage.snapshot().directories).toEqual(before.directories);
     expect(storage.snapshot().accountBindings).toEqual(before.accountBindings);
-    expect(storage.snapshot().identityCache.alice).toMatchObject({ threadsUserId: "123" });
+    expect(storage.snapshot().identityCache[username]).toMatchObject({ threadsUserId });
     act(() => { stop(); });
   });
 

@@ -114,7 +114,7 @@ describe("renderNicknameLabel", () => {
     expect(result.element?.textContent).toBe("[😊🔥 Chinese中文 Arabic اختبار]");
   });
 
-  it("sets dir=auto, the full title, and the TPD data attributes", () => {
+  it("sets dir=auto, the full title, and the cleanup marker without exposing the private contact ID", () => {
     document.body.innerHTML = `
       <div class="header">
         <span class="identity"><a href="https://www.threads.com/@alice">alice</a></span>
@@ -122,12 +122,20 @@ describe("renderNicknameLabel", () => {
       </div>
     `;
 
-    const { result } = render("攝影師阿明");
+    const privateContact = contact({ id: "5970c93e-831c-4bc3-949f-e88fc96eaf5a", nickname: "攝影師阿明" });
+    const occurrence = occurrenceFor("alice");
+    const result = renderNicknameLabel({
+      occurrence,
+      contact: privateContact,
+      separator: resolveSeparatorPlan(occurrence.metadataRow),
+    });
 
     expect(result.element?.getAttribute("dir")).toBe("auto");
     expect(result.element?.getAttribute("title")).toBe("攝影師阿明");
     expect(result.element?.hasAttribute("data-tpd-nickname")).toBe(true);
-    expect(result.element?.getAttribute("data-tpd-contact-id")).toBe("contact-1");
+    expect(result.element?.hasAttribute("data-tpd-contact-id")).toBe(false);
+    expect(document.body.innerHTML).not.toContain(privateContact.id);
+    expect(findExistingNicknameLabel(occurrence)).toBe(result.element);
   });
 
   it("does not create a nickname element when Threads owns the row untouched otherwise", () => {

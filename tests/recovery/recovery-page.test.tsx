@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { t } from "../../src/i18n/t";
+import { RecoveryRestoreContext } from "../../src/recovery/RecoveryImportCard";
 import { RecoveryPage, type RecoveryPageProps } from "../../src/recovery/RecoveryPage";
 import { GITHUB_BUG_REPORT_URL } from "../../src/shared/links";
 import { installFakeChrome } from "../fixtures/storage/fakeChromeStorage";
@@ -10,8 +11,8 @@ import { ALICE, ALICE_DIR, DAMAGED_ALICE, withDirectory } from "../fixtures/stor
 
 /**
  * The Recovery page (Phase 4 Task 19, checklist #14-#18). What it offers is as much the point as how it
- * looks: keep a raw copy, copy diagnostics, report, and for one damaged account clear it. Never repair,
- * rebuild an index, or import a recovery file.
+ * looks: keep a raw copy, copy diagnostics, report, and for one damaged account clear it or (1.1.0) restore
+ * it from its own recovery file after checks and a confirmation. Never repair anything by itself.
  */
 const DIRECTORY = { kind: "directory", code: "DIRECTORY_INVALID" } as const;
 const GLOBAL = { kind: "global", code: "COLLECTION_INVALID" } as const;
@@ -35,6 +36,7 @@ function renderPage(overrides: Partial<RecoveryPageProps> = {}) {
   const props: RecoveryPageProps = {
     state: DIRECTORY,
     ownerThreadsUserId: ALICE,
+    restore: { prepare: vi.fn(), commit: vi.fn() },
     exportRecovery: vi.fn(async () => true),
     clearDamagedDirectory: vi.fn(async () => ({ ok: true }) as const),
     ...overrides,
@@ -78,15 +80,47 @@ describe("RecoveryPage: what it says", () => {
 });
 
 describe("RecoveryPage: what it offers", () => {
-  it("offers a raw export, diagnostics, a report and a clear, and nothing that repairs, rebuilds or imports", () => {
-    renderPage();
+  it("offers a raw export, diagnostics, a report, a checked restore from this account's recovery file and a clear, and no repair", () => {
+    const props = renderPage();
 
     const buttons = screen.getAllByRole("button").map((b) => b.textContent);
     expect(buttons).toEqual([t("recovery_exportAction"), t("dashboard_about_copyDiagnostics"), t("dashboard_import_clearAccountAction")]);
     expect(screen.getAllByRole("link")).toHaveLength(1);
-    // No control anywhere, in any of the three languages, that repairs, rebuilds or imports.
-    expect(document.body.textContent).not.toMatch(/repair button|rebuild|reimport|re-import|import recovery/i);
-    expect(document.querySelector("input[type=file]")).toBeNull();
+    // 1.1.0: the one addition is the restore card - a file chooser, and nothing is read or changed until a file is chosen.
+    expect(screen.getByRole("heading", { name: t("recovery_restore_title") })).toBeTruthy();
+    expect(document.querySelectorAll("input[type=file]")).toHaveLength(1);
+    expect(props.restore.prepare).not.toHaveBeenCalled();
+    expect(document.body.textContent).not.toMatch(/repair button|reimport|re-import/i);
+    // It says a download is not a promise that the file can be restored (spec U6).
+    expect(screen.getByText(t("recovery_restore_exportHint"))).toBeTruthy();
+  });
+
+  it("keeps an export or a clear from starting while any restore for the account is being committed (spec U5)", () => {
+    const props: RecoveryPageProps = {
+      state: DIRECTORY,
+      ownerThreadsUserId: ALICE,
+      restore: { prepare: vi.fn(), commit: vi.fn() },
+      exportRecovery: vi.fn(async () => true),
+      clearDamagedDirectory: vi.fn(async () => ({ ok: true }) as const),
+    };
+    render(
+      <RecoveryRestoreContext.Provider value={{ stage: "committing" }}>
+        <RecoveryPage {...props} />
+      </RecoveryRestoreContext.Provider>,
+    );
+
+    expect((button("recovery_exportAction") as HTMLButtonElement).disabled).toBe(true);
+    expect((button("dashboard_import_clearAccountAction") as HTMLButtonElement).disabled).toBe(true);
+  });
+
+  it("keeps an export or a clear from starting while a recovery file is being read (spec U5)", async () => {
+    const reading = deferred<never>();
+    renderPage({ restore: { prepare: vi.fn(() => reading.promise), commit: vi.fn() } });
+
+    fireEvent.change(document.querySelector("input[type=file]")!, { target: { files: [new File(["{}"], "recovery.json")] } });
+
+    await waitFor(() => expect((button("recovery_exportAction") as HTMLButtonElement).disabled).toBe(true));
+    expect((button("dashboard_import_clearAccountAction") as HTMLButtonElement).disabled).toBe(true);
   });
 
   it("links to the bug report form and to nothing else, without opener or referrer, and puts no diagnostics in the address", () => {
@@ -105,6 +139,14 @@ describe("RecoveryPage: what it offers", () => {
     expect(screen.queryByRole("button", { name: t("dashboard_import_clearAccountAction") })).toBeNull();
     expect(screen.getByText(t("recovery_globalNoClear"))).toBeTruthy();
     expect(screen.getAllByRole("button").map((b) => b.textContent)).toEqual([t("recovery_exportAction"), t("dashboard_about_copyDiagnostics")]);
+  });
+
+  it("offers no restore when everything is damaged: a global recovery file is not supported, and it says so", () => {
+    renderPage({ state: GLOBAL });
+
+    expect(document.querySelector("input[type=file]")).toBeNull();
+    expect(screen.queryByRole("heading", { name: t("recovery_restore_title") })).toBeNull();
+    expect(screen.getByText(t("recovery_restore_globalUnsupported"))).toBeTruthy();
   });
 });
 
