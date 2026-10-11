@@ -6,7 +6,7 @@
 
 在 Threads 個人頁、動態消息、回覆與引用貼文中顯示自己設定的暱稱，也能在擴充功能的通訊錄管理頁面（Dashboard）保存私人備註，搜尋、編輯及備份資料。不同 Threads 帳號在這個瀏覽器中各有自己的通訊錄。
 
-1.0.0 版已於 Chrome Web Store 與 Microsoft Edge Add-ons 上架。已記錄的驗證結果與待完成項目，請見[發布驗證狀態](docs/verification/current-status.md)。
+目前版本為 [1.1.1](https://github.com/marslento/your-name-for-threads/releases/tag/v1.1.1)，為 light mode 的共用按鈕與輸入框加入淡灰底色。擴充功能也可從 Chrome Web Store 與 Microsoft Edge Add-ons 安裝；商店更新時間依各自審核進度而定。已記錄的驗證結果與待完成項目，請見[發布驗證狀態](docs/verification/current-status.md)。
 
 ## 隱私
 

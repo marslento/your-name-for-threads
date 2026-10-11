@@ -4,6 +4,13 @@ Notable changes to Your Name for Threads are recorded here. The format follows [
 
 ## [Unreleased]
 
+## [1.1.1] - 2026-10-11
+
+### Changed
+
+- Give shared outline buttons and inputs a subtle `bg-input/30` background in light mode while preserving their existing dark, hover, focus and disabled styles. Disabled outline buttons also use the new light-mode background.
+- Give shared ghost buttons a subtle `bg-input/20` background.
+
 ## [1.1.0] - 2026-09-27
 
 ### Added

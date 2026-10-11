@@ -577,6 +577,8 @@ describe("content bootstrap", () => {
   });
 
   it("refreshes one mounted Profile only through persisted storage changes", async () => {
+    // Keep the dated cache and external updates valid without faking event timers.
+    vi.useFakeTimers({ toFake: ["Date"], now: new Date("2026-09-10T00:00:00.000Z") });
     window.history.replaceState(null, "", "/@alice");
     document.body.innerHTML = `
       <div class="x1a8lsjc">
