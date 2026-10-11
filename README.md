@@ -6,7 +6,7 @@ A local-first, open-source private nickname and notes directory for Threads.
 
 Add personal nicknames to Threads profile pages, the feed, replies and quoted posts. Keep private notes in the extension's Dashboard, where you can search, edit and back up your directory. Each Threads account has its own directory in this browser.
 
-Version 1.0.0 is available on Chrome Web Store and Microsoft Edge Add-ons. See the [release verification status](docs/verification/current-status.md) for recorded evidence and remaining checks.
+The current release is [1.1.1](https://github.com/marslento/your-name-for-threads/releases/tag/v1.1.1), which adds a subtle background to shared buttons and inputs in light mode. The extension is also available on Chrome Web Store and Microsoft Edge Add-ons; store updates follow their review schedules. See the [release verification status](docs/verification/current-status.md) for recorded evidence and remaining checks.
 
 ## Privacy at a glance
 
