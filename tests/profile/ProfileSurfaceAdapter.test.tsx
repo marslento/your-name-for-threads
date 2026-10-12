@@ -337,6 +337,11 @@ function createAdapter(options: {
   return { adapter, store, repository, mounts };
 }
 
+beforeEach(() => {
+  surfaceHealth.reset();
+  vi.mocked(reportDiagnostic).mockClear();
+});
+
 afterEach(() => {
   act(() => {
     for (const adapter of adapters) adapter.cleanup({ page: page(99) });
@@ -347,6 +352,7 @@ afterEach(() => {
   Reflect.deleteProperty(globalThis, "chrome");
   __resetMigrationCoordinatorForTests();
   document.body.replaceChildren();
+  surfaceHealth.reset();
 });
 
 describe("ProfileSurfaceAdapter", () => {
@@ -388,6 +394,10 @@ describe("ProfileSurfaceAdapter", () => {
 
     await expect(reconcile(adapter)).resolves.toBeUndefined();
 
+    expect(reportDiagnostic).toHaveBeenCalledWith("PROFILE_SURFACE_MOUNT_FAILED", "profile-surface", "degraded");
+    expect(JSON.stringify(vi.mocked(reportDiagnostic).mock.calls)).not.toContain(privateMarker);
+    expect(surfaceHealth.snapshot()).toEqual({ profile: "degraded", "post-author": "ready" });
+
     const host = profileHost();
     const callsAfterFailure = store.resolveCalls;
     const logsAfterFailure = error.mock.calls.length;
@@ -395,7 +405,7 @@ describe("ProfileSurfaceAdapter", () => {
     expect(threadsSibling.isConnected).toBe(true);
     expect(document.querySelectorAll("[data-tpd-profile-host]")).toHaveLength(1);
     expect(error).toHaveBeenCalledWith(
-      "Threads Private Directory UI error",
+      expect.any(String),
       expect.objectContaining({ componentStack: expect.any(String) }),
     );
     expect(error.mock.calls.flat().some((value) => value instanceof Error)).toBe(false);
@@ -1084,63 +1094,14 @@ describe("ProfileSurfaceAdapter", () => {
   });
 });
 
-describe("ProfileSurfaceAdapter -> PROFILE_SURFACE_MOUNT_FAILED diagnostics (Phase 4 Task 8)", () => {
-  beforeEach(() => {
-    vi.mocked(reportDiagnostic).mockClear();
-  });
-
-  it("records a render failure inside the mounted Profile UI - the code only, never the error or the data it held", async () => {
-    showProfile("alice");
-    const privateMarker = "PRIVATE_CONTACT_DATABASE_alice_photographer";
-    class ThrowingContactStore extends MutableContactStore {
-      override resolve(): ThreadContact | null {
-        throw new Error(privateMarker);
-      }
-    }
-    vi.spyOn(console, "error").mockImplementation(() => {});
-    const { adapter } = createAdapter({ store: new ThrowingContactStore() });
-
-    await reconcile(adapter);
-
-    expect(reportDiagnostic).toHaveBeenCalledWith("PROFILE_SURFACE_MOUNT_FAILED", "profile-surface", "degraded");
-    expect(JSON.stringify(vi.mocked(reportDiagnostic).mock.calls)).not.toContain(privateMarker);
-  });
-
-  it("records a Shadow setup that fails while mounting", async () => {
-    showProfile("alice");
-    const failing = createAdapter({ createShadow: () => null });
-
-    await reconcile(failing.adapter);
-
-    expect(reportDiagnostic).toHaveBeenCalledWith("PROFILE_SURFACE_MOUNT_FAILED", "profile-surface", "degraded");
-  });
-
-  it("records nothing for a Profile that mounts normally", async () => {
-    showProfile("alice");
-    const { adapter } = createAdapter();
-
-    await reconcile(adapter);
-
-    expect(reportDiagnostic).not.toHaveBeenCalled();
-  });
-});
-
 describe("ProfileSurfaceAdapter -> surface health (Phase 4 Task 21)", () => {
-  beforeEach(() => {
-    surfaceHealth.reset();
-    vi.mocked(reportDiagnostic).mockClear();
-  });
-
-  afterEach(() => {
-    surfaceHealth.reset();
-  });
-
   it("is ready for a Profile that mounts normally, and the Feed surface is not mentioned", async () => {
     showProfile("alice");
     const { adapter } = createAdapter();
 
     await reconcile(adapter);
 
+    expect(reportDiagnostic).not.toHaveBeenCalled();
     expect(surfaceHealth.snapshot()).toEqual({ profile: "ready", "post-author": "ready" });
   });
 
@@ -1150,21 +1111,7 @@ describe("ProfileSurfaceAdapter -> surface health (Phase 4 Task 21)", () => {
 
     await reconcile(adapter);
 
-    expect(surfaceHealth.snapshot()).toEqual({ profile: "degraded", "post-author": "ready" });
-  });
-
-  it("is degraded when the mounted UI crashes, and the Feed surface is left alone", async () => {
-    showProfile("alice");
-    vi.spyOn(console, "error").mockImplementation(() => {});
-    class ThrowingContactStore extends MutableContactStore {
-      override resolve(): ThreadContact | null {
-        throw new Error("PRIVATE_CONTACT_DATABASE");
-      }
-    }
-    const { adapter } = createAdapter({ store: new ThrowingContactStore() });
-
-    await reconcile(adapter);
-
+    expect(reportDiagnostic).toHaveBeenCalledWith("PROFILE_SURFACE_MOUNT_FAILED", "profile-surface", "degraded");
     expect(surfaceHealth.snapshot()).toEqual({ profile: "degraded", "post-author": "ready" });
   });
 

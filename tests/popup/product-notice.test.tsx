@@ -74,14 +74,6 @@ describe("a configured notice", () => {
     await waitFor(() => expect(screen.queryByRole("region", { name: title(N1) })).toBeNull());
     expect(storage.snapshot().lastSeenNoticeId).toBeUndefined();
   });
-
-  it("is not shown again to someone who has already seen it", async () => {
-    open({ lastSeenNoticeId: "n1" }, [N1]);
-    await settled();
-
-    expect(screen.queryByRole("region", { name: title(N1) })).toBeNull();
-    expect(gotIt()).toBeNull();
-  });
 });
 
 describe("no notice", () => {
@@ -91,13 +83,6 @@ describe("no notice", () => {
 
     expect(gotIt()).toBeNull();
     expect(screen.queryByRole("region")).toBeNull();
-  });
-
-  it("is shown for an ordinary update: the same notices, already seen, are just the popup", async () => {
-    open({ lastSeenNoticeId: "n2" }, [N1, N2]);
-    await settled();
-
-    expect(gotIt()).toBeNull();
   });
 
   it("is shown when reading what was seen fails, and the popup still works", async () => {

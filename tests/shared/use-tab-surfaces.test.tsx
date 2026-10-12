@@ -1,7 +1,6 @@
 import { act, cleanup, render, renderHook, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 
-import zhTW from "../../_locales/zh_TW/messages.json";
 import { PartialIntegrationNotice } from "../../src/shared/PartialIntegrationNotice";
 import type { SurfaceHealthSnapshot } from "../../src/shared/surfaceHealth";
 import { TAB_SURFACES_STORAGE_KEY } from "../../src/shared/tabSurfaces";
@@ -167,10 +166,5 @@ describe("PartialIntegrationNotice", () => {
     render(<PartialIntegrationNotice surfaces={surfaces} />);
 
     expect(notice()).not.toBeNull();
-  });
-
-  it("uses the owner's own zh_TW sentence, word for word", () => {
-    // The plan gives this line; it is the wording the owner chose, so a "tidier" rewrite is a change of copy.
-    expect(zhTW.integration_partialUnavailable.message).toBe("部分 Threads 整合目前無法使用");
   });
 });

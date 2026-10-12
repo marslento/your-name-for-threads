@@ -8,8 +8,17 @@ export default defineConfig({
   },
   test: {
     css: true,
-    environment: "jsdom",
-    include: ["tests/**/*.test.{ts,tsx}"],
+    environment: "node",
+    projects: [
+      {
+        extends: true,
+        test: { name: "node", include: ["tests/**/*.test.ts"] },
+      },
+      {
+        extends: true,
+        test: { name: "jsdom", environment: "jsdom", include: ["tests/**/*.test.tsx"] },
+      },
+    ],
     // The 5 s default is a wall-clock limit, not a work budget: with all test
     // files running in parallel a loaded machine (or a small CI runner) pushes
     // otherwise-fast jsdom tests past it. Three suites run at once timed out

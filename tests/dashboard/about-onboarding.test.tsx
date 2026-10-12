@@ -20,17 +20,6 @@ afterEach(() => {
 });
 
 describe("About: replaying the onboarding tour", () => {
-  it("offers the tour and opens it at the first step, in a dialog", async () => {
-    installAboutChrome({ onboarding: { completed: true } });
-    render(<AboutPage />);
-    expect(screen.queryByRole("dialog")).toBeNull();
-
-    fireEvent.click(replayButton());
-
-    const dialog = await screen.findByRole("dialog", { name: t("dashboard_about_replayTour") });
-    expect(dialog.textContent).toContain(t("onboarding_step1_title"));
-  });
-
   it("leaves the completed flag alone while the tour is replayed and dismissed", async () => {
     const { storage } = installAboutChrome({ onboarding: { completed: true } });
     render(<AboutPage />);
@@ -76,8 +65,10 @@ describe("About: replaying the onboarding tour", () => {
   it("starts from the first step every time it is reopened", async () => {
     installAboutChrome({ onboarding: { completed: true } });
     render(<AboutPage />);
+    expect(screen.queryByRole("dialog")).toBeNull();
     fireEvent.click(replayButton());
-    await screen.findByRole("dialog");
+    const firstDialog = await screen.findByRole("dialog", { name: t("dashboard_about_replayTour") });
+    expect(firstDialog.textContent).toContain(t("onboarding_step1_title"));
     fireEvent.click(screen.getByRole("button", { name: t("onboarding_next") }));
     fireEvent.click(screen.getByRole("button", { name: t("common_close") }));
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());

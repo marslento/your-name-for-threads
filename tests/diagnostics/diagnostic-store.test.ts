@@ -38,7 +38,7 @@ describe("LocalDiagnosticStore", () => {
     expect(await store.list()).toEqual([event(1), event(2)]);
   });
 
-  it("keeps at most 20 events, dropping the oldest first", async () => {
+  it("keeps at most 20 events at first overflow and after sustained appends, dropping the oldest first", async () => {
     const storage = install();
     const store = new LocalDiagnosticStore();
 
@@ -49,13 +49,8 @@ describe("LocalDiagnosticStore", () => {
     expect(listed).toHaveLength(20);
     expect(seconds(listed)).toEqual(Array.from({ length: 20 }, (_, i) => i + 2));
     expect((storage.snapshot().diagnostics as unknown[]).length).toBe(20);
-  });
 
-  it("does not grow past 20 however many events arrive", async () => {
-    const storage = install();
-    const store = new LocalDiagnosticStore();
-
-    for (let n = 1; n <= 55; n += 1) await store.record(event(n));
+    for (let n = MAX_DIAGNOSTIC_EVENTS + 2; n <= 55; n += 1) await store.record(event(n));
 
     expect(seconds(await store.list())).toEqual(Array.from({ length: 20 }, (_, i) => i + 36));
     expect((storage.snapshot().diagnostics as unknown[]).length).toBe(20);

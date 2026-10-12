@@ -1,3 +1,5 @@
+// @vitest-environment jsdom
+
 import { toast } from "sonner";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 

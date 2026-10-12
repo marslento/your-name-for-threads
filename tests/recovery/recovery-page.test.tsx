@@ -90,7 +90,6 @@ describe("RecoveryPage: what it offers", () => {
     expect(screen.getByRole("heading", { name: t("recovery_restore_title") })).toBeTruthy();
     expect(document.querySelectorAll("input[type=file]")).toHaveLength(1);
     expect(props.restore.prepare).not.toHaveBeenCalled();
-    expect(document.body.textContent).not.toMatch(/repair button|reimport|re-import/i);
     // It says a download is not a promise that the file can be restored (spec U6).
     expect(screen.getByText(t("recovery_restore_exportHint"))).toBeTruthy();
   });

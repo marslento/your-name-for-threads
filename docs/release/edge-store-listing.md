@@ -4,7 +4,7 @@ Version 1.0.0 is published at [Microsoft Edge Add-ons](https://microsoftedge.mic
 
 The maintainer confirmed the 1.1.0 listing, privacy fields, translations and demo assets against the existing store dashboard on 2026-09-27. Account-specific publisher and registration values remain in that dashboard. This file is the reusable submission reference; store review and publication remain separate steps. The ID in the public listing URL is not the Partner Center Product ID required by the update API.
 
-The listing text, the purpose, the permission justifications, the reviewer's instructions and the data table are the same as the Chrome listing's, word for word, and a test holds them equal (`tests/repo/store-listings.test.ts`), so the two stores and the privacy policy cannot disagree. The same test holds the rest to what a machine can hold: the summary is the manifest's own description, the addresses are the ones the extension links to, the descriptions repeat the README and About & Privacy sentences word for word, every row of the data table is a row of the Data Handling Matrix, and the two permissions here are the two in the manifest. It cannot say whether the copy is good, or whether Partner Center's form is what is described here.
+Review the listing text, addresses, field limits, permissions and data disclosures against the current product, Chrome listing and Partner Center form before submission. `tests/repo/store-listings.test.ts` checks that unresolved submission decisions retain a release gate; the package audit checks the extension's actual permissions and remote-code restrictions.
 
 ## Store fields
 

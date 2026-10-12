@@ -1,15 +1,16 @@
 import { spawnSync } from "node:child_process";
 import { createHash, randomBytes } from "node:crypto";
 import { mkdirSync, readFileSync, symlinkSync, utimesSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { join, relative } from "node:path";
 import { crc32 as platformCrc32, deflateRawSync, inflateRawSync } from "node:zlib";
 
-import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { auditPackage } from "../../scripts/release-audit.mjs";
 import { buildZip, crc32, readZipEntry, run, zipDirectory } from "../../scripts/make-release-zip.mjs";
 import { buildPackage, filesUnder, removeBuilt, scratchDirectory } from "../fixtures/buildPackage";
 import { ROOT } from "../fixtures/repoFiles";
+import packageMetadata from "../../package.json";
 
 /**
  * The release ZIP (Phase 4 Task 37; review checklist 39 and 40). It is what both stores and the GitHub release receive,
@@ -94,7 +95,7 @@ function readZip(zip: Buffer): Entry[] {
 const unzipHere = spawnSync("unzip", ["-v"], { encoding: "utf8" }).status === 0;
 const tarHere = spawnSync("tar", ["--version"], { encoding: "utf8" }).status === 0;
 
-afterEach(removeBuilt);
+afterAll(removeBuilt);
 
 describe("what the ZIP holds", () => {
   it("is every file in the directory, read back byte for byte by a reader that is not the writer's, with a CRC from the platform", () => {
@@ -411,14 +412,113 @@ describe("the platform's own tools", () => {
   });
 });
 
+const text: Record<string, string> = {};
+
+/** Every address in the package, and why it is there. None of them is fetched. */
+const ADDRESSES: Record<string, string> = {
+  "http://www.w3.org/2000/svg": "an XML namespace, as an identifier, for the SVG the interface draws",
+  "http://www.w3.org/1999/xlink": "an XML namespace, as an identifier, for SVG links",
+  "http://www.w3.org/XML/1998/namespace": "an XML namespace, as an identifier, in React's attribute table",
+  "http://www.w3.org/1998/Math/MathML": "an XML namespace, as an identifier, in React DOM",
+  "https://www.threads.com/@$": "the profile address the extension builds a link from",
+  "https://www.threads.com/": "Threads itself: where the tour's Open Threads goes",
+  "https://tailwindcss.com": "a licence line in a banner comment",
+  "https://reactrouter.com/en/main/routers/picking-a-router.": "the text of a developer warning in react-router",
+  "https://react.dev/errors/": "the text of React's production error messages",
+  "http://localhost": "a base for reading relative addresses, never fetched",
+  "https://marslento.github.io/your-name-for-threads/privacy": "the link to the privacy policy, opened in a new tab by the person",
+  "https://github.com/marslento/your-name-for-threads": "the link to the source, opened in a new tab by the person",
+  "https://json-schema.org/draft/2020-12/schema": "an identifier in zod's JSON Schema converter, a string that is never fetched",
+  "http://json-schema.org/draft-07/schema#": "an identifier in zod's JSON Schema converter, a string that is never fetched",
+  "http://json-schema.org/draft-04/schema#": "an identifier in zod's JSON Schema converter, a string that is never fetched",
+};
+
+const matches = (pattern: RegExp) => Object.entries(text).flatMap(([file, body]) => [...body.matchAll(pattern)].map((match) => ({ file, at: match.index ?? 0, match: match[0] })));
+
 describe("a real production build", () => {
   let built: string;
 
-  // A real build takes about three seconds alone and much longer while the whole suite is running, so it is given the same generous timeout as the other tests that build.
   beforeAll(() => {
     built = buildPackage();
+    for (const file of filesUnder(built)) {
+      const name = relative(built, file).split("\\").join("/");
+      if (/\.(?:js|html|css)$/.test(name)) text[name] = readFileSync(file, "utf8");
+    }
   }, 120_000);
-  afterAll(removeBuilt);
+
+  it("(control) passes the package audit as a real production package", () => {
+    const audit = auditPackage(built, { packageJson: join(ROOT, "package.json") });
+    expect(audit.files).toBeGreaterThan(10);
+    expect(audit.findings).toEqual([]);
+  });
+
+  it("requests storage and only the Threads host", () => {
+    const manifest = JSON.parse(readFileSync(join(built, "manifest.json"), "utf8"));
+    expect(manifest.permissions).toEqual(["storage"]);
+    expect(manifest.host_permissions).toEqual(["https://www.threads.com/*"]);
+  });
+
+  it("emits no source map and nothing that points at one", () => {
+    expect(filesUnder(built).filter((file) => file.endsWith(".map"))).toEqual([]);
+    const references = filesUnder(built).filter((file) => /\.(js|css|html)$/.test(file) && readFileSync(file, "utf8").includes("sourceMappingURL"));
+    expect(references).toEqual([]);
+  });
+
+  it("packages the current version without package.json's dependency lists", () => {
+    expect(JSON.parse(readFileSync(join(built, "manifest.json"), "utf8")).version).toBe(packageMetadata.version);
+    const leaking = filesUnder(built).filter((file) => /\.(js|html|css|json)$/.test(file) && /devDependencies|@crxjs\/vite-plugin/.test(readFileSync(file, "utf8")));
+    expect(leaking).toEqual([]);
+  });
+
+  it("contains only reviewed addresses, each a namespace, a link the person follows, or a string that is never fetched", () => {
+    const found = new Set(matches(new RegExp("https?://[A-Za-z0-9._~:/?#@!$&'()*+,;=%-]+", "g")).map((entry) => entry.match));
+
+    expect([...found].sort()).toEqual(Object.keys(ADDRESSES).sort());
+  });
+
+  it("names no analytics, crash reporting, advertising or content-delivery host, in any file of the package", () => {
+    const hosts = ["google-analytics.com", "googletagmanager.com", "doubleclick.net", "sentry.io", "segment.io", "segment.com", "mixpanel.com", "amplitude.com", "datadoghq.com", "bugsnag.com", "hotjar.com", "clarity.ms", "plausible.io", "posthog.com", "fullstory.com", "logrocket.com", "newrelic.com", "nr-data.net", "rollbar.com", "matomo.cloud", "heapanalytics.com", "intercom.io", "hubspot.com", "facebook.net", "connect.facebook", "fbcdn.net", "graph.facebook.com", "cloudflareinsights.com", "statcounter.com", "mc.yandex.ru", "launchdarkly.com", "cdn.jsdelivr.net", "unpkg.com", "cdnjs.cloudflare.com", "googleapis.com", "gstatic.com"];
+
+    const named = Object.entries(text).flatMap(([file, body]) => hosts.filter((host) => body.toLowerCase().includes(host)).map((host) => `${file}: ${host}`));
+
+    expect(named).toEqual([]);
+  });
+
+  it("holds one way to compile a string, zod's probe, and it cannot run: the schema switches it off", () => {
+    const found = matches(/\beval\s*\(|new Function\s*\(|\bFunction\s*\(\s*[`"']/g);
+
+    expect(found, "the ways to compile a string in the package").toHaveLength(1);
+    expect(found[0]?.file).toMatch(/^assets\/dashboard\.html-.+\.js$/);
+    const context = text[found[0]?.file ?? ""]?.slice(Math.max(0, (found[0]?.at ?? 0) - 160), found[0]?.at ?? 0) ?? "";
+    expect(context, "it is zod's allowsEval, which returns before it gets there when jitless is set").toMatch(/jitless/);
+  });
+
+  it("reaches the network in two places only: the page observer's XMLHttpRequest wrapper, and Vite's module preload for the extension's own files", () => {
+    const fetches = matches(/\bfetch\s*\(/g);
+    const requests = matches(/XMLHttpRequest/g);
+
+    expect(fetches).toHaveLength(1);
+    expect(fetches[0]?.file).toMatch(/^assets\/settingsRepository-.+\.js$/);
+    expect(text[fetches[0]?.file ?? ""], "it is the module preload polyfill, which fetches the links the extension's own pages carry").toContain("modulepreload");
+    expect(requests.map((entry) => entry.file).sort()).toEqual([expect.stringMatching(/^assets\/identityObserver\.ts-(?!loader).+\.js$/)]);
+  });
+
+  it("uses no beacon, socket, event stream, script import, cookie, database, local storage or Chrome cookie or request API", () => {
+    const apis = ["sendBeacon", "WebSocket", "EventSource", "importScripts", "indexedDB", "localStorage", "document.cookie", "cookieStore", "chrome.cookies", "chrome.webRequest"];
+
+    const used = apis.flatMap((api) => matches(new RegExp(api.replace(/\./g, "\\."), "g")).map((entry) => `${entry.file}: ${api}`));
+
+    expect(used).toEqual([]);
+  });
+
+  it("touches sessionStorage in one place only: react-router's record of view transitions, on the Dashboard's own origin", () => {
+    const found = matches(/sessionStorage/g);
+
+    expect(found.length).toBeGreaterThanOrEqual(1);
+    for (const entry of found) {
+      expect(entry.file, "a Threads page never runs the Dashboard's code").toMatch(/^assets\/dashboard\.html-.+\.js$/);
+    }
+  });
 
   it("zips to exactly its files, twice the same, and the extracted ZIP passes the package audit as the build did", () => {
     const zip = join(scratchDirectory(), "release.zip");

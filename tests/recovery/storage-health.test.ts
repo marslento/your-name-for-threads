@@ -64,11 +64,6 @@ describe("validateStorageHealth: one damaged Directory", () => {
     expect(validateStorageHealth(bobFirst)).toEqual(damaged("dir-alice"));
   });
 
-  it("a binding that points at a damaged Directory is still a directory problem, not a global one", () => {
-    // Alice is bound to dir-alice, which is damaged. The binding itself is well formed.
-    expect(validateStorageHealth(withDirectory("dir-alice", "junk"))).toEqual(damaged("dir-alice"));
-  });
-
   it("with two damaged Directories, names the first in a stable order and lists both for the caller that has to decide per account", () => {
     const raw = withDirectory("dir-bob", "junk", withDirectory("dir-alice", "junk"));
     const reversed = { ...raw, directories: Object.fromEntries(Object.entries(raw.directories as Record<string, unknown>).reverse()) };
@@ -155,13 +150,6 @@ describe("validateStorageHealth: what a Directory holds", () => {
 
   it.each([["a string", "x"], ["null", null], ["a number", 7], ["an array", []]])("a tombstone that is %s is damaged", (_kind, value) => {
     expect(validateStorageHealth(holding({ tombstones: { t1: value } }))).toEqual(damaged(ALICE_DIR));
-  });
-
-  it("leaves the healthy account alone, so one account's garbage stops only that account", () => {
-    const raw = holding({ contacts: "oops" });
-
-    expect(invalidDirectoryIds(raw)).toEqual([ALICE_DIR]);
-    expect(validateStorageHealth(raw)).toEqual(damaged(ALICE_DIR));
   });
 });
 

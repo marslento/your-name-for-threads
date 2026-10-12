@@ -25,6 +25,8 @@ pnpm test:e2e
 
 Vitest collects `tests/**/*.test.{ts,tsx}`. It does not collect scripts placed in documentation. Playwright has explicit entry specs in `playwright.config.ts`. New independent review probes must be integrated into a formal suite or retained as a clearly labeled investigation, not silently counted as CI coverage.
 
+Plain TypeScript tests run in Node; TSX tests run in jsdom. A plain TypeScript test that uses the DOM or exercises page-context behavior declares `// @vitest-environment jsdom`. Keep the browser environment where the behavior depends on it instead of adding DOM shims to data tests.
+
 ## Required regression coverage
 
 - Invalid account evidence permanently revokes already captured write/export authority, even if the same account is immediately confirmed again.
@@ -37,6 +39,10 @@ Vitest collects `tests/**/*.test.{ts,tsx}`. It does not collect scripts placed i
 - The published ZIP has the intended permissions, version, assets, CSP and checksum; store jobs require approval before obtaining credentials.
 
 Test files and assertion counts are not an API. When removing a test, state whether the requirement retired or name the case that now covers the same defect. A shorter test is acceptable when it still fails for the bug it protects against. Do not preserve obsolete behavior merely to maintain old totals.
+
+Exact copy, cosmetic CSS classes, column proportions and document structure are reviewed when they change. Their former automated contracts are retired. Fixture-only schema checks are replaced by the existing migration, validation and backup roundtrip tests. Keep locale completeness, accessible names, focus, errors and warning delivery automated. Review public privacy statements, issue forms and store disclosures before release; release gates, permissions, private-data boundaries and package integrity remain automated.
+
+Package audit rules use a small valid package fixture with one fault injected at a time. `tests/build/release-zip.test.ts` builds the real product once and checks its audit results, permissions, version, source maps, dependency inventory and ZIP roundtrip together. `tests/build/production-build.test.ts` keeps a separate source-map control build. Both use temporary directories and leave `dist` alone.
 
 ## Running a targeted check
 

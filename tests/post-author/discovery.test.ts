@@ -1,3 +1,5 @@
+// @vitest-environment jsdom
+
 import { afterEach, describe, expect, it } from "vitest";
 
 import { classifyAuthorOccurrence } from "../../src/content/surfaces/post-author/classifyAuthorOccurrence";
@@ -237,11 +239,6 @@ describe("classifyAuthorOccurrence", () => {
   }
 
   it("classifies a normal post author as feed", () => {
-    document.body.innerHTML = feedPost("alice");
-    expect(classify("alice")).toBe("feed");
-  });
-
-  it("classifies a profile page post author as feed", () => {
     document.body.innerHTML = feedPost("alice");
     expect(classify("alice")).toBe("feed");
   });

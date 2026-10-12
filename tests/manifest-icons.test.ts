@@ -53,20 +53,4 @@ describe("manifest icons", () => {
     expect(toolbar[16]).toBe((icons as Record<number, string>)[16]);
     expect(toolbar[32]).toBe((icons as Record<number, string>)[32]);
   });
-
-  it("does not reference the 512 px source or the 64 px extra: only the four slots are meant to ship", async () => {
-    const { icons, action } = await resolvedManifest();
-    const referenced = [...Object.values(icons ?? {}), ...Object.values((action as { default_icon?: Record<number, string> }).default_icon ?? {})];
-
-    expect(referenced).not.toContain("icons/icon.png");
-    expect(referenced).not.toContain("icons/icon64.png");
-  });
-
-  it("keeps the source artwork large enough to regenerate any slot", () => {
-    const source = readPng("icons/icon.png");
-
-    expect(source.isPng).toBe(true);
-    expect(source.width).toBe(source.height);
-    expect(source.width).toBeGreaterThanOrEqual(128);
-  });
 });

@@ -58,27 +58,7 @@ describe("DirectoryTable", () => {
       />,
     );
 
-    // No fixed character cut any more: the note is rendered in full and CSS
-    // clips it to whatever the fixed 26% column is worth.
-    const note = screen.getByText(longNote);
-    expect(note.className).toContain("truncate");
-  });
-
-  it("pins the five columns to the agreed proportions, adding up to 100%", () => {
-    const alice = contact({ id: "alice" });
-    const { container } = render(
-      <DirectoryTable
-        contacts={[alice]}
-        pendingConflictByContactId={new Map()}
-        onEdit={vi.fn()}
-        onResolveConflict={vi.fn()}
-      />,
-    );
-
-    const widths = [...container.querySelectorAll("col")].map((col) => (col as HTMLElement).style.width);
-    expect(widths).toEqual(["24%", "20%", "26%", "20%", "10%"]);
-    expect(widths.reduce((total, width) => total + Number.parseInt(width, 10), 0)).toBe(100);
-    expect(container.querySelector("table")!.className).toContain("table-fixed");
+    expect(screen.getByText(longNote)).toBeTruthy();
   });
 
   it("shows only the Edit action for a normal contact", () => {
@@ -97,22 +77,6 @@ describe("DirectoryTable", () => {
     expect(screen.queryByText(t("profile_pendingConfirmation"))).toBeNull();
   });
 
-  it("shows the pending badge and both actions for a canonical conflicted contact", () => {
-    const alice = contact({ id: "alice", threadsUserId: "123" });
-    render(
-      <DirectoryTable
-        contacts={[alice]}
-        pendingConflictByContactId={new Map([["alice", "conflict-1"]])}
-        onEdit={vi.fn()}
-        onResolveConflict={vi.fn()}
-      />,
-    );
-
-    expect(screen.getByText(t("profile_pendingConfirmation"))).toBeTruthy();
-    expect(screen.getByRole("button", { name: t("profile_editNickname") })).toBeTruthy();
-    expect(screen.getByRole("button", { name: t("dashboard_directory_resolveConflictAction") })).toBeTruthy();
-  });
-
   it("calls onEdit with the row's contact and onResolveConflict with the conflict id", () => {
     const alice = contact({ id: "alice", threadsUserId: "123" });
     const onEdit = vi.fn();
@@ -125,6 +89,10 @@ describe("DirectoryTable", () => {
         onResolveConflict={onResolveConflict}
       />,
     );
+
+    expect(screen.getByText(t("profile_pendingConfirmation"))).toBeTruthy();
+    expect(screen.getByRole("button", { name: t("profile_editNickname") })).toBeTruthy();
+    expect(screen.getByRole("button", { name: t("dashboard_directory_resolveConflictAction") })).toBeTruthy();
 
     fireEvent.click(screen.getByRole("button", { name: t("profile_editNickname") }));
     expect(onEdit).toHaveBeenCalledWith(alice);

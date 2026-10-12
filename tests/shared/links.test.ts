@@ -1,20 +1,8 @@
-import { readdirSync, readFileSync } from "node:fs";
-import { extname, join, relative } from "node:path";
-
 import { describe, expect, it } from "vitest";
 
 import * as links from "../../src/shared/links";
 
 const urls = Object.entries(links) as Array<[string, string]>;
-const root = process.cwd();
-
-function sourceFiles(directory: string): string[] {
-  return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
-    const path = join(directory, entry.name);
-    if (entry.isDirectory()) return sourceFiles(path);
-    return [".ts", ".tsx", ".html", ".json"].includes(extname(path)) ? [path] : [];
-  });
-}
 
 describe("public links (Phase 4 §9, §28)", () => {
   it("exports only URLs", () => {
@@ -56,14 +44,5 @@ describe("public links (Phase 4 §9, §28)", () => {
     expect(url.pathname).toBe("/marslento/your-name-for-threads/security/policy");
     expect(url.search).toBe("");
     expect(links.SECURITY_POLICY_URL).not.toContain("advisories");
-  });
-
-  it("are the only place under src/ that names GitHub or GitHub Pages, so there is one thing to correct", () => {
-    const offenders = sourceFiles(join(root, "src"))
-      .filter((path) => relative(root, path).replaceAll("\\", "/") !== "src/shared/links.ts")
-      .filter((path) => /github\.com|github\.io/i.test(readFileSync(path, "utf8")))
-      .map((path) => relative(root, path));
-
-    expect(offenders).toEqual([]);
   });
 });

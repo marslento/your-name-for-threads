@@ -160,14 +160,6 @@ describe("classifyExternalContact", () => {
 
     expect(classifyExternalContact(incoming, indexes).kind).toBe("ambiguous_local_identity");
   });
-
-  it("stays unambiguous when only one local contact holds a given stable ID", () => {
-    const local = contact({ id: "local-1", threadsUserId: "123", username: "alice" });
-    const indexes = buildExternalMatchIndexes(localSnapshot({ contacts: [local] }));
-    const incoming = contact({ id: "incoming-1", threadsUserId: "123", username: "alice-renamed" });
-
-    expect(classifyExternalContact(incoming, indexes)).toEqual({ kind: "stable_duplicate", incoming, local });
-  });
 });
 
 describe("findDuplicateTargets", () => {

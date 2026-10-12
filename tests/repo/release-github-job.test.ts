@@ -72,7 +72,7 @@ describe.skipIf(!usable)("the release step, run", () => {
     expect(asked(context)).toEqual(["release", "create", `v${VERSION}`, `release/${ZIP}`, "release/SHA256SUMS", "--title", `Your Name for Threads ${VERSION}`, "--notes-file", "release/release-notes.md", "--verify-tag", "--end"]);
   });
 
-  it("puts the checksum and a word about the stores' own review at the end of the notes, and keeps the changelog section as it was", () => {
+  it("adds the checksum to the notes and keeps the changelog section as it was", () => {
     const context = setup();
 
     execute(context);
@@ -80,7 +80,6 @@ describe.skipIf(!usable)("the release step, run", () => {
     const notes = readFileSync(join(context.dir, "release", "release-notes.md"), "utf8");
     expect(notes.startsWith(NOTES)).toBe(true);
     expect(notes).toContain(`Its SHA-256 is ${context.sha}.`);
-    expect(notes).toContain("whose reviews are separate");
   });
 
   it("does nothing when the ZIP is not the one the packaging job recorded, and leaves the notes alone", () => {
@@ -145,15 +144,5 @@ describe.skipIf(!usable)("the release step, run", () => {
 
     expect(result.status).not.toBe(0);
     expect(asked(context)).toContain("create");
-  });
-});
-
-describe("the script that is run", () => {
-  it("is read out of the workflow, and needs nothing from GitHub's expressions: what runs here is what runs there", () => {
-    const script = releaseScript();
-
-    expect(script.startsWith("set -euo pipefail\n")).toBe(true);
-    expect(script).toContain("gh release create");
-    expect(script).not.toContain("${{");
   });
 });

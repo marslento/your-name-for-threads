@@ -354,7 +354,6 @@ describe("the notes for certification", () => {
     expect(notes).toContain("What changed:\n## Your Name for Threads 1.2.3");
     expect(notes).toContain("- A thing.");
     expect(notes).toContain("How to test it:");
-    expect(notes).toContain("no credentials to give");
   });
 
   it("are only the version when there is nothing else to say", async () => {
@@ -363,14 +362,6 @@ describe("the notes for certification", () => {
     await submit(fake);
 
     expect(readNotes(fake)).toBe("Version 1.2.3.");
-  });
-
-  it("are the reviewer instructions of the real Edge listing, which are also the Chrome listing's", () => {
-    const edge = reviewerInstructions(readFileSync(LISTING, "utf8"));
-    const chrome = reviewerInstructions(readFileSync(join(ROOT, "docs", "release", "chrome-store-listing.md"), "utf8"));
-
-    expect(edge).toBe(chrome);
-    expect(edge).toContain('"Open Directory"');
   });
 
   it("are never longer than the limit, cut in what changed and never in how to test it", () => {

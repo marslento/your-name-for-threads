@@ -9,7 +9,7 @@ Each threat below has five parts. **Threat** says what could go wrong. **Mitigat
 Two limits apply to all of it:
 
 - Evidence means a test that fails when the mitigation is removed, or a file that can be read. Where a claim is an analysis of the code and no test attacks it, the text says so. Nothing here has been tested against a hostile Threads page.
-- `tests/repo/threat-model.test.ts` holds what a machine can hold: every threat has all five parts, every file named exists, and the numbers and keys stated here are the ones in the code. It cannot judge whether a threat is missing.
+- `tests/repo/threat-model.test.ts` guards dependency installation settings, HTML injection APIs and the browser-test workflow's permissions. Review the threat descriptions, evidence and limits when the relevant boundaries change.
 
 This is not a claim that the extension is secure. It is a list of what was considered, what was done, and what was left.
 
@@ -262,7 +262,7 @@ This is not a claim that the extension is secure. It is a list of what was consi
 - Diagnostics are not part of a backup. The surface-health record that the popup shows is also closed sets only.
 - The bug-report link carries only the template, and the issue forms tell the reader what not to paste.
 
-**Evidence.** `tests/diagnostics/diagnostic-types.test.ts`, `tests/diagnostics/diagnostic-store.test.ts`, `tests/diagnostics/diagnostic-summary.test.ts`, `tests/diagnostics/diagnostic-backup-exclusion.test.ts`, `tests/repo/issue-templates.test.ts`, `tests/repo/data-handling-matrix.test.ts`.
+**Evidence.** `tests/diagnostics/diagnostic-types.test.ts`, `tests/diagnostics/diagnostic-store.test.ts`, `tests/diagnostics/diagnostic-summary.test.ts`, `tests/diagnostics/diagnostic-backup-exclusion.test.ts`, `tests/repo/data-handling-matrix.test.ts`. Review the public issue forms' privacy guidance when those forms change.
 
 **Residual.** What a person pastes elsewhere is theirs, and a GitHub issue is public. The browser family, the operating-system family and the version are in the copied text, which is a small fingerprint, not an identity.
 
@@ -305,7 +305,7 @@ This is not a claim that the extension is secure. It is a list of what was consi
 - The built bundle, dependencies included, is held to a reviewed inventory: every address, every way to compile a string and every way to reach the network, a cookie or the page's storage is a list with a reason, and a new one fails a test. The one string compile in the bundle, zod's `Function("")` probe, is switched off with `z.config({ jitless: true })`, because the extension's policy reports every attempt as a violation.
 - Installs use the frozen lockfile, and the project pins pnpm 10, which does not run a dependency's install scripts unless it is explicitly allowed. The project allows none.
 
-**Evidence.** `tests/build/release-audit.test.ts`, `tests/build/production-build.test.ts`, `tests/build/package-inventory.test.ts`, `tests/portability/backup-schema-no-eval.test.ts`, `tests/repo/data-handling-matrix.test.ts`, `tests/repo/ci-workflow.test.ts`, `tests/repo/threat-model.test.ts`, `scripts/release-audit.mjs`.
+**Evidence.** `tests/build/release-audit.test.ts`, `tests/build/production-build.test.ts`, `tests/build/release-zip.test.ts`, `tests/portability/backup-schema-no-eval.test.ts`, `tests/repo/data-handling-matrix.test.ts`, `tests/repo/ci-workflow.test.ts`, `tests/repo/threat-model.test.ts`, `scripts/release-audit.mjs`.
 
 **Residual.** A compromised dependency that is bundled into the package would be inside it. Nothing scans the dependencies against published advisories: there is no `pnpm audit` step and no Dependabot alert configuration that this repository could show. The audit's patterns are text patterns and can be evaded by code written to evade them, and so can the inventory's. A dependency's use of `eval` was found once, by a browser and not by a scan, which is why the package is also loaded into a real browser that reports policy violations.
 

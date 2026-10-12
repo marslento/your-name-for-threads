@@ -359,7 +359,7 @@ describe("RecoveryImportCard: keeps the file to itself (U5)", () => {
     expect(window.location.href).toBe(address);
     expect(window.sessionStorage.length).toBe(0);
     // localStorage cannot be opened in this test runtime; the built package is held to using none at all by
-    // tests/build/package-inventory.test.ts.
+    // tests/build/release-zip.test.ts.
   });
 });
 

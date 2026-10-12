@@ -2,7 +2,7 @@
 
 What Your Name for Threads promises about the work it does on a Threads page and in the Dashboard, how a machine checks each promise, and what a person still has to look at in a real browser before a release.
 
-The automated checks measure **work**: what is scheduled, scanned, read and kept. They do not measure milliseconds, because jsdom cannot say whether a page feels fast. Record manual measurements for the exact candidate being tested. The results table below is a reusable template; `tests/repo/performance-contract.test.ts` fails if a row claims a result without a date.
+The automated checks measure **work**: what is scheduled, scanned, read and kept. They do not measure milliseconds, because jsdom cannot say whether a page feels fast. Record manual measurements for the exact candidate being tested, with a date for each result. Review the results table before release.
 
 ## The contract
 
@@ -14,11 +14,6 @@ The runtime only acts when the page changes. A mutation asks for one animation f
   - "schedules no timer and no frame while the page is idle, however much it is scrolled"
   - "(control) does see the runtime ask for a frame when a post arrives, and never a timer or an interval"
   - "goes quiet again after a burst of posts: no loop is left running"
-- Automated: `tests/repo/performance-contract.test.ts`
-  - "uses no interval and no idle callback anywhere in the extension"
-  - "keeps its timeouts to a reviewed list, each one bounded and cancellable"
-  - "keeps animation frames to the three places that tie one to a mutation or a scan"
-  - "gives the Threads page no timeout, scroll listener or observer of scrolling"
 - Manual: [Long Feed scroll](#long-feed-scroll)
 
 ### 2. The mutation observer does not scan the document; reconciles get the dirty subtree
@@ -38,8 +33,6 @@ Nicknames are found in memory. Loading more posts costs no storage read and no w
 
 - Automated: `tests/runtime/performance-contract.test.tsx`
   - "reads storage as often for a 60-post page as for a 3-post page, and not at all as more posts arrive"
-- Automated: `tests/repo/performance-contract.test.ts`
-  - "reads no storage from the code that decorates posts"
 - Manual: [Long Feed scroll](#long-feed-scroll)
 
 ### 4. An account switch does one controlled full scan
@@ -52,7 +45,7 @@ A confirmed owner change tears down the old owner's UI and store, loads the new 
 
 ### 5. Rendered occurrences are not kept in a permanent registry
 
-A post whose nickname has been rendered is not remembered. The one registry that holds page nodes keeps only posts whose author has no nickname yet, so that a later identity discovery can label them without a rescan. It is emptied of posts that left the page on every discovery, and cleared on every navigation. Everything else the content script and the page observer collect is reviewed in a list: a new collection fails a test until someone says what it holds and how it is bounded.
+A post whose nickname has been rendered is not remembered. The one registry that holds page nodes keeps only posts whose author has no nickname yet, so that a later identity discovery can label them without a rescan. It is emptied of posts that left the page on every discovery, and cleared on every navigation. Review new collections for retained page nodes and bounded growth.
 
 - Automated: `tests/runtime/performance-contract.test.tsx`
   - "keeps nothing for posts whose nickname it rendered"
@@ -60,8 +53,6 @@ A post whose nickname has been rendered is not remembered. The one registry that
   - "lets go of occurrences whose posts left the page, the next time an identity is discovered"
   - "hands an occurrence back the moment it resolves, and keeps nothing of it"
   - "starts empty on the next page, so a long session's navigation does not pile up"
-- Automated: `tests/repo/performance-contract.test.ts`
-  - "holds a collection in the content script or the page observer only where it has been reviewed"
 - Manual: [Long Feed scroll](#long-feed-scroll)
 
 ### 6. A Directory of about a thousand contacts stays usable

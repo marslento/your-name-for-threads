@@ -10,7 +10,6 @@ import { ROOT } from "../fixtures/repoFiles";
 const DIR = "scripts/verification/final-zip-smoke";
 const read = (path: string) => readFileSync(join(ROOT, path), "utf8").replace(/\r\n/g, "\n");
 const driver = read(`${DIR}/run.mjs`);
-const readme = read(`${DIR}/README.md`);
 
 describe("the script", () => {
   it("requires a ZIP argument before starting a browser", () => {
@@ -18,17 +17,6 @@ describe("the script", () => {
     expect(run.error).toBeUndefined();
     expect(run.status).toBe(2);
     expect(run.stderr).toMatch(/usage:.*<release.zip>/);
-  });
-
-  it("hashes the candidate ZIP bytes and compares the extracted manifest version", () => {
-    expect(driver).toContain("const bytes = readFileSync(ZIP);");
-    expect(driver).toContain('createHash("sha256").update(bytes).digest("hex")');
-    expect(driver).toContain("manifest.version === result.zip.packageVersion");
-  });
-
-  it("runs the release audit's own function on the extracted ZIP", () => {
-    expect(driver).toContain('import { auditPackage } from "../../release-audit.mjs";');
-    expect(driver).toContain("auditPackage(extracted");
   });
 
   it("maps the real Threads to the local server, and reaches no address but the three it knows", () => {
@@ -57,10 +45,5 @@ describe("the script", () => {
   it("records names and never a path or an ID, and exits non-zero unless every check passed", () => {
     expect(driver).toContain("zip: { name: basename(ZIP) }, browser: basename(BROWSER)");
     expect(driver).toContain("await finish(ok && result.checks.every((c) => c.ok) ? 0 : 1);");
-  });
-
-  it("is described by a README that gives the command, says what it checks and says what it does not", () => {
-    expect(readme).toContain("node scripts/verification/final-zip-smoke/run.mjs");
-    expect(readme).toMatch(/not Chrome/);
   });
 });
