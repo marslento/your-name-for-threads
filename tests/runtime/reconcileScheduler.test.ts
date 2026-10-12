@@ -1,3 +1,5 @@
+// @vitest-environment jsdom
+
 import { describe, expect, it, vi } from "vitest";
 
 import { ReconcileScheduler } from "../../src/content/runtime/ReconcileScheduler";

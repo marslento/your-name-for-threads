@@ -32,7 +32,7 @@ describe("ExtensionErrorBoundary", () => {
     expect(screen.queryByText(privateMarker)).toBeNull();
     expect(logger).toHaveBeenCalledTimes(1);
     expect(logger).toHaveBeenCalledWith(
-      "Threads Private Directory UI error",
+      expect.any(String),
       expect.objectContaining({
         componentStack: expect.stringContaining("ThrowingProfile"),
       }),

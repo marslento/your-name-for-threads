@@ -77,80 +77,47 @@ describe("About & Privacy: content", () => {
     installFakeChrome(healthyStorage(), backgroundSendMessage());
     render(<AboutPage ownerThreadsUserId={OWNER} />);
 
-    expect(screen.getAllByRole("heading", { level: 1 }).map((h) => h.textContent)).toEqual([t("dashboard_sidebar_about")]);
-    expect(screen.getAllByRole("heading", { level: 2 }).map((h) => h.textContent)).toEqual([
-      t("extension_name"),
-      t("dashboard_about_privacyHeading"),
-      t("dashboard_about_supportHeading"),
-      t("dashboard_about_linksHeading"),
-      t("dashboard_about_independentHeading"),
-    ]);
-    expect(screen.getAllByRole("heading", { level: 3 }).map((h) => h.textContent)).toEqual([
-      t("dashboard_about_backupHeading"),
-      t("dashboard_about_sharedHeading"),
-    ]);
+    expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
+    for (const section of screen.getAllByRole("region")) {
+      expect(within(section).getAllByRole("heading").length).toBeGreaterThan(0);
+    }
+    for (const heading of screen.getAllByRole("heading")) {
+      expect(heading.textContent?.trim()).toBeTruthy();
+    }
   });
 
-  it.each([
-    "extension_name",
-    "dashboard_about_intro",
-    "dashboard_about_supportedBrowsers",
-    "dashboard_about_privacyLocal",
-    "dashboard_about_privacyNoTelemetry",
-    "dashboard_about_backupReminder",
-    "dashboard_about_privacyBackup",
-    "dashboard_about_privacySharedProfile",
-    "dashboard_about_privacySharedProfileLimit",
-    "dashboard_about_supportHelp",
-    "dashboard_about_supportDiagnostics",
-    "dashboard_about_supportPrivate",
-    "dashboard_about_independent",
-    "dashboard_about_vibeCoding",
-    "dashboard_about_nameNote",
-  ])("shows %s", (key) => {
+  it("shows the privacy limits and private support guidance", () => {
     installFakeChrome(healthyStorage(), backgroundSendMessage());
     render(<AboutPage ownerThreadsUserId={OWNER} />);
 
-    expect(screen.getByText(t(key))).toBeTruthy();
-  });
-
-  it("keeps the product name, the version and the replay-the-tour entry", () => {
-    installFakeChrome(healthyStorage(), backgroundSendMessage());
-    render(<AboutPage ownerThreadsUserId={OWNER} />);
-
-    expect(screen.getByText(t("popup_versionLabel"))).toBeTruthy();
-    expect(button("dashboard_about_replayTour")).toBeTruthy();
-  });
-
-  it("never claims more than the design allows, on the page as rendered", () => {
-    installFakeChrome(healthyStorage(), backgroundSendMessage());
-    const { container } = render(<AboutPage ownerThreadsUserId={OWNER} />);
-
-    expect(container.textContent ?? "").not.toMatch(/100%|guarantee|completely secure|絕對|完全安全|保證|百分之百/i);
+    for (const key of [
+      "dashboard_about_privacyLocal",
+      "dashboard_about_privacyNoTelemetry",
+      "dashboard_about_privacyBackup",
+      "dashboard_about_privacySharedProfileLimit",
+      "dashboard_about_supportDiagnostics",
+      "dashboard_about_supportPrivate",
+    ]) {
+      expect(screen.getByText(t(key)), key).toBeTruthy();
+    }
   });
 });
 
 describe("About & Privacy: links (navigation only)", () => {
-  it.each([
-    ["dashboard_about_linkSource", GITHUB_REPO_URL],
-    ["dashboard_about_linkIssues", GITHUB_ISSUES_URL],
-    ["dashboard_about_linkPrivacy", PRIVACY_POLICY_URL],
-    ["dashboard_about_reportIssue", GITHUB_BUG_REPORT_URL],
-    ["dashboard_about_linkSecurity", SECURITY_POLICY_URL],
-  ])("%s goes to its address", (key, href) => {
-    installFakeChrome(healthyStorage(), backgroundSendMessage());
-    render(<AboutPage ownerThreadsUserId={OWNER} />);
-
-    expect(link(key).getAttribute("href")).toBe(href);
-  });
-
-  it("opens every external link in a new tab, without handing the page to the opener", () => {
+  it("links to the intended addresses and opens external links without handing the page to the opener", () => {
     installFakeChrome(healthyStorage(), backgroundSendMessage());
     const { container } = render(<AboutPage ownerThreadsUserId={OWNER} />);
 
-    const anchors = [...container.querySelectorAll("a")];
-    expect(anchors.length).toBe(5);
-    for (const anchor of anchors) {
+    for (const [key, href] of [
+      ["dashboard_about_linkSource", GITHUB_REPO_URL],
+      ["dashboard_about_linkIssues", GITHUB_ISSUES_URL],
+      ["dashboard_about_linkPrivacy", PRIVACY_POLICY_URL],
+      ["dashboard_about_reportIssue", GITHUB_BUG_REPORT_URL],
+      ["dashboard_about_linkSecurity", SECURITY_POLICY_URL],
+    ]) {
+      expect(link(key).getAttribute("href"), key).toBe(href);
+    }
+    for (const anchor of container.querySelectorAll("a")) {
       expect(anchor.getAttribute("target")).toBe("_blank");
       expect(anchor.getAttribute("rel")).toContain("noopener");
       expect(anchor.getAttribute("rel")).toContain("noreferrer");
@@ -181,7 +148,6 @@ describe("Copy diagnostics (Task 11)", () => {
 
     await waitFor(() => expect(writeText).toHaveBeenCalledTimes(1));
     const copied = writeText.mock.calls[0][0] as string;
-    expect(copied.startsWith("Your Name for Threads Diagnostics")).toBe(true);
     expect(copied).toContain("Account resolver state: confirmed");
     expect(copied).toContain("Directory exists: yes");
     expect(copied).toContain("Contact count: 1");

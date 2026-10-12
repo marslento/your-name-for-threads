@@ -4,7 +4,7 @@ This document covers the first manual submission and later tag-driven releases: 
 
 **Before enabling automation:** verify the repository environment, approval rules and live store API setup. The workflow file alone does not establish that these settings exist or that a submission has succeeded.
 
-`tests/repo/release-pipeline.test.ts` holds what a machine can hold: every secret the workflow uses is documented here, every job that uses one is behind the approval environment, no job that can write is outside the approval, and no credential is in the repository.
+`tests/repo/release-pipeline.test.ts` checks that jobs using secrets or repository write permission require approval. `tests/repo/no-committed-secrets.test.ts` scans the working tree for credentials. Review this document when the workflow's credentials or approval rules change.
 
 ## What it does
 

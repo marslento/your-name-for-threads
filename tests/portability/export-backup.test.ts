@@ -3,6 +3,8 @@ import { describe, expect, it } from "vitest";
 import type { DirectorySnapshot } from "../../src/domain/directorySnapshot";
 import { backupFilename, createBackupSnapshot, exportDirectory, serializeBackup } from "../../src/portability/exportBackup";
 
+const OWNER = { threadsUserId: "900", username: "alice" };
+
 function snapshot(): DirectorySnapshot {
   return {
     directoryId: "dir-1",
@@ -19,34 +21,19 @@ function snapshot(): DirectorySnapshot {
 
 describe("createBackupSnapshot", () => {
   it("sorts contacts by id and tombstones by contactId", () => {
-    const backup = createBackupSnapshot(snapshot(), "2026-09-14T10:55:23.000Z");
+    const backup = createBackupSnapshot(snapshot(), OWNER, "2026-09-14T10:55:23.000Z");
 
     expect(backup.contacts.map((c) => c.id)).toEqual(["a", "b"]);
     expect(backup.tombstones.map((t) => t.contactId)).toEqual(["y", "z"]);
-  });
-
-  it("never includes settings/identityCache/identityIndex/identityConflicts fields", () => {
-    const backup = createBackupSnapshot(snapshot(), "2026-09-14T10:55:23.000Z");
-
-    expect(backup).not.toHaveProperty("settings");
-    expect(backup).not.toHaveProperty("identityCache");
-    expect(backup).not.toHaveProperty("identityIndex");
-    expect(backup).not.toHaveProperty("identityConflicts");
   });
 });
 
 describe("serializeBackup determinism", () => {
   it("produces identical bytes for identical durable data at a fixed exportedAt", () => {
-    const backupA = createBackupSnapshot(snapshot(), "2026-09-14T10:55:23.000Z");
-    const backupB = createBackupSnapshot(snapshot(), "2026-09-14T10:55:23.000Z");
+    const backupA = createBackupSnapshot(snapshot(), OWNER, "2026-09-14T10:55:23.000Z");
+    const backupB = createBackupSnapshot(snapshot(), OWNER, "2026-09-14T10:55:23.000Z");
 
     expect(serializeBackup(backupA)).toBe(serializeBackup(backupB));
-  });
-
-  it("uses two-space indentation", () => {
-    const json = serializeBackup(createBackupSnapshot(snapshot(), "2026-09-14T10:55:23.000Z"));
-
-    expect(json).toContain('\n  "format"');
   });
 });
 
@@ -60,9 +47,15 @@ describe("exportDirectory", () => {
       ]),
     };
 
-    const result = exportDirectory(corrupt, "2026-09-14T10:55:23.000Z");
+    const result = exportDirectory(corrupt, OWNER, "2026-09-14T10:55:23.000Z");
 
-    expect(result.ok).toBe(false);
+    expect(result).toEqual({
+      ok: false,
+      reason: {
+        kind: "invariant",
+        issues: [{ code: "broken_merged_lineage", contactId: "a", mergedIntoContactId: "ghost" }],
+      },
+    });
   });
 });
 

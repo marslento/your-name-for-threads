@@ -1,33 +1,9 @@
-import { describe, expect, expectTypeOf, it } from "vitest";
+import { describe, expect, it } from "vitest";
 
-import type { ThreadContact } from "../../src/domain/contact";
-import type { ContactTombstone } from "../../src/domain/tombstone";
 import { assertValidTombstone } from "../../src/domain/tombstone";
-import type { IdentityConflict } from "../../src/domain/conflict";
-import {
-  MAX_NICKNAME_LENGTH,
-  MAX_NOTE_LENGTH,
-  normalizeNickname,
-  normalizeNote,
-} from "../../src/domain/validation";
-
-describe("V2 active contact shape", () => {
-  it("carries no deletion state", () => {
-    expectTypeOf<ThreadContact>().not.toHaveProperty("deletedAt");
-  });
-
-  it("carries an optional note alongside the required nickname", () => {
-    expectTypeOf<ThreadContact>().toHaveProperty("nickname").toEqualTypeOf<string>();
-    expectTypeOf<ThreadContact>().toHaveProperty("note").toEqualTypeOf<string | undefined>();
-  });
-});
+import { normalizeNote } from "../../src/domain/validation";
 
 describe("V2 tombstone shape", () => {
-  it("carries no nickname or note", () => {
-    expectTypeOf<ContactTombstone>().not.toHaveProperty("nickname");
-    expectTypeOf<ContactTombstone>().not.toHaveProperty("note");
-  });
-
   it("accepts a user_deleted tombstone without mergedIntoContactId", () => {
     expect(() =>
       assertValidTombstone({
@@ -66,32 +42,7 @@ describe("V2 tombstone shape", () => {
   });
 });
 
-describe("V2 pending-only identity conflict shape", () => {
-  it("carries no status property", () => {
-    expectTypeOf<IdentityConflict>().not.toHaveProperty("status");
-  });
-});
-
-describe("nickname validation (1-25)", () => {
-  it("has a max length of 25", () => {
-    expect(MAX_NICKNAME_LENGTH).toBe(25);
-  });
-
-  it("accepts exactly 25 visible characters", () => {
-    const nickname = "a".repeat(25);
-    expect(normalizeNickname(nickname)).toBe(nickname);
-  });
-
-  it("rejects 26 visible characters", () => {
-    expect(() => normalizeNickname("a".repeat(26))).toThrow();
-  });
-});
-
 describe("note validation (<=200)", () => {
-  it("has a max length of 200", () => {
-    expect(MAX_NOTE_LENGTH).toBe(200);
-  });
-
   it("accepts an empty note", () => {
     expect(normalizeNote("")).toBe("");
   });

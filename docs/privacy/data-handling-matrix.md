@@ -4,7 +4,7 @@ What Your Name for Threads stores, where, whether any of it leaves your browser,
 
 This is the reference the public privacy statements are written from: `PRIVACY.md`, the About & Privacy page, the GitHub Pages privacy page and the store disclosures. If one of them disagrees with this table, one of them is wrong and must be fixed before release.
 
-It describes what the code does, not what was intended. `tests/repo/data-handling-matrix.test.ts` checks what a machine can: the storage keys the code really writes, what a real JSON backup really contains, that nothing in `src/` uses a network API (apart from the page observer described in the last row), and that the two statements most likely to go stale (the identity cache sweep and the Recovery dump) are revisited when the code changes. It cannot check the wording of the prose.
+It describes what the code does, not what was intended. `tests/repo/data-handling-matrix.test.ts` checks real backup contents, deletion and account clearing, copied diagnostics, and source boundaries for network and browser storage APIs. Review the table when storage, retention or Recovery behavior changes.
 
 **Nothing is sent to the developer automatically.** The extension has no developer-run server, analytics, telemetry, crash reporter, advertising or cloud sync. It contains no code that makes a network request, and its manifest asks for `storage` and for host access to `https://www.threads.com/*` only. You can export a backup, copy diagnostics, or paste either one somewhere. Nicknames rendered on Threads pages are readable by scripts running there.
 
@@ -35,7 +35,7 @@ A Directory is limited to 20,000 contacts and tombstones combined. Deletion repl
 
 ## Storage keys
 
-The real keys, cross-checked by the test against what the code writes.
+The current keys. Review this table when storage keys change; migrations and repository tests check the stored data.
 
 | Area | Key | Holds |
 | --- | --- | --- |

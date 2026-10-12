@@ -80,13 +80,6 @@ describe("Restore vs Merge on the same backup (Phase 3.6 §7/§10-§12)", () => 
     expect(restored.tombstones.size).toBe(0);
   });
 
-  it("Restore removes a contact added after the backup was taken", () => {
-    const restored = buildRestoreCandidate(backupAtT1());
-
-    expect(restored.contacts.has("d")).toBe(false);
-    expect(restored.tombstones.has("d")).toBe(false);
-  });
-
   it("Merge keeps the newer local deletion instead of resurrecting it", () => {
     const built = buildSelfMergeCandidate({
       latestLocal: localAtT2(),
@@ -100,35 +93,6 @@ describe("Restore vs Merge on the same backup (Phase 3.6 §7/§10-§12)", () => 
     if (!built.ok) return;
     expect(activeIds(built.candidate)).toEqual(["a", "b", "d"]);
     expect(built.candidate.tombstones.get("c")?.reason).toBe("user_deleted");
-  });
-
-  it("Merge keeps a local-only contact the backup never had", () => {
-    const built = buildSelfMergeCandidate({
-      latestLocal: localAtT2(),
-      incoming: backupAtT1(),
-      preflight: analyzeSelfMerge(localAtT2(), backupAtT1()),
-      decisions: new Map(),
-      operationNow: "2026-02-01T13:00:00.000Z",
-    });
-
-    expect(built.ok).toBe(true);
-    if (!built.ok) return;
-    expect(built.candidate.contacts.has("d")).toBe(true);
-  });
-
-  it("the two operations disagree on this backup - they are not the same code path wearing two names", () => {
-    const restored = buildRestoreCandidate(backupAtT1());
-    const merged = buildSelfMergeCandidate({
-      latestLocal: localAtT2(),
-      incoming: backupAtT1(),
-      preflight: analyzeSelfMerge(localAtT2(), backupAtT1()),
-      decisions: new Map(),
-      operationNow: "2026-02-01T13:00:00.000Z",
-    });
-
-    expect(merged.ok).toBe(true);
-    if (!merged.ok) return;
-    expect(activeIds(restored)).not.toEqual(activeIds(merged.candidate));
   });
 });
 
@@ -144,6 +108,9 @@ describe("Restore Preflight counts (Phase 3.6 §9)", () => {
     // a and b are byte-identical on both sides.
     expect(preflight.summary.unchanged).toBe(2);
     expect(preflight.summary.update).toBe(0);
+    // Restore is the user's one decision; re-asking per record would make it a Merge (Phase 3.6 §8, checklist #13).
+    expect(preflight.items).toEqual([]);
+    expect(preflight.blockingIssues).toEqual([]);
   });
 
   it("counts an edit made after the backup as a revert to the backup version", () => {
@@ -158,14 +125,6 @@ describe("Restore Preflight counts (Phase 3.6 §9)", () => {
     expect(preflight.summary.update).toBe(1);
     expect(preflight.summary.create).toBe(2);
     expect(preflight.summary.delete).toBe(0);
-  });
-
-  /** Restore is the user's one decision; re-asking per record would make it a Merge (Phase 3.6 §8, checklist #13). */
-  it("never produces review items or blocking issues, whatever the local state is", () => {
-    const preflight = analyzeRestore(localAtT2(), backupAtT1());
-
-    expect(preflight.items).toEqual([]);
-    expect(preflight.blockingIssues).toEqual([]);
   });
 });
 

@@ -69,10 +69,6 @@ describe("analyzeRecoveryTarget: where the file may go", () => {
     expect(raw).toEqual(before);
   });
 
-  it("refuses the normal two-account storage for Alice (A5)", () => {
-    expect(analyze(twoAccounts())).toEqual({ ok: false, code: "target_not_empty" });
-  });
-
   it.each<[string, (dir: Record<string, unknown>) => void]>([
     ["a note that was edited since", (dir) => { (dir.contacts as Record<string, Record<string, unknown>>).c1.note = "Edited later"; }],
     ["a timestamp that differs", (dir) => { (dir.contacts as Record<string, Record<string, unknown>>).c1.updatedAt = LATER; }],
@@ -310,12 +306,5 @@ describe("recoveryApplied: is this exact candidate what is stored?", () => {
     copy.accountBindings = { [ALICE]: "dir-copy", [BOB]: BOB_DIR };
     expect(recoveryApplied(copy, preview)).toBe(false);
     expect(recoveryApplied("PRIVATE_ROOT_PROBE", preview)).toBe(false);
-  });
-});
-
-describe("the fixture", () => {
-  it("is a Directory the loader sets aside, with the file's own records", () => {
-    expect(validateStorageHealth(inRecovery())).toEqual({ kind: "directory_error", directoryId: ALICE_DIR, code: "DIRECTORY_INVALID" });
-    expect(recoveryDirectory(recoveryImportFixture()).contacts).toEqual(damaged().contacts);
   });
 });

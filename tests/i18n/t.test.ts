@@ -54,7 +54,10 @@ describe("t", () => {
   it("substitutes positional placeholders in the bundled fallback", () => {
     vi.stubGlobal("navigator", { language: "en-US" });
 
-    expect(t("profile_saveNickname", "ignored")).toBe(enMessages.profile_saveNickname.message);
+    expect(t("onboarding_stepProgress", ["2", "3"])).toBe(
+      enMessages.onboarding_stepProgress.message.replace("$1", "2").replace("$2", "3"),
+    );
+    expect(t("dashboard_directory_countLabel", "2")).toBe(enMessages.dashboard_directory_countLabel.message.replace("$1", "2"));
   });
 
   it("does not throw when chrome.i18n.getMessage itself throws", () => {

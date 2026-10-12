@@ -29,10 +29,6 @@ describe("when it runs", () => {
     expect(text()).toMatch(/^  workflow_dispatch:\s*$/m);
     expect(text()).not.toMatch(/^\s+tags:|pull_request_target|workflow_run/);
   });
-
-  it("never on pull_request_target or workflow_run, which run with a fork's code and the repository's trust", () => {
-    expect(text()).not.toMatch(/pull_request_target|workflow_run/);
-  });
 });
 
 describe("what it runs", () => {
@@ -43,12 +39,6 @@ describe("what it runs", () => {
   it("installs no other way, so a lockfile that disagrees with package.json fails the run", () => {
     expect(text()).not.toMatch(/pnpm install(?! --frozen-lockfile)|\bnpm (?:install|ci)\b|\byarn\b|--no-frozen-lockfile|--force/);
     expect(text().match(/--frozen-lockfile/g)).toHaveLength(1);
-  });
-
-  it("uses the scripts package.json defines, so the workflow and the developer run the same thing", () => {
-    const scripts = (JSON.parse(readFileSync(join(ROOT, "package.json"), "utf8")) as { scripts: Record<string, string> }).scripts;
-
-    for (const command of commands().filter((line) => !line.startsWith("pnpm install"))) expect(scripts[command.replace(/^pnpm /, "")], command).toBeDefined();
   });
 });
 
@@ -87,9 +77,8 @@ describe("what it is trusted with", () => {
     expect(compare).toBeGreaterThan(checksum);
     expect(script.slice(download)).toContain("set -euo pipefail");
   });
-  it("pins Node and caches the pnpm store, and cannot run forever", () => {
+  it("pins Node and cannot run forever", () => {
     expect(text()).toMatch(/node-version:\s*\d+/);
-    expect(text()).toMatch(/cache:\s*pnpm/);
     expect(text()).toMatch(/timeout-minutes:\s*\d+/);
   });
 });

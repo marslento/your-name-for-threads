@@ -68,17 +68,15 @@ const emptyV3: ExtensionStorageV3 = {
 };
 
 describe("migrateV3ToV4", () => {
-  it("discards the development-only V3 directory content entirely", () => {
-    const v4 = migrateV3ToV4(populatedV3());
+  it("discards the development-only V3 directory content while preserving settings and identityCache", () => {
+    const v3 = populatedV3();
+    const v4 = migrateV3ToV4(v3);
 
     expect(v4.directories).toEqual({});
     expect(v4.accountBindings).toEqual({});
-  });
-
-  it("never assigns V3 data to a Threads account - accountBindings starts empty even with populated V3 contacts", () => {
-    const v4 = migrateV3ToV4(populatedV3());
-
     expect(Object.keys(v4.accountBindings)).toHaveLength(0);
+    expect(v4.settings).toEqual(v3.settings);
+    expect(v4.identityCache).toEqual(v3.identityCache);
   });
 
   it("handles an empty V3 installation the same way", () => {
@@ -91,20 +89,6 @@ describe("migrateV3ToV4", () => {
       identityCache: {},
       settings: emptyV3.settings,
     });
-  });
-
-  it("preserves settings exactly", () => {
-    const v3 = populatedV3();
-    const v4 = migrateV3ToV4(v3);
-
-    expect(v4.settings).toEqual(v3.settings);
-  });
-
-  it("preserves identityCache exactly", () => {
-    const v3 = populatedV3();
-    const v4 = migrateV3ToV4(v3);
-
-    expect(v4.identityCache).toEqual(v3.identityCache);
   });
 });
 

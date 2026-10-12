@@ -42,6 +42,7 @@ describe("the contact editor in the Dashboard", () => {
   it("names the problem with the nickname, in a live region, and stops when it is fixed", async () => {
     await openEditor();
     const nickname = screen.getByLabelText(t("profile_nicknameLabel"));
+    expect(describedError(nickname)).toMatchObject({ invalid: "false", message: "" });
 
     fireEvent.change(nickname, { target: { value: "" } });
     expect(describedError(nickname)).toEqual({ invalid: "true", message: t("profile_nicknameInvalid"), live: true, dangling: false });
@@ -54,6 +55,7 @@ describe("the contact editor in the Dashboard", () => {
   it("names the problem with the note, in a live region, and stops when it is fixed", async () => {
     await openEditor();
     const note = screen.getByLabelText(t("dashboard_drawer_noteLabel"));
+    expect(describedError(note)).toMatchObject({ invalid: "false", message: "" });
 
     fireEvent.change(note, { target: { value: "x".repeat(MAX_NOTE_LENGTH + 1) } });
     expect(describedError(note)).toEqual({ invalid: "true", message: t("dashboard_drawer_noteInvalid"), live: true, dangling: false });
@@ -61,14 +63,6 @@ describe("the contact editor in the Dashboard", () => {
     fireEvent.change(note, { target: { value: "a short note" } });
     expect(describedError(note)).toMatchObject({ invalid: "false", message: "" });
     expect(note.getAttribute("aria-describedby")).toBeNull();
-  });
-
-  it("(control) starts with neither field invalid", async () => {
-    await openEditor();
-
-    for (const control of [screen.getByLabelText(t("profile_nicknameLabel")), screen.getByLabelText(t("dashboard_drawer_noteLabel"))]) {
-      expect(describedError(control)).toMatchObject({ invalid: "false", message: "" });
-    }
   });
 });
 

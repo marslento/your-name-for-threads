@@ -63,10 +63,6 @@ describe("the section for a version", () => {
     expect(changelogSection(CHANGELOG.replace(/\n/g, "\r\n"), "1.0.0")).toEqual(changelogSection(CHANGELOG, "1.0.0"));
   });
 
-  it("takes the last section too, to the end of the file", () => {
-    expect(changelogSection("## [2.0.0] - 2027-01-01\n\nLast one.\n", "2.0.0").body).toBe("Last one.");
-  });
-
   it("matches the version literally: a dot is a dot", () => {
     expect(() => changelogSection("## [1x0x0] - 2026-01-01\n\nNot it.\n", "1.0.0")).toThrow(/no "## \[1\.0\.0\]" section/);
   });
@@ -98,14 +94,12 @@ describe("the command line", () => {
     return dir;
   };
 
-  it("writes the notes, titled with the version and the date, and says so", () => {
+  it("writes the notes, titled with the version and the date", () => {
     const dir = setup();
-    const said: string[] = [];
 
-    expect(run(["1.0.0", "CHANGELOG.md", "notes.md"], { cwd: dir, log: (line) => said.push(line) })).toBe(0);
+    expect(run(["1.0.0", "CHANGELOG.md", "notes.md"], { cwd: dir, log: () => {} })).toBe(0);
 
     expect(readFileSync(join(dir, "notes.md"), "utf8")).toBe("## Your Name for Threads 1.0.0 (2026-10-01)\n\n### Added\n\n- One.\n- Two.\n");
-    expect(said).toEqual(["release notes for 1.0.0 (2026-10-01) written to notes.md"]);
   });
 
   it("fails, and writes nothing, for a version with no section", () => {

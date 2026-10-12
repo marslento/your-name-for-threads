@@ -1,6 +1,6 @@
 # Permission audit
 
-This documents the requested permissions and browser APIs used by the current implementation. Tests compare the tables with the manifest and source. Browser behavior still requires candidate-specific acceptance.
+This documents the requested permissions and browser APIs used by the current implementation. Tests check requested permissions and source API boundaries. Review the tables when those change. Browser behavior still requires candidate-specific acceptance.
 
 ## The built manifest
 

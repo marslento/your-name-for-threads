@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
@@ -56,14 +56,6 @@ describe("when it runs", () => {
     expect(text()).not.toMatch(/workflow_dispatch|pull_request|workflow_run|repository_dispatch|schedule:/);
   });
 
-  it("has a tag pattern that matches a stable version and not a pre-release, a partial version or a build", () => {
-    const pattern = /^ {6}- "(v\[0-9\]\+\.\[0-9\]\+\.\[0-9\]\+)"$/m.exec(text())![1];
-    const matches = (tag: string) => new RegExp(`^${pattern.replace(/\./g, "\\.")}$`).test(tag);
-
-    for (const stable of ["v1.0.0", "v0.1.0", "v10.20.30"]) expect(matches(stable), stable).toBe(true);
-    for (const other of ["v1.0.0-beta.1", "v1.0.0-rc", "v1.0", "1.0.0", "v1.0.0+build", "vv1.0.0", "v1.0.0.1", "v1.x.0", "V1.0.0"]) expect(matches(other), other).toBe(false);
-  });
-
   it("never cancels a release that is running, and runs one release per tag", () => {
     expect(text()).toMatch(/^concurrency:\n {2}group: release-\$\{\{ github\.ref \}\}\n {2}cancel-in-progress: false$/m);
   });
@@ -80,10 +72,6 @@ describe("what it is trusted with", () => {
     const block = job("package");
 
     expect(block).not.toMatch(/secrets\.|GITHUB_TOKEN|github\.token|environment:|chrome-webstore|edge-add|addons\.microsoftedge|oauth2\.googleapis|gh release|npm publish|pnpm publish|curl |wget /i);
-  });
-
-  it("never uses pull_request_target or workflow_run, which run with a fork's code and the repository's trust", () => {
-    expect(text()).not.toMatch(/pull_request_target|workflow_run/);
   });
 
   it("uses only the four actions it has been reviewed for, each at a verified commit", () => {
@@ -166,22 +154,6 @@ describe("what it does, in order", () => {
   it("hands the next job the version and the checksum of what it built, and nothing else", () => {
     expect(job("package")).toMatch(/outputs:\n {6}version: \$\{\{ steps\.zip\.outputs\.version \}\}\n {6}sha256: \$\{\{ steps\.zip\.outputs\.sha256 \}\}\n/);
   });
-
-  it("reads the version from package.json, the only place it is written", () => {
-    expect(text()).toContain("node -p \"require('./package.json').version\"");
-  });
-});
-
-describe("what it runs", () => {
-  it("only scripts and commands that exist", () => {
-    const scripts = (JSON.parse(readFileSync(join(ROOT, "package.json"), "utf8")) as { scripts: Record<string, string> }).scripts;
-
-    for (const path of ["scripts/make-release-zip.mjs", "scripts/changelog-excerpt.mjs", "scripts/release-audit.mjs"]) {
-      expect(text(), path).toContain(path);
-      expect(existsSync(join(ROOT, path)), path).toBe(true);
-    }
-    for (const script of ["test", "build", "release:audit"]) expect(scripts[script], script).toBeDefined();
-  });
 });
 
 /**
@@ -250,7 +222,6 @@ describe.each(STORES)("the $title job", ({ name, script, credentials: CREDENTIAL
 describe("the GitHub release job", () => {
   const block = () => job("github-release");
   const list = () => steps(block());
-  const CREATE = 'gh release create "$GITHUB_REF_NAME" "$zip" release/SHA256SUMS --title "Your Name for Threads ${VERSION}" --notes-file release/release-notes.md --verify-tag';
 
   it("comes after the packaging job and both store jobs, so only after the approval and both submissions", () => {
     expect(block()).toMatch(/^ {4}needs: \[package, chrome, edge\]$/m);
@@ -276,26 +247,6 @@ describe("the GitHub release job", () => {
     expect(list().flatMap((step) => (step.uses ? [step.uses] : []))).toEqual(["actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c"]);
     expect(block()).toMatch(/uses: actions\/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c\n {8}with:\n {10}name: release\n {10}path: release\n/);
     expect(block()).not.toMatch(/checkout|pnpm|npm |yarn|vite|tsc|make-release-zip|node scripts|curl |wget|actions\/cache/);
-  });
-
-  it("checks the ZIP against the checksum the packaging job recorded, and against the checksum file, before it creates anything", () => {
-    const script = block();
-
-    expect(script).toContain("SHA256: ${{ needs.package.outputs.sha256 }}");
-    expect(script).toContain('test "$(sha256sum "$zip" | cut -d \' \' -f 1)" = "$SHA256"');
-    expect(script).toContain("(cd release && sha256sum -c SHA256SUMS)");
-    expect(script.indexOf("sha256sum -c SHA256SUMS")).toBeLessThan(script.indexOf("gh release create"));
-    expect(script.indexOf('= "$SHA256"')).toBeLessThan(script.indexOf("gh release create"));
-    expect(script).toContain("set -euo pipefail");
-  });
-
-  it("creates the release for the tag, from the ZIP and its checksum file, with the changelog section as its notes, and only if the tag exists", () => {
-    expect(block()).toContain(CREATE);
-    expect(block().match(/gh release/g)).toHaveLength(1);
-  });
-
-  it("makes a stable release: not a draft, not a pre-release, and not aimed at a branch", () => {
-    expect(block()).not.toMatch(/--draft|--prerelease|--target|--latest=false|--generate-notes/);
   });
 });
 

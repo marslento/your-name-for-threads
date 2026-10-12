@@ -37,7 +37,7 @@ describe("extension manifest", () => {
   it("keeps the version consistent without expanding permissions", async () => {
     const resolvedManifest = await manifest;
 
-    // The version is package.json's and nowhere else (tests/build/version-source.test.ts); nothing here pins a number.
+    // Compare the real package version with both consumers; nothing here pins a number.
     expect(resolvedManifest.version).toBe(PHASE_ONE_VERSION);
     expect(packageMetadata.version).toBe(PHASE_ONE_VERSION);
     expect(resolvedManifest.permissions).toEqual(["storage"]);

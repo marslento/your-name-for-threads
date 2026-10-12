@@ -1,3 +1,5 @@
+// @vitest-environment jsdom
+
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { runBackupExport } from "../../src/dashboard/backup/runBackupExport";
 import { BrowserDirectoryRepository } from "../../src/storage/BrowserDirectoryRepository";

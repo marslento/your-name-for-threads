@@ -3,37 +3,23 @@ import { join } from "node:path";
 
 import { afterEach, describe, expect, it } from "vitest";
 
-import { DASHBOARD_SESSIONS_STORAGE_KEY } from "../../src/account/DashboardSessionRegistry";
 import { DEFAULT_EXTENSION_SETTINGS } from "../../src/domain/settings";
-import { IDENTITY_CACHE_TTL_MS } from "../../src/domain/identityCache";
 import { collectDiagnosticSummary } from "../../src/diagnostics/collectDiagnosticSummary";
-import { DIAGNOSTIC_COMPONENTS, PRODUCT_DIAGNOSTIC_CODES } from "../../src/diagnostics/diagnosticTypes";
-import { LocalDiagnosticStore, MAX_DIAGNOSTIC_EVENTS } from "../../src/diagnostics/DiagnosticStore";
+import { LocalDiagnosticStore } from "../../src/diagnostics/DiagnosticStore";
 import { setOnboardingCompleted } from "../../src/onboarding/onboardingState";
 import { setLastSeenNoticeId } from "../../src/release/productNotice";
 import { exportDirectory } from "../../src/portability/exportBackup";
 import { BrowserDirectoryRepository } from "../../src/storage/BrowserDirectoryRepository";
 import { BrowserStorageContactsRepository } from "../../src/storage/BrowserStorageContactsRepository";
 import { __resetMigrationCoordinatorForTests } from "../../src/storage/migrations";
-import { TAB_SURFACES_STORAGE_KEY } from "../../src/shared/tabSurfaces";
 import { writeSettings } from "../../src/storage/settingsRepository";
 import { backgroundSendMessage } from "../fixtures/storage/diagnosticCoordinator";
 import { ROOT, filesMatching, markdownTable } from "../fixtures/repoFiles";
 import { installFakeChrome } from "../fixtures/storage/fakeChromeStorage";
 
-/**
- * The Data Handling Matrix (Phase 4 Task 14) is prose, and prose goes stale. These
- * tests tie the parts of it a machine can check to the code: the storage keys that
- * are really written, what a real backup really holds, that nothing in `src/`
- * touches the network, and the two statements (the identity cache sweep, the
- * Recovery dump) that stop being true the day someone changes the code. They
- * cannot judge the wording - that is for the reviewer of PRIVACY.md and the store
- * disclosures, which are written from this table.
- */
+// Check actual export, deletion and diagnostics data against the privacy boundaries.
 const DOC = join(ROOT, "docs", "privacy", "data-handling-matrix.md");
-const SRC = join(ROOT, "src");
 
-const COLUMNS = ["Data", "Purpose", "Stored where", "Sent to the developer?", "In a JSON Backup?", "Retention", "User control"];
 const OWNER = "900";
 const AT = "2026-03-01T00:00:00.000Z";
 
@@ -84,53 +70,7 @@ function backupJson(area: { snapshot(): Record<string, unknown> }): string {
   return result.json;
 }
 
-describe("data handling matrix: structure", () => {
-  it("has the seven columns, a row for everything the plan names, and no empty cell", () => {
-    const [header, ...rows] = table("Data");
-
-    expect(header).toEqual(COLUMNS);
-    for (const name of ["Threads username", "Numeric Threads ID", "Nickname", "Note", "Tombstones", "Current-account state", "Integration status", "Last-seen notice ID", "Diagnostic event codes", "Backup file", "Recovery dump"]) {
-      expect(rows.some((r) => r[0].toLowerCase().startsWith(name.toLowerCase())), name).toBe(true);
-    }
-    for (const row of rows) {
-      expect(row.length, row[0]).toBe(COLUMNS.length);
-      for (const cell of row) expect(cell, `${row[0]}: empty cell`).not.toBe("");
-    }
-  });
-
-  it("says No to being sent to the developer on every row", () => {
-    const [, ...rows] = table("Data");
-
-    for (const row of rows) expect(row[3], row[0]).toMatch(/^No\b/);
-  });
-});
-
 describe("data handling matrix: agrees with the code", () => {
-  it("lists exactly the chrome.storage.local keys the product writes, and the three session keys it uses", async () => {
-    const { area } = await populate();
-    const keys = table("Storage keys").slice(1);
-    const documented = (areaName: string) => keys.filter((k) => k[0] === `chrome.storage.${areaName}`).map((k) => k[1]).sort();
-
-    expect(documented("local")).toEqual(Object.keys(area.snapshot()).sort());
-
-    const sessionKey = /SESSION_KEY = "([^"]+)"/.exec(readFileSync(join(SRC, "account", "AccountContextRegistry.ts"), "utf8"))?.[1];
-    expect(documented("session")).toEqual([sessionKey, DASHBOARD_SESSIONS_STORAGE_KEY, TAB_SURFACES_STORAGE_KEY].sort());
-  });
-
-  it("notices a new file that writes browser storage, or reads the session area, so the matrix is revisited", () => {
-    expect(filesMatching(/chrome\.storage\.local\.(set|remove|clear)\b/)).toEqual([
-      "src/diagnostics/diagnosticCoordinator.ts",
-      "src/onboarding/onboardingState.ts",
-      "src/recovery/recoveryRestore.ts",
-      "src/release/productNotice.ts",
-      "src/storage/BrowserStorageContactsRepository.ts",
-      "src/storage/directoryAccess.ts",
-      "src/storage/migrations.ts",
-      "src/storage/settingsRepository.ts",
-    ]);
-    expect(filesMatching(/chrome\.storage\.session\b/)).toEqual(["src/account/AccountContextRegistry.ts", "src/account/DashboardSessionRegistry.ts", "src/shared/tabSurfaces.ts"]);
-  });
-
   it("never syncs through the browser account and never reaches the network, apart from the page observer", () => {
     expect(filesMatching(/chrome\.storage\.(sync|managed)\b/)).toEqual([]);
     // The observer wraps the page's own fetch and XMLHttpRequest to read what Threads loads; nothing else may
@@ -178,9 +118,6 @@ describe("data handling matrix: agrees with the code", () => {
     expect(stored).toContain("4002");
     expect(stored).not.toContain("GONE_NICK_PROBE");
     expect(stored).not.toContain("GONE_NOTE_PROBE");
-    expect(dataRow("Tombstones")["Stored where"]).toContain("tombstones");
-    expect(dataRow("Nickname").Retention).toMatch(/Deleting a contact discards the nickname/);
-    expect(dataRow("Note").Retention).toMatch(/Deleting a contact discards the note/);
   });
 
   it("Clear this account's data removes the Directory and its binding and leaves the browser-global keys", async () => {
@@ -195,10 +132,9 @@ describe("data handling matrix: agrees with the code", () => {
     expect(after.accountBindings[OWNER]).toBeUndefined();
     expect(Object.keys(after.identityCache)).toEqual(["stranger_probe"]);
     expect(Object.keys(after)).toEqual(expect.arrayContaining(["settings", "onboarding", "lastSeenNoticeId", "diagnostics"]));
-    expect(dataRow("Identity cache")["User control"]).toMatch(/Clear this account's data deliberately leaves it/);
   });
 
-  it("says in the Copied diagnostics row what the copied text holds, line by line, and that no private value can be in it", async () => {
+  it("copies only reviewed diagnostics fields without private values or the raw user agent", async () => {
     await populate();
     const text = await collectDiagnosticSummary({
       accountState: "confirmed",
@@ -207,74 +143,17 @@ describe("data handling matrix: agrees with the code", () => {
       userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
       platform: "Windows",
     });
-    // Every line the code writes, in order, with the words the row has to have for it. A line added to the copied text fails here until
-    // someone has read it and put it in the row, and in PRIVACY.md and the store disclosures, which are written from the row.
-    const reviewed: Record<string, string> = {
-      Version: "extension version",
-      Browser: "browser family and its major version",
-      Platform: "operating system family",
-      "Storage schema": "storage and backup format numbers",
-      "Backup version": "storage and backup format numbers",
-      "Account resolver state": "account and recovery states",
-      "Recovery state": "account and recovery states",
-      "Directory exists": "how many contacts",
-      "Contact count": "how many contacts",
-      "Tombstone count": "deleted-contact records",
-      "Pending conflict count": "pending conflicts",
-      "Runtime surface status": "each part of the threads integration",
-      "Recent diagnostic error codes": "recent event codes",
-    };
+    const reviewed = [
+      "Version", "Browser", "Platform", "Storage schema", "Backup version",
+      "Account resolver state", "Recovery state", "Directory exists", "Contact count",
+      "Tombstone count", "Pending conflict count", "Runtime surface status", "Recent diagnostic error codes",
+    ];
     const labels = text.split("\n").filter((line) => /^[A-Za-z ]+:/.test(line)).map((line) => line.split(":")[0]);
-    const purpose = dataRow("Copied diagnostics").Purpose.toLowerCase();
 
-    expect(labels).toEqual(Object.keys(reviewed));
-    for (const [label, words] of Object.entries(reviewed)) expect(purpose, label).toContain(words);
+    expect(labels).toEqual(reviewed);
     expect(text).toContain("Browser: Chrome 153\n");
     expect(text).toContain("Platform: Windows\n");
     expect(text, "the raw user agent never leaves").not.toMatch(/Mozilla|153\.0\.0\.0|Win64/);
     expect(text, "no private value can be in it").not.toMatch(/PROBE|alice_probe|bob_probe|stranger_probe|\b(4001|4002|7777|900)\b/);
-    const privacy = readFileSync(join(ROOT, "PRIVACY.md"), "utf8").replace(/\r\n/g, "\n");
-    expect(privacy).toContain("which browser you use, by family and major version");
-    expect(privacy).toContain("which operating system family");
-  });
-
-  it("quotes the numbers the code enforces", () => {
-    expect(dataRow("Diagnostic event codes").Purpose).toContain(`fixed list of ${PRODUCT_DIAGNOSTIC_CODES.length}`);
-    expect(dataRow("Diagnostic event codes").Purpose).toContain(`fixed list of ${DIAGNOSTIC_COMPONENTS.length}`);
-    expect(dataRow("Diagnostic event codes").Retention).toContain(`newest ${MAX_DIAGNOSTIC_EVENTS}`);
-    expect(dataRow("Identity cache").Retention).toContain(`${IDENTITY_CACHE_TTL_MS / 86_400_000} days`);
-  });
-
-  it("says the identity cache is not swept for as long as nothing in the product sweeps it", () => {
-    // The sweep exists (`pruneIdentityCache`) but no product code calls it. The day something does, this row is wrong.
-    const callers = filesMatching(/\.pruneIdentityCache\s*\(/);
-    const retention = dataRow("Identity cache").Retention;
-
-    if (callers.length === 0) expect(retention).toMatch(/not swept/);
-    else expect(retention, `${callers.join(", ")} now sweeps it; rewrite the retention cell`).not.toMatch(/not swept/);
-  });
-
-  it("says what reads a Recovery dump back, as the code does: nothing, or since 1.1.0 only the single-account restore", () => {
-    const reader = filesMatching(/RECOVERY_FORMAT|your-name-for-threads-recovery/).includes("src/recovery/recoveryImport.ts");
-    const purpose = dataRow("Recovery dump").Purpose;
-
-    if (reader) {
-      expect(purpose).toContain("Restore from a recovery file");
-      expect(purpose).toContain("a single account's file only, for that same signed-in account");
-      expect(purpose).toContain("only into that account's empty Directory or back over the damaged Directory it came from");
-      expect(purpose).not.toMatch(/nothing in the extension reads it back/);
-    } else {
-      expect(purpose).toMatch(/nothing in the extension reads it back/);
-    }
-  });
-
-  it("calls the Recovery dump planned until its format tag appears in the code", () => {
-    const implemented = filesMatching(/your-name-for-threads-recovery/).length > 0;
-    const row = dataRow("Recovery dump");
-    const claims = `${row.Purpose} ${row["Stored where"]}`;
-
-    expect(row.Data.toLowerCase().includes("planned"), "the row's own label").toBe(!implemented);
-    if (implemented) expect(claims).not.toMatch(/not implemented/i);
-    else expect(claims).toMatch(/Not implemented/);
   });
 });

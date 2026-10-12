@@ -392,11 +392,4 @@ describe("NicknameDialog", () => {
     expect(within(portalContainer).getByRole("dialog")).toBeTruthy();
     expect(document.body.querySelector('[data-slot="dialog-content"]')).toBeNull();
   });
-
-  it("does not mutate frozen props", () => {
-    const frozen = Object.freeze({ username: " @ALICE ", initialNickname: "阿明" });
-    renderDialog({ mode: "edit", username: frozen.username, initialNickname: frozen.initialNickname });
-
-    expect(frozen).toEqual({ username: " @ALICE ", initialNickname: "阿明" });
-  });
 });

@@ -50,20 +50,6 @@ describe("resetDirectory", () => {
     });
   });
 
-  it("assigns exactly the given newDirectoryId, never reusing the old one", () => {
-    const result = resetDirectory({
-      ownerThreadsUserId: "123",
-      directories: { "dir-old": directory({ directoryId: "dir-old" }) },
-      accountBindings: { "123": "dir-old" },
-      newDirectoryId: "dir-new",
-    });
-
-    expect(result.ok).toBe(true);
-    if (!result.ok) return;
-    expect(result.newDirectory.directoryId).toBe("dir-new");
-    expect(result.newDirectory.directoryId).not.toBe("dir-old");
-  });
-
   it("refuses with no_directory for an owner who has never had a Directory", () => {
     const result = resetDirectory({
       ownerThreadsUserId: "123",

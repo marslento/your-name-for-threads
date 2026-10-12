@@ -10,7 +10,7 @@ import { PHASE_ONE_VERSION } from "../../src/shared/constants";
  * The version is derived from package.json, not merely equal to it (Phase 4 Task 29; review checklist 35 and 36). Two
  * numbers that agree today prove nothing about tomorrow's release, so package.json is replaced by one that says
  * something else and the constant every part of the product reads, and the manifest, are asked what they say.
- * (A file of its own, so that the substitute cannot reach tests/build/version-source.test.ts, which reads the real one.)
+ * (A file of its own, so that the substitute cannot reach tests/manifest.test.ts, which reads the real version.)
  */
 describe("the version follows package.json", () => {
   it("in the constant every part of the product reads", () => {

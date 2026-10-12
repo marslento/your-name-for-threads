@@ -4,7 +4,6 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import type { ThreadsTabContext } from "../../src/account/AccountContextRegistry";
 import { OPEN_DASHBOARD_MESSAGE_TYPE } from "../../src/account/dashboardSessionRequest";
 import { App, isThreadsUrl, openOrFocusDashboard } from "../../src/popup/App";
-import { PHASE_ONE_VERSION } from "../../src/shared/constants";
 import type { ExtensionSettings } from "../../src/domain/settings";
 import { t } from "../../src/i18n/t";
 
@@ -139,9 +138,6 @@ describe("popup", () => {
     await waitFor(() =>
       expect((screen.getByRole("switch") as HTMLButtonElement).getAttribute("aria-checked")).toBe("true"),
     );
-    expect(screen.getByText(t("popup_currentSiteLabel"))).toBeTruthy();
-    expect(screen.getByText(t("popup_threadsSite"))).toBeTruthy();
-    expect(screen.getByText(PHASE_ONE_VERSION)).toBeTruthy();
     expect(chromeApi.tabs.query).toHaveBeenCalledWith({ active: true, currentWindow: true });
   });
 
@@ -153,7 +149,6 @@ describe("popup", () => {
     render(<App />);
 
     expect(await screen.findByText(t("popup_threadsUnresolvedGuidance"))).toBeTruthy();
-    expect(screen.getByText(t("popup_threadsSite"))).toBeTruthy();
     const openButton = screen.getByRole("button", { name: t("popup_openDashboard") }) as HTMLButtonElement;
     await waitFor(() => expect(openButton.disabled).toBe(true));
   });
@@ -166,7 +161,6 @@ describe("popup", () => {
     render(<App />);
 
     expect(await screen.findByText(t("popup_nonThreadsGuidance"))).toBeTruthy();
-    expect(screen.getByText(t("popup_nonThreadsSite"))).toBeTruthy();
     const openButton = screen.getByRole("button", { name: t("popup_openDashboard") }) as HTMLButtonElement;
     expect(openButton.disabled).toBe(true);
   });

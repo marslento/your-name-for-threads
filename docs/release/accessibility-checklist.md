@@ -2,7 +2,7 @@
 
 What Your Name for Threads promises about being usable without a mouse, without sight of the screen, and with a wider text size, how a machine checks each promise, and what a person still has to try in a real browser before a release.
 
-This is a **practical audit, not a WCAG conformance claim**, and nothing published should say otherwise. The automated checks run on jsdom, which has no layout, no real focus ring, no screen reader and no zoom. Record manual browser results for the exact candidate being tested. The results table below is a reusable template; `tests/repo/accessibility-checklist.test.ts` fails if a row claims a result without a date.
+This is a **practical audit, not a WCAG conformance claim**, and nothing published should say otherwise. The automated checks run on jsdom, which has no layout, no real focus ring, no screen reader and no zoom. Record manual browser results for the exact candidate being tested, with a date for each result. Review the results table before release.
 
 ## The contract
 
@@ -32,7 +32,7 @@ Buttons, links, fields, switches, selects and tabs on every screen say what they
 Every control is a real control that a keyboard can reach, nothing depends on a click on an element that is not one, and no tabindex reorders the page. Dialogs close with Escape.
 
 - Automated: `tests/accessibility/static-guards.test.ts`
-  - "has no positive tabindex, and its one tabindex is the onboarding step heading that code focuses when the step changes"
+  - "has no positive tabindex"
   - "puts no click handler on an element that is not a control, which a keyboard cannot reach"
 - Automated: `tests/accessibility/dialogs.test.tsx`
   - "the contact editor drawer, opened from a row's button and closed with Escape"
@@ -40,7 +40,7 @@ Every control is a real control that a keyboard can reach, nothing depends on a 
 
 ### 3. Focus is visible
 
-The browser's outline is removed in eight places only, each on a reviewed list, and every control that removes it draws a focus border and ring in its place. The ring's colour is far enough from the surfaces it sits on (see 8).
+Every control that removes the browser's outline draws a focus indicator in its place. The ring's colour is far enough from the surfaces it sits on (see 8).
 
 - Automated: `tests/accessibility/static-guards.test.ts`
   - "removes the browser's outline only where something else shows focus, or where nothing focusable is being styled"
@@ -73,7 +73,6 @@ An invalid field says so and points at the words that say why, and those words a
 - Automated: `tests/accessibility/form-errors.test.tsx`
   - "names the problem with the nickname, in a live region, and stops when it is fixed"
   - "names the problem with the note, in a live region, and stops when it is fixed"
-  - "(control) starts with neither field invalid"
   - "names the problem with an over-long nickname, and it clears when it is fixed"
 - Automated: `tests/dashboard/final-contact-editor.test.tsx`
   - "associates the note error message with the note textarea via aria-describedby"

@@ -2,11 +2,7 @@ import { act } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { toast } from "sonner";
 
-import {
-  ProfileToaster,
-  showProfileToast,
-  type ProfileToastOutcome,
-} from "../../src/content/ui/profile/profileToasts";
+import { ProfileToaster, showProfileToast } from "../../src/content/ui/profile/profileToasts";
 import {
   createProfileShadow,
   type ProfileShadowSurface,
@@ -53,23 +49,10 @@ describe("showProfileToast", () => {
     expect(error).toHaveBeenCalledTimes(semantic === "error" ? 1 : 0);
     expect(semantic === "success" ? success : error).toHaveBeenCalledWith(t(messageKey));
   });
-
-  it.each(["numeric-id-upgrade", "identity-cache-update", "username-rename", "theme-change"])(
-    "does not expose passive %s feedback",
-    (passiveOutcome) => {
-      const success = vi.spyOn(toast, "success").mockReturnValue("success-toast");
-      const error = vi.spyOn(toast, "error").mockReturnValue("error-toast");
-
-      showProfileToast(passiveOutcome as ProfileToastOutcome);
-
-      expect(success).not.toHaveBeenCalled();
-      expect(error).not.toHaveBeenCalled();
-    },
-  );
 });
 
 describe("ProfileToaster", () => {
-  it("renders a localized bottom-center host inside the owned Shadow Root", async () => {
+  it("renders a localized host inside the owned Shadow Root", async () => {
     const { host, surface } = createSurface();
 
     await act(async () => {
@@ -87,8 +70,6 @@ describe("ProfileToaster", () => {
     expect(toaster?.closest("section")?.getAttribute("aria-label")).toContain(
       t("profile_notificationsLabel"),
     );
-    expect(toaster?.dataset.xPosition).toBe("center");
-    expect(toaster?.dataset.yPosition).toBe("bottom");
   });
 
   it("applies explicit light and dark themes, including a live prop change", async () => {

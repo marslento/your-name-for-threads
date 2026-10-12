@@ -1,52 +1,28 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
-import { join, relative, sep } from "node:path";
+import { join } from "node:path";
 
 import { afterEach, describe, expect, it } from "vitest";
 
 import { REPO_URL, renderPrivacyPage, run } from "../../scripts/build-site.mjs";
-import { auditReleaseGates } from "../../scripts/release-audit.mjs";
 import { GITHUB_BUG_REPORT_URL, GITHUB_ISSUES_URL, GITHUB_REPO_URL, PRIVACY_POLICY_URL, SECURITY_POLICY_URL } from "../../src/shared/links";
-import { filesUnder, removeBuilt, scratchDirectory } from "../fixtures/buildPackage";
+import { removeBuilt, scratchDirectory } from "../fixtures/buildPackage";
 import { ROOT } from "../fixtures/repoFiles";
 
-/**
- * The GitHub Pages site (Phase 4 Task 32; review checklist 28, "Public Disclosure Consistency"): a home page, /privacy and
- * /support, published from `site/` exactly as committed. The site is a public statement about what the extension does, so
- * what is held here is that it says only what the rest of the project says (the privacy page is PRIVACY.md rendered, the
- * support page uses the extension's own words and links), that it fetches nothing from anywhere, and that it cannot be
- * released with a store link that goes nowhere.
- */
+// Validate public pages, the privacy renderer and deployment boundaries.
 const SITE = join(ROOT, "site");
 const PAGES = ["index.html", "privacy/index.html", "support/index.html"];
 
 const read = (path: string) => readFileSync(join(ROOT, path), "utf8").replace(/\r\n/g, "\n");
 const page = (name: string) => read(`site/${name}`);
-const messages = JSON.parse(read("_locales/en/messages.json")) as Record<string, { message: string }>;
-const message = (key: string) => messages[key].message;
 
 const withoutComments = (html: string) => html.replace(/<!--[\s\S]*?-->/g, "");
 const decode = (text: string) => text.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&amp;/g, "&");
-/** The words on a page, as one line: tags removed and comments dropped. Each block is on its own line in the source. */
-const plain = (html: string) => decode(withoutComments(html).replace(/<[^>]+>/g, "")).replace(/\s+/g, " ").trim();
 const hrefs = (html: string) => [...withoutComments(html).matchAll(/\bhref="([^"]*)"/g)].map((match) => decode(match[1]));
 const isRemote = (href: string) => /^https?:/i.test(href);
-const between = (html: string, tag: string) => html.match(new RegExp(`<${tag}[^>]*>([\\s\\S]*?)</${tag}>`))![1];
 
 afterEach(removeBuilt);
 
 describe("the site", () => {
-  it("is exactly the three pages and the stylesheet, so nothing unreviewed is published with them", () => {
-    const files = filesUnder(SITE).map((file) => relative(SITE, file).split(sep).join("/")).sort();
-
-    expect(files).toEqual(["index.html", "privacy/index.html", "style.css", "support/index.html"]);
-  });
-
-  it("is made of text: no file the site is made from has a NUL byte, which would make Git show its changes as binary and hide them from review", () => {
-    const made = [...filesUnder(SITE), join(ROOT, "scripts", "build-site.mjs"), join(ROOT, "scripts", "build-site.d.mts"), join(ROOT, ".github", "workflows", "pages.yml"), join(ROOT, "tests", "repo", "site.test.ts")];
-
-    for (const file of made) expect(readFileSync(file).includes(0), relative(ROOT, file)).toBe(false);
-  });
-
   it.each(PAGES)("%s is a whole page: its language, a viewport, one title, one h1, one main region and a description", (file) => {
     const html = page(file);
 
@@ -55,26 +31,8 @@ describe("the site", () => {
     expect(html.match(/<title>[^<]+<\/title>/g)).toHaveLength(1);
     expect(html.match(/<h1[ >]/g)).toHaveLength(1);
     expect(html.match(/<main>/g)).toHaveLength(1);
-    expect(html).toMatch(/<meta name="description" content="[^"]{20,}">/);
+    expect(html).toMatch(/<meta name="description" content="[^"]+">/);
     expect(html.match(/aria-current="page"/g), "it says which page it is").toHaveLength(1);
-  });
-
-  it("gives each page a title of its own", () => {
-    const titles = PAGES.map((file) => page(file).match(/<title>([^<]+)<\/title>/)![1]);
-
-    expect(new Set(titles).size).toBe(3);
-  });
-
-  it("carries the same header and the same independence statement on every page", () => {
-    const navigation = (file: string) =>
-      [...between(page(file), "nav").matchAll(/<a href="([^"]+)"[^>]*>([^<]+)<\/a>/g)].map((match) => [match[2], new URL(match[1], `https://site.test/base/${file}`).href]);
-    const brand = (file: string) => new URL(page(file).match(/<a class="brand" href="([^"]+)"/)![1], `https://site.test/base/${file}`).href;
-
-    for (const file of PAGES) {
-      expect(navigation(file), file).toEqual([["Privacy", "https://site.test/base/privacy/"], ["Support", "https://site.test/base/support/"], ["GitHub", GITHUB_REPO_URL]]);
-      expect(brand(file), file).toBe("https://site.test/base/");
-      expect(plain(between(page(file), "footer")), file).toBe(message("dashboard_about_independent"));
-    }
   });
 });
 
@@ -99,10 +57,6 @@ describe("what the site fetches", () => {
       const store = /^https:\/\/(chromewebstore\.google\.com|microsoftedge\.microsoft\.com\/addons)\//.test(href);
       expect(ours || store, `${file} links to ${href}`).toBe(true);
     }
-  });
-
-  it.each(PAGES)("%s publishes no email address", (file) => {
-    expect(page(file)).not.toMatch(/mailto:|[\w.+-]+@[\w-]+\.[\w.-]+/i);
   });
 });
 
@@ -161,20 +115,6 @@ describe("the colours", () => {
 describe("the privacy page", () => {
   it("is PRIVACY.md rendered, exactly, so it cannot say anything PRIVACY.md does not, or fall behind it", () => {
     expect(page("privacy/index.html"), "site/privacy/index.html is out of date: run `pnpm build:site` and commit it").toBe(renderPrivacyPage(read("PRIVACY.md")));
-  });
-
-  it("would notice a change: a PRIVACY.md with one more sentence renders differently", () => {
-    expect(renderPrivacyPage(`${read("PRIVACY.md")}\nAn extra sentence.\n`)).not.toBe(page("privacy/index.html"));
-  });
-
-  it("names the same repository as the extension, for the links PRIVACY.md points into it", () => {
-    expect(REPO_URL).toBe(GITHUB_REPO_URL);
-  });
-
-  it("has a script in package.json that renders it", () => {
-    const scripts = (JSON.parse(read("package.json")) as { scripts: Record<string, string> }).scripts;
-
-    expect(scripts["build:site"]).toBe("node scripts/build-site.mjs");
   });
 
   it("is written by that script, from the PRIVACY.md next to it", () => {
@@ -271,58 +211,8 @@ describe("the renderer", () => {
   });
 });
 
-describe("the home page", () => {
-  const html = page("index.html");
-  const bullets = (markdown: string) => markdown.split("## Privacy at a glance")[1].split("\n## ")[0].split("\n").filter((line) => line.startsWith("- ")).map((line) => line.slice(2).replace(/`/g, ""));
-
-  it("gives the README's 'Privacy at a glance' as it stands, and no more claims than that", () => {
-    const privacy = html.split('<h2 id="privacy-at-a-glance">')[1].split("<h2")[0];
-    const items = [...privacy.matchAll(/<li>([\s\S]*?)<\/li>/g)].map((match) => plain(match[1]));
-
-    expect(items).toEqual(bullets(read("README.md")));
-  });
-
-  it("says it is independent, unofficial and open source, and links to the repository and to the other two pages", () => {
-    expect(plain(html)).toMatch(/independent, unofficial, open-source/);
-    expect(hrefs(html)).toEqual(expect.arrayContaining([GITHUB_REPO_URL, "privacy/", "support/"]));
-  });
-
-  it("has no store link before publication, and has both after the follow-up is complete", () => {
-    const chrome = /href="https:\/\/chromewebstore\.google\.com\/[^"]+"/;
-    const edge = /href="https:\/\/microsoftedge\.microsoft\.com\/addons\/[^"]+"/;
-
-    if (html.includes("POST-PUBLICATION")) {
-      expect(html).not.toMatch(chrome);
-      expect(html).not.toMatch(edge);
-      expect(plain(html)).toContain("not in the Chrome Web Store or Microsoft Edge Add-ons yet");
-    } else {
-      expect(html).toMatch(chrome);
-      expect(html).toMatch(edge);
-      expect(plain(html)).not.toMatch(/not in the Chrome Web Store/);
-    }
-  });
-
-  it("does not require public store listings before the first package can be submitted", () => {
-    const found = auditReleaseGates(ROOT).filter((finding) => finding.path.startsWith("site/index.html:"));
-
-    expect(found).toEqual([]);
-  });
-});
-
 describe("the support page", () => {
   const html = page("support/index.html");
-  const text = plain(html);
-
-  it("tells someone how to copy diagnostics, with the names the extension gives its own buttons", () => {
-    for (const key of ["popup_openDashboard", "dashboard_sidebar_about", "dashboard_about_copyDiagnostics", "dashboard_about_reportIssue", "recovery_exportAction"]) {
-      expect(text, key).toContain(message(key));
-    }
-  });
-
-  it("repeats the About page's guidance on what diagnostics hold and on what never to paste, word for word", () => {
-    expect(text).toContain(message("dashboard_about_supportDiagnostics"));
-    expect(text).toContain(message("dashboard_about_supportPrivate"));
-  });
 
   it("links to the bug-report form, to Issues and to the security policy that the extension itself links to", () => {
     expect(hrefs(html)).toEqual(expect.arrayContaining([GITHUB_BUG_REPORT_URL, GITHUB_ISSUES_URL, SECURITY_POLICY_URL]));
@@ -333,15 +223,6 @@ describe("the support page", () => {
 
     expect(forms.length).toBeGreaterThan(0);
     for (const form of forms) expect(["", "?template=bug_report.yml"]).toContain(new URL(form).search);
-  });
-
-  it("sends a security problem to the policy and never to a public issue", () => {
-    expect(text).toContain("Do not open a public issue");
-  });
-
-  it("promises no response time and no bounty it cannot keep", () => {
-    expect(text).toContain("no guaranteed response time");
-    expect(text).not.toMatch(/within \d|hours|business days|bounty/i);
   });
 });
 

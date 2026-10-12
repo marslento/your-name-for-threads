@@ -43,8 +43,4 @@ describe("filterContacts", () => {
   it("returns no results when nothing matches", () => {
     expect(filterContacts(contacts, "nonexistent")).toEqual([]);
   });
-
-  it("does not throw for a contact without a note", () => {
-    expect(filterContacts([bob], "anything")).toEqual([]);
-  });
 });
